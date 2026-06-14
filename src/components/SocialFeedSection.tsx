@@ -1,17 +1,17 @@
 import React, { useState } from "react";
-import { Twitter, Facebook, Instagram, MessageSquare, Heart, Share2, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Twitter, Facebook, Instagram, Linkedin, Youtube, MessageSquare, Heart, Share2, Sparkles, Plus, Trash2 } from "lucide-react";
 import { SocialPost } from "../types";
 
 interface SocialFeedSectionProps {
   key?: string;
   posts: SocialPost[];
   isAdmin: boolean;
-  onAddPost?: (platform: "twitter" | "facebook" | "instagram", content: string, imageUrl?: string) => Promise<void>;
+  onAddPost?: (platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube", content: string, imageUrl?: string) => Promise<void>;
   onDeletePost?: (id: string) => Promise<void>;
 }
 
 export default function SocialFeedSection({ posts, isAdmin, onAddPost, onDeletePost }: SocialFeedSectionProps) {
-  const [activeTab, setActiveTab] = useState<"all" | "twitter" | "instagram" | "facebook">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "twitter" | "instagram" | "facebook" | "linkedin" | "youtube">("all");
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [likeCountDiff, setLikeCountDiff] = useState<Record<string, number>>({});
 
@@ -20,25 +20,33 @@ export default function SocialFeedSection({ posts, isAdmin, onAddPost, onDeleteP
     .filter((post) => activeTab === "all" || post.platform === activeTab)
     .sort((a, b) => b.id.localeCompare(a.id));
 
-  const getPlatformIcon = (platform: "twitter" | "facebook" | "instagram") => {
+  const getPlatformIcon = (platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube") => {
     switch (platform) {
       case "twitter":
         return <Twitter className="w-4 h-4 text-sky-400" />;
-      case "facebook":
-        return <Facebook className="w-4 h-4 text-blue-500" />;
+      case "linkedin":
+        return <Linkedin className="w-4 h-4 text-blue-400" />;
+      case "youtube":
+        return <Youtube className="w-4 h-4 text-red-500" />;
       case "instagram":
         return <Instagram className="w-4 h-4 text-pink-400" />;
+      case "facebook":
+        return <Facebook className="w-4 h-4 text-blue-500" />;
     }
   };
 
-  const getPlatformClass = (platform: "twitter" | "facebook" | "instagram") => {
+  const getPlatformClass = (platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube") => {
     switch (platform) {
       case "twitter":
         return "border-sky-500/20 bg-sky-950/10";
-      case "facebook":
+      case "linkedin":
         return "border-blue-500/20 bg-blue-950/10";
+      case "youtube":
+        return "border-red-500/20 bg-red-950/10";
       case "instagram":
         return "border-pink-500/20 bg-pink-950/10";
+      case "facebook":
+        return "border-blue-500/20 bg-blue-950/10";
     }
   };
 
@@ -104,15 +112,26 @@ export default function SocialFeedSection({ posts, isAdmin, onAddPost, onDeleteP
             <span>Instagram</span>
           </button>
           <button
-            onClick={() => setActiveTab("facebook")}
+            onClick={() => setActiveTab("linkedin")}
             className={`flex items-center gap-1.5 px-5 py-2.5 rounded-sm text-xs font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
-              activeTab === "facebook"
+              activeTab === "linkedin"
                 ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.25)]"
                 : "bg-[#002366]/40 text-gray-300 hover:text-white border border-gray-500/10 hover:border-blue-500/25"
             }`}
           >
-            <Facebook className="w-3.5 h-3.5" />
-            <span>Facebook</span>
+            <Linkedin className="w-3.5 h-3.5" />
+            <span>LinkedIn</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("youtube")}
+            className={`flex items-center gap-1.5 px-5 py-2.5 rounded-sm text-xs font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer ${
+              activeTab === "youtube"
+                ? "bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.25)]"
+                : "bg-[#002366]/40 text-gray-300 hover:text-white border border-gray-500/10 hover:border-red-600/25"
+            }`}
+          >
+            <Youtube className="w-3.5 h-3.5" />
+            <span>YouTube</span>
           </button>
         </div>
 

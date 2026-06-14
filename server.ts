@@ -262,14 +262,25 @@ const initialData: CivicShieldData = {
     },
     {
       id: "soc_1",
-      platform: "facebook",
-      username: "Civic Shield - Citizens Legal Alliance",
-      handle: "/civicshield",
+      platform: "linkedin",
+      username: "Civic Shield Foundation",
+      handle: "linkedin.com/company/civicshield",
       content: "Did you know? Representing yourself in local courts ('Pro-Se') is a constitutional absolute. However, filing municipal objection paperwork can feel incredibly scary.\n\nTo make this easy, we've uploaded clean, standardized boilerplate templates for obection responses directly to our online Evidence Room. Learn how to speak the institutional language and stand tall with confidence. 📚🛡️",
       timestamp: "1 day ago",
       likes: 195,
       shares: 72,
       comments: 15
+    },
+    {
+      id: "soc_youtube_1",
+      platform: "youtube",
+      username: "Civic Shield Channel",
+      handle: "youtube.com/@civicshield",
+      content: "📺 NEW VIDEO RELEASE: Walking through an active police detainment step-by-step. Discover how to politely resist unconstitutional searches while remaining fully compliant with officers' safe verbal requests. Watch the full simulation on our channel and learn how to guard your legal rights easily!",
+      timestamp: "2 days ago",
+      likes: 412,
+      shares: 155,
+      comments: 48
     }
   ],
   newsletters: [
@@ -649,8 +660,8 @@ app.post("/api/social-feed", (req, res) => {
     const newSocialPost = {
       id: "soc_" + Date.now(),
       platform,
-      username: platform === "twitter" ? "Civic Shield Campaign" : platform === "instagram" ? "Civic Shield" : "Civic Shield - Citizens Legal Alliance",
-      handle: platform === "twitter" ? "@TheCivicShield" : platform === "instagram" ? "@thecivicshield" : "/civicshield",
+      username: platform === "twitter" ? "Civic Shield Campaign" : platform === "linkedin" ? "Civic Shield Foundation" : platform === "youtube" ? "Civic Shield Channel" : platform === "instagram" ? "Civic Shield" : "Civic Shield - Citizens Legal Alliance",
+      handle: platform === "twitter" ? "@TheCivicShield" : platform === "linkedin" ? "linkedin.com/company/civicshield" : platform === "youtube" ? "youtube.com/@civicshield" : platform === "instagram" ? "@thecivicshield" : "/civicshield",
       content,
       imageUrl: imageUrl || undefined,
       timestamp: "Just now",

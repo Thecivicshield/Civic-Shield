@@ -345,7 +345,7 @@ export default function App() {
   };
 
   // Add Campaign Social Broadcast Post
-  const handleAddSocialPost = async (platform: "twitter" | "facebook" | "instagram", content: string, imageUrl?: string) => {
+  const handleAddSocialPost = async (platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube", content: string, imageUrl?: string) => {
     if (!data) return;
     try {
       const res = await fetch("/api/social-feed", {

@@ -59,6 +59,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
           <a href="#impact-metrics" className="text-xs font-bold tracking-wider uppercase text-gray-300 hover:text-[#d4af37] transition-colors">Milestones</a>
           <a href="#justice-shield" className="text-xs font-bold tracking-wider uppercase text-gray-300 hover:text-[#d4af37] transition-colors">Justice Shield</a>
           <a href="#evidence" className="text-xs font-bold tracking-wider uppercase text-gray-300 hover:text-[#d4af37] transition-colors">Evidence Board</a>
+          <a href="#blog" className="text-xs font-bold tracking-wider uppercase text-gray-300 hover:text-[#d4af37] transition-colors">Blog</a>
           <a href="#timeline" className="text-xs font-bold tracking-wider uppercase text-gray-300 hover:text-[#d4af37] transition-colors">Roadmap</a>
         </nav>
 

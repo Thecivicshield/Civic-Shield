@@ -23,7 +23,7 @@ interface AdminPanelProps {
   }) => Promise<void>;
   onAnswerQuestion: (id: string, answer: string, repliedBy: string, isPublic: boolean) => Promise<void>;
   onDeleteQuestion: (id: string) => Promise<void>;
-  onAddSocialPost: (platform: "twitter" | "facebook" | "instagram", content: string, imageUrl?: string) => Promise<void>;
+  onAddSocialPost: (platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube", content: string, imageUrl?: string) => Promise<void>;
   onDeleteSocialPost: (id: string) => Promise<void>;
   onSendNewsletter: (subject: string, badge: string, body: string) => Promise<string>;
   accentColor: string;
@@ -48,7 +48,7 @@ export default function AdminPanel({
   const [activeTab, setActiveTab] = useState<'layout' | 'upload' | 'blog' | 'qna' | 'social' | 'newsletters' | 'subs'>('layout');
 
   // Social feed states
-  const [socialPlatform, setSocialPlatform] = useState<"twitter" | "instagram" | "facebook">("twitter");
+  const [socialPlatform, setSocialPlatform] = useState<"twitter" | "instagram" | "facebook" | "linkedin" | "youtube">("twitter");
   const [socialContent, setSocialContent] = useState("");
   const [socialImageUrl, setSocialImageUrl] = useState("");
   const [socialStatus, setSocialStatus] = useState<string | null>(null);
@@ -746,7 +746,8 @@ export default function AdminPanel({
                 >
                   <option value="twitter">Twitter / X Protocol</option>
                   <option value="instagram">Instagram Showcase</option>
-                  <option value="facebook">Facebook Community</option>
+                  <option value="linkedin">LinkedIn Professional Network</option>
+                  <option value="youtube">YouTube Video Channel</option>
                 </select>
               </div>
 

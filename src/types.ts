@@ -72,7 +72,7 @@ export interface NewsletterSub {
 
 export interface SocialPost {
   id: string;
-  platform: "twitter" | "facebook" | "instagram";
+  platform: "twitter" | "facebook" | "linkedin" | "instagram" | "youtube";
   username: string;
   handle: string;
   content: string;
