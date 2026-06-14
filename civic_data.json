@@ -160,10 +160,10 @@
     },
     {
       "id": "post_2",
-      "title": "Pro-Se Rights: You Do Not Need to Afford an Attorney to Stand Tall",
-      "content": "Many citizens give up their statutory rights simply because they cannot afford steep attorney trial retainers. However, representing oneself ('Pro-Se') is a constitutionally absolute right.\n\nInside our Evidence locker, we have assembled standardized response packets to small claims files, zoning objections, and municipal citation assessments. In this dispatch, we walk you through standard courthouse filing etiquette - covering how to stamp, index, and properly serve your responses to municipal offices. Stand tall and represent with confidence.",
+      "title": "Party-in-Person Rights: You Do Not Need to Afford an Attorney to Stand Tall",
+      "content": "Many citizens give up their statutory rights simply because they cannot afford steep advocate fees. However, representing oneself as a 'Party-in-Person' is a recognized legal option under Indian law and international human rights conventions.\n\nInside our Evidence locker, we have assembled standardized response templates for municipal corporation inquiries, RTI drafts, and basic magistrate court drafts. In this dispatch, we walk you through standard registry submission etiquette - covering how to stamp, index, and properly serve your replies to local bodies. Stand tall and represent with confidence.",
       "date": "2026-06-10",
-      "author": "David Vance, Litigation Lead",
+      "author": "Aditya Sen, Senior Advocate",
       "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200",
       "comments": []
     }
@@ -171,8 +171,8 @@
   "evidence": [
     {
       "id": "ev_1",
-      "title": "Traffic interaction & Police Consent Handbook",
-      "description": "A pocket-sized breakdown of your exact constitutional rights and compliance requirements during routine highway or roadside vehicular administrative actions.",
+      "title": "Traffic Interaction & Motor Vehicles Act Handbook",
+      "description": "A pocket-sized breakdown of your exact constitutional rights, police questioning limits, and compliance requirements under the Indian Motor Vehicles Act.",
       "type": "pdf",
       "fileName": "Traffic_Interactions_Civilian_Guide.pdf",
       "fileUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
@@ -182,10 +182,10 @@
     },
     {
       "id": "ev_2",
-      "title": "Pro-Se Self-Representation & Filing Templates",
-      "description": "Standard boilerplate layouts for composing clear, professional civil replies to minor administrative citations or landlord claims.",
+      "title": "Party-in-Person & RTI Draft Templates",
+      "description": "Standard boilerplate layouts for composing clear, professional RTI requests, municipal show-cause replies, or rental agreement objections.",
       "type": "spreadsheet",
-      "fileName": "ProSe_Response_Courter_Templates.xlsx",
+      "fileName": "PartyInPerson_RTI_Templates.xlsx",
       "fileUrl": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
       "uploadedAt": "2026-06-09",
       "fileSize": "2.40 MB",
@@ -259,7 +259,7 @@
       "platform": "linkedin",
       "username": "Civic Shield Foundation",
       "handle": "linkedin.com/company/civicshield",
-      "content": "Did you know? Representing yourself in local courts ('Pro-Se') is a constitutional absolute. However, filing municipal objection paperwork can feel incredibly scary.\n\nTo make this easy, we've uploaded clean, standardized boilerplate templates for obection responses directly to our online Evidence Room. Learn how to speak the institutional language and stand tall with confidence. 📚🛡️",
+      "content": "Did you know? Representing yourself as a 'Party-in-Person' under Indian and international law is a well-established right. However, drafting official responses or filing RTI requests can feel incredibly scary.\n\nTo make this easy, we've uploaded clean, standardized boilerplate templates for answers, RTI requests, and municipal appeals directly to our online Evidence Room. Learn how to speak the institutional language. 📚🛡️",
       "timestamp": "1 day ago",
       "likes": 195,
       "shares": 72,

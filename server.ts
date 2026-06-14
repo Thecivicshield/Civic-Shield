@@ -588,12 +588,12 @@ app.post("/api/questions", async (req, res) => {
     if (aiClient) {
       try {
         const campaignKnowledge = `
-          You are the Official AI Campaign Advocate of "Civic Shield", advocating for legal literacy, citizen defense, and mutual procedural dialogue.
+          You are the Official AI Campaign Advocate of "Civic Shield", advocating for legal literacy, citizen defense, and mutual procedural dialogue using Indian and International law (e.g., Indian Constitution, RTI Act 2005, Advocates Act 1961, UDHR, ICCPR).
           Campaign Goal: Bridge the path between citizens and legal authority, eliminate fear of procedures, and equip everyone with knowledge of basic laws so they can protect themselves.
           Tone: Objective, supportive, professional, authoritative, reassuring, and non-escalating.
-          Key pillars: Bridge the Gap, Eliminate Fear, Citizen Defense.
-          Resources in the locker: Traffic Stop civilian handbook, Pro-Se litigation reply templates, de-escalation video guide.
-          Frequently Asked: We aim to demystify trial procedures and statutory terms. Subscriptions and donations finance public printing, training clinics, and de-escalation research materials.
+          Key pillars: Bridge the Gap, Eliminate Fear, Citizen Defense, Civic Transparency.
+          Resources in the locker: Traffic Rules & Motor Vehicle Act handbook, Party-in-Person legal templates, RTI drafts, de-escalation video guide.
+          Frequently Asked: We aim to demystify trial procedures, High Court writ filings, RTI requests, speaking orders, and statutory terms.
         `;
         
         const response = await aiClient.models.generateContent({
@@ -620,17 +620,17 @@ app.post("/api/questions", async (req, res) => {
       const lower = text.toLowerCase();
       let answerText = "";
       if (lower.includes("detain") || lower.includes("free to go")) {
-        answerText = "An inquiry is completely voluntary. You are under no obligation to stand or answer, and you may walk away in most cases. Detainment is a temporary seizure where an officer needs reasonable articulable suspicion of an infraction. Always ask: 'Am I being detained, or am I free to go?' to establish this boundary clearly.";
+        answerText = "Inquiries are completely voluntary. Under Articles 19 & 21 of the Indian Constitution, you are under no obligation to answer interrogative questioning. If detained under suspicion of an offense, you must cooperate but possess an absolute constitutional right to remain silent and seek immediate legal aid under Article 22(1).";
       } else if (lower.includes("record") || lower.includes("camera") || lower.includes("video") || lower.includes("phone")) {
-        answerText = "You have a clearly protected constitutional right to record police officers carrying out their duties in plain sight in public view. Ensure you remain at a non-interference distance and state calmly: 'I am standing back and documenting this for legal transparency.'";
+        answerText = "You have a protected constitutional right under Article 19(1)(a) (Freedom of Speech and Expression) to record public officials carrying out their duties in plain public view. You must maintain a non-interference distance, remain respectful, and avoid restricted zones under official security acts.";
       } else if (lower.includes("pro-se") || lower.includes("represent myself") || lower.includes("lawyer")) {
-        answerText = "Representing yourself ('Pro-Se') is an absolute constitutional right. You do not need to afford flat trial retainer bills to stand strong. Check our online Evidence Room to extract blank boilerplate procedural forms!";
+        answerText = "Representing yourself ('Party-in-Person') is an absolute statutory right under Indian Law. Under Section 32 of the Advocates Act, 1961, any court or tribunal can permit a litigant to plead their own case directly, saving steep counsel charges.";
       } else if (lower.includes("search") || lower.includes("consent") || lower.includes("warrant")) {
-        answerText = "The 4th Amendment guards against unreasonable searches. Never physically block an officer, but make your objection clear: 'Officer, I do not consent to any searches.' If they claim to have an active warrant, request to physically read it to verify addresses.";
+        answerText = "Articles 21 (Personal Liberty) and privacy jurisprudence protect you against arbitrary searches of your body or private residence. Officers must present a valid warrant issued by a magistrate or satisfy specific acute emergency procedural codes. Ask calmly to inspect the written order.";
       } else if (lower.includes("id ") || lower.includes("identify") || lower.includes("name") || lower.includes("license")) {
-        answerText = "In many jurisdictions, you are only required to provide physical identification if you are under suspect detainment or driving a motor vehicle. If simply walking down the street, ask: 'Officer, am I being detained under crime suspicion?' to see if identification is legally mandatory.";
+        answerText = "Under Indian law, citizens are generally only required to produce address and ID proof under specific regulatory check duties (such as active driving of a motor vehicle governed by the Motor Vehicles Act or high-security area protocols). If approached casually in public spaces, respectfully ask: 'Am I being charged with any offense, or am I free to go?'";
       } else {
-        answerText = "Thank you for joining our dialogue! We advocate for legal literacy and mutual de-escalation. We suggest checking our online Handouts Vault to download our routine citizen handbook, compiling deep procedural definitions and safe conversational scripts.";
+        answerText = "Thank you for joining our dialogue! We advocate for legal literacy and mutual de-escalation. We suggest checking our online Handouts Vault to download our standard citizen handbook, compiling deep procedural definitions and safe conversational scripts.";
       }
       newQuestion.answered = true;
       newQuestion.answer = answerText;
