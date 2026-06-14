@@ -1,5 +1,5 @@
 import React from "react";
-import { Trees, Coins, Scale, LucideIcon } from "lucide-react";
+import { Trees, Coins, Scale, ShieldAlert, Landmark, Eye, FileText, LucideIcon } from "lucide-react";
 
 interface Pillar {
   title: string;
@@ -18,7 +18,11 @@ interface PillarsSectionProps {
 const IconMap: { [key: string]: LucideIcon } = {
   Trees,
   Coins,
-  Scale
+  Scale,
+  ShieldAlert,
+  Landmark,
+  Eye,
+  FileText
 };
 
 export default function PillarsSection({ pillars, isAdmin, onUpdatePillar, accentColor }: PillarsSectionProps) {
@@ -48,7 +52,7 @@ export default function PillarsSection({ pillars, isAdmin, onUpdatePillar, accen
         </div>
 
         {/* Pillars Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {pillars.map((pillar, idx) => {
             const IconComponent = IconMap[pillar.iconName] || Scale;
             

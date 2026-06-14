@@ -13,6 +13,22 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
   const [typedKey, setTypedKey] = React.useState("");
   const [wrongKey, setWrongKey] = React.useState(false);
 
+  // Load administrative passkey from localStorage, defaulting to lol12ymn
+  const [adminPasskey, setAdminPasskey] = React.useState(() => {
+    try {
+      return localStorage.getItem("civic_shield_admin_passkey") || "lol12ymn";
+    } catch {
+      return "lol12ymn";
+    }
+  });
+
+  // State to manage changing administrative passcode
+  const [isChangePassOpen, setIsChangePassOpen] = React.useState(false);
+  const [newPasskey, setNewPasskey] = React.useState("");
+  const [confirmPasskey, setConfirmPasskey] = React.useState("");
+  const [changeError, setChangeError] = React.useState<string | null>(null);
+  const [changeSuccess, setChangeSuccess] = React.useState(false);
+
   const handleToggleClick = () => {
     if (isAdminMode) {
       // Log out instantly
@@ -24,7 +40,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (typedKey === "gpcivicshield") {
+    if (typedKey === adminPasskey) {
       setIsAdminMode(true);
       setIsLockOpen(false);
       setTypedKey("");
@@ -32,6 +48,33 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
     } else {
       setWrongKey(true);
       setTimeout(() => setWrongKey(false), 600);
+    }
+  };
+
+  const handleChangePasskeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPasskey.trim()) {
+      setChangeError("Passkey cannot be empty.");
+      return;
+    }
+    if (newPasskey !== confirmPasskey) {
+      setChangeError("New passkey and confirmation do not match.");
+      return;
+    }
+
+    try {
+      localStorage.setItem("civic_shield_admin_passkey", newPasskey);
+      setAdminPasskey(newPasskey);
+      setChangeSuccess(true);
+      setChangeError(null);
+      setTimeout(() => {
+        setIsChangePassOpen(false);
+        setChangeSuccess(false);
+        setNewPasskey("");
+        setConfirmPasskey("");
+      }, 1500);
+    } catch (err: any) {
+      setChangeError("Failed to save to local storage: " + err.message);
     }
   };
 
@@ -64,27 +107,39 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
         </nav>
 
         {/* Campaign Admin Switch */}
-        <button
-          id="admin-mode-toggle"
-          onClick={handleToggleClick}
-          className={`flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer border ${
-            isAdminMode 
-              ? "bg-[#d4af37] text-[#001a4d] border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
-              : "bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-[#001a4d] border-[#d4af37]/45"
-          }`}
-        >
-          {isAdminMode ? (
-            <>
-              <Unlock className="w-3.5 h-3.5" />
-              <span>Manager Active</span>
-            </>
-          ) : (
-            <>
-              <Lock className="w-3.5 h-3.5" />
-              <span>Manager Login</span>
-            </>
+        <div className="flex items-center gap-2">
+          {isAdminMode && (
+            <button
+              onClick={() => setIsChangePassOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-bold tracking-wider uppercase bg-transparent text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 transition-all cursor-pointer"
+            >
+              <Eye className="w-3 h-3 text-[#d4af37]" />
+              <span>Change Passkey</span>
+            </button>
           )}
-        </button>
+
+          <button
+            id="admin-mode-toggle"
+            onClick={handleToggleClick}
+            className={`flex items-center gap-2 px-4 py-2 rounded-sm text-xs font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer border ${
+              isAdminMode 
+                ? "bg-[#d4af37] text-[#001a4d] border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]" 
+                : "bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-[#001a4d] border-[#d4af37]/45"
+            }`}
+          >
+            {isAdminMode ? (
+              <>
+                <Unlock className="w-3.5 h-3.5" />
+                <span>Manager Active</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5" />
+                <span>Manager Login</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* GORGEOUS PASSPHRASE AUTHENTICATION modal overlay */}
@@ -147,6 +202,86 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
                   className="py-2 bg-[#d4af37] hover:bg-[#c39e2e] text-[#001a4d] font-bold rounded-sm text-[10px] font-mono uppercase tracking-widest transition-all cursor-pointer shadow-md"
                 >
                   Authenticate
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* GORGEOUS CHANGE PASSPHRASE modal overlay */}
+      {isChangePassOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-[#001233] border-2 border-[#d4af37]/80 rounded-sm p-6 sm:p-8 shadow-[0_0_50px_rgba(212,175,55,0.15)] space-y-6">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 bg-[#d4af37]/10 border border-[#d4af37] rounded-sm flex items-center justify-center mx-auto text-[#d4af37]">
+                <Sparkles className="w-6 h-6 text-[#d4af37]" />
+              </div>
+              <h3 className="text-base font-serif text-white tracking-wider uppercase">Set New Access Passkey</h3>
+              <p className="text-[10px] text-gray-400 font-mono leading-relaxed">
+                Provide a secure, private administrative key for managing layout, uploads and postings. This will persist on system refreshes.
+              </p>
+            </div>
+
+            <form onSubmit={handleChangePasskeySubmit} className="space-y-4">
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400 block pb-0.5">New Administrative Passkey</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="E.g., lol12ymn"
+                    value={newPasskey}
+                    onChange={(e) => setNewPasskey(e.target.value)}
+                    className="w-full bg-[#001a4d] border border-[#d4af37]/35 text-xs text-white rounded-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-gray-600"
+                    autoFocus
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400 block pb-0.5">Verify Passkey</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Verify passkey..."
+                    value={confirmPasskey}
+                    onChange={(e) => setConfirmPasskey(e.target.value)}
+                    className="w-full bg-[#001a4d] border border-[#d4af37]/35 text-xs text-white rounded-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-gray-600"
+                  />
+                </div>
+              </div>
+
+              {changeError && (
+                <p className="text-center text-[10px] text-red-400 font-mono bg-red-950/20 py-1.5 px-2.5 rounded-sm border border-red-500/20">
+                  {changeError}
+                </p>
+              )}
+
+              {changeSuccess && (
+                <p className="text-center text-[10px] text-emerald-400 font-mono bg-emerald-950/20 py-1.5 px-2.5 rounded-sm border border-emerald-500/20 animate-pulse">
+                  ✓ Successful: Passkey updated and indexed!
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsChangePassOpen(false);
+                    setNewPasskey("");
+                    setConfirmPasskey("");
+                    setChangeError(null);
+                  }}
+                  className="py-2 border border-gray-600 hover:border-gray-400 text-gray-400 hover:text-white rounded-sm text-[10px] font-mono uppercase tracking-widest transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={changeSuccess}
+                  className="py-2 bg-[#d4af37] hover:bg-[#c39e2e] disabled:bg-[#002366] text-[#001a4d] font-bold rounded-sm text-[10px] font-mono uppercase tracking-widest transition-all cursor-pointer shadow-md"
+                >
+                  Apply Key
                 </button>
               </div>
             </form>

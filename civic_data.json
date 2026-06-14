@@ -34,6 +34,11 @@
             "title": "Citizen Advocacy",
             "description": "Providing easy-to-use self-defense template vaults so you can represent your interests with institutional competence.",
             "iconName": "Landmark"
+          },
+          {
+            "title": "Civic Transparency",
+            "description": "Independently cataloging government mandates, public spending budgets, and asset records to ensure permanent institutional transparency and open citizen auditing.",
+            "iconName": "Eye"
           }
         ]
       }
