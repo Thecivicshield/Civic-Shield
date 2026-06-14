@@ -73,6 +73,8 @@ export default function AdminPanel({
   const [uploadVerified, setUploadVerified] = useState("Campaign Coordinator");
   const [uploadType, setUploadType] = useState<'pdf' | 'video' | 'spreadsheet' | 'image'>('pdf');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'link'>('file');
+  const [uploadLinkUrl, setUploadLinkUrl] = useState("");
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -174,9 +176,40 @@ export default function AdminPanel({
     }
   };
 
-  // Upload file handler
+  // Upload file or link handler
   const handleUploadItem = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (uploadMethod === 'link') {
+      if (!uploadLinkUrl || !uploadLinkUrl.startsWith("http")) {
+        setUploadStatus("Please enter a valid HTTP/HTTPS web address URL first.");
+        return;
+      }
+      setIsUploading(true);
+      setUploadStatus("Indexing external resource link...");
+      try {
+        await onUploadFile({
+          fileName: uploadLinkUrl,
+          fileType: uploadType,
+          fileData: uploadLinkUrl,
+          title: uploadTitle || "External Resource Link",
+          description: uploadDesc,
+          verifiedBy: uploadVerified || "Campaign Lead"
+        });
+        
+        setUploadStatus(`Resource successfully indexed! Link is now live inside critical records.`);
+        setUploadLinkUrl("");
+        setUploadTitle("");
+        setUploadDesc("");
+        setTimeout(() => setUploadStatus(null), 4500);
+      } catch (err: any) {
+        setUploadStatus("Link indexing failed: " + err.message);
+      } finally {
+        setIsUploading(false);
+      }
+      return;
+    }
+
     if (!selectedFile) {
       setUploadStatus("Please choose a file from your device first.");
       return;
@@ -413,19 +446,44 @@ export default function AdminPanel({
 
       {/* 2. File Upload Locker */}
       {activeTab === 'upload' && (
-        <form onSubmit={handleUploadItem} className="space-y-4 max-w-xl">
+        <form onSubmit={handleUploadItem} className="space-y-4 max-w-xl animate-in fade-in duration-200">
           <div className="p-4 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-sm space-y-1">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#d4af37] flex items-center gap-1.5 leading-none">
-              <FileUp className="w-4 h-4" /> Upload PDF, Videos, or audit logs
+              <FileUp className="w-4 h-4" /> Defense Resource Upload Locker
             </h4>
             <p className="text-[11px] text-gray-300 leading-relaxed font-sans font-light">
-              Choose file from device to convert to high compliance cloud index streams. Files are directly linked and stored inside the public locker.
+              Add verified files or external resources directly to the legal index. Videos can be linked directly from YouTube/Vimeo to fit within device stream requirements cleanly.
             </p>
+          </div>
+
+          <div className="flex select-none border border-[#d4af37]/35 p-1 rounded-sm bg-[#001a4d]/60">
+            <button
+              type="button"
+              onClick={() => setUploadMethod('file')}
+              className={`flex-1 text-center py-2 text-[10px] uppercase font-mono font-bold tracking-wider rounded-sm transition-all cursor-pointer ${
+                uploadMethod === 'file'
+                  ? 'bg-[#d4af37] text-[#001a4d]'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Local File Upload (PDF / Video)
+            </button>
+            <button
+              type="button"
+              onClick={() => setUploadMethod('link')}
+              className={`flex-1 text-center py-2 text-[10px] uppercase font-mono font-bold tracking-wider rounded-sm transition-all cursor-pointer ${
+                uploadMethod === 'link'
+                  ? 'bg-[#d4af37] text-[#001a4d]'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              External Hyperlink / Video URL
+            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400">Document Title</label>
+              <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400">Resource Title</label>
               <input
                 type="text"
                 required
@@ -470,34 +528,48 @@ export default function AdminPanel({
                 className="w-full bg-[#001a4d] border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none text-xs rounded-sm px-3 py-2 text-white font-sans"
               >
                 <option value="pdf">Document (PDF)</option>
-                <option value="video">Construction Log (MP4 Video)</option>
+                <option value="video">Construction Log (MP4 / YouTube Video)</option>
                 <option value="spreadsheet">Financial Sheet (XLS/CSV)</option>
                 <option value="image">Violation Photograph (JPG/PNG)</option>
               </select>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400">Select File Stream</label>
-              <input
-                type="file"
-                required
-                onChange={handleFileChange}
-                className="w-full bg-[#001a4d] border border-[#d4af37]/20 focus:outline-none text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:font-semibold file:bg-[#d4af37]/20 file:text-[#d4af37] file:hover:bg-[#d4af37]/35 file:cursor-pointer"
-              />
-            </div>
+            {uploadMethod === 'file' ? (
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400">Select File Stream</label>
+                <input
+                  type="file"
+                  required
+                  onChange={handleFileChange}
+                  className="w-full bg-[#001a4d] border border-[#d4af37]/20 focus:outline-none text-xs text-gray-400 file:mr-4 file:py-1.5 file:px-3 file:rounded-sm file:border-0 file:text-[10px] file:uppercase file:font-semibold file:bg-[#d4af37]/20 file:text-[#d4af37] file:hover:bg-[#d4af37]/35 file:cursor-pointer"
+                />
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400">Resource URL / Video Link</label>
+                <input
+                  type="url"
+                  required
+                  value={uploadLinkUrl}
+                  onChange={(e) => setUploadLinkUrl(e.target.value)}
+                  placeholder="E.g., https://www.youtube.com/watch?v=..."
+                  className="w-full bg-[#001a4d] border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none text-xs rounded-sm px-3 py-2 text-white placeholder-gray-600 font-sans"
+                />
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
-            disabled={isUploading || !selectedFile}
+            disabled={isUploading || (uploadMethod === 'file' ? !selectedFile : !uploadLinkUrl)}
             className="px-5 py-2.5 bg-[#d4af37] hover:bg-[#c39e2e] disabled:bg-[#002366] text-[#001a4d] font-bold text-xs tracking-wider uppercase rounded-sm transition-all cursor-pointer flex items-center justify-center gap-2"
           >
             <FileCheck className="w-4 h-4" />
-            <span>{isUploading ? "Processing base64 streams..." : "Upload & Index Evidence Material"}</span>
+            <span>{isUploading ? "Indexing streams..." : (uploadMethod === 'file' ? "Upload & Index Evidence Material" : "Index Link Resource")}</span>
           </button>
 
           {uploadStatus && (
-            <p className="text-xs font-semibold text-[#d4af37] bg-[#d4af37]/5 px-3 py-2 rounded-sm border border-[#d4af37]/25">
+            <p className="text-xs font-semibold text-[#d4af37] bg-[#d4af37]/5 px-3 py-2 rounded-sm border border-[#d4af37]/25 animate-pulse">
               {uploadStatus}
             </p>
           )}

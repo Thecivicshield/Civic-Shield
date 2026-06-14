@@ -515,27 +515,38 @@ app.post("/api/upload", (req, res) => {
       return res.status(400).json({ error: "Missing uploaded file components." });
     }
     
-    // Extract base64
-    const matches = fileData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-      return res.status(400).json({ error: "Incorrect base64 document stream." });
+    // Extract base64 or external link
+    let fileUrl = "";
+    let calculatedSize = "";
+    let finalFileName = fileName;
+
+    if (fileData.startsWith("http://") || fileData.startsWith("https://")) {
+      fileUrl = fileData;
+      calculatedSize = "URL Link";
+      finalFileName = fileName || "External Web Resource";
+    } else {
+      // Extract base64
+      const matches = fileData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (!matches || matches.length !== 3) {
+        return res.status(400).json({ error: "Incorrect base64 document stream." });
+      }
+      
+      const buffer = Buffer.from(matches[2], "base64");
+      const sanitizedSafeName = Date.now() + "_" + fileName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+      const finalFilePath = path.join(UPLOADS_DIR, sanitizedSafeName);
+      
+      fs.writeFileSync(finalFilePath, buffer);
+      
+      fileUrl = `/uploads/${sanitizedSafeName}`;
+      calculatedSize = (buffer.length / (1024 * 1024)).toFixed(2) + " MB";
     }
-    
-    const buffer = Buffer.from(matches[2], "base64");
-    const sanitizedSafeName = Date.now() + "_" + fileName.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const finalFilePath = path.join(UPLOADS_DIR, sanitizedSafeName);
-    
-    fs.writeFileSync(finalFilePath, buffer);
-    
-    const fileUrl = `/uploads/${sanitizedSafeName}`;
-    const calculatedSize = (buffer.length / (1024 * 1024)).toFixed(2) + " MB";
     
     const newEvidence: EvidenceItem = {
       id: "ev_" + Date.now(),
-      title: title || fileName,
+      title: title || finalFileName,
       description: description || "Uploaded PDF/Video material",
       type: fileType || "pdf",
-      fileName: fileName,
+      fileName: finalFileName,
       fileUrl: fileUrl,
       uploadedAt: new Date().toISOString().split("T")[0],
       fileSize: calculatedSize,
@@ -597,6 +608,28 @@ app.post("/api/questions", async (req, res) => {
       } catch (gemError) {
         console.error("Gemini AI generation failure, saving question for manual admin response:", gemError);
       }
+    }
+
+    // Smart offline legal literacy responder fallback
+    if (!newQuestion.answered) {
+      const lower = text.toLowerCase();
+      let answerText = "";
+      if (lower.includes("detain") || lower.includes("free to go")) {
+        answerText = "An inquiry is completely voluntary. You are under no obligation to stand or answer, and you may walk away in most cases. Detainment is a temporary seizure where an officer needs reasonable articulable suspicion of an infraction. Always ask: 'Am I being detained, or am I free to go?' to establish this boundary clearly.";
+      } else if (lower.includes("record") || lower.includes("camera") || lower.includes("video") || lower.includes("phone")) {
+        answerText = "You have a clearly protected constitutional right to record police officers carrying out their duties in plain sight in public view. Ensure you remain at a non-interference distance and state calmly: 'I am standing back and documenting this for legal transparency.'";
+      } else if (lower.includes("pro-se") || lower.includes("represent myself") || lower.includes("lawyer")) {
+        answerText = "Representing yourself ('Pro-Se') is an absolute constitutional right. You do not need to afford flat trial retainer bills to stand strong. Check our online Evidence Room to extract blank boilerplate procedural forms!";
+      } else if (lower.includes("search") || lower.includes("consent") || lower.includes("warrant")) {
+        answerText = "The 4th Amendment guards against unreasonable searches. Never physically block an officer, but make your objection clear: 'Officer, I do not consent to any searches.' If they claim to have an active warrant, request to physically read it to verify addresses.";
+      } else if (lower.includes("id ") || lower.includes("identify") || lower.includes("name") || lower.includes("license")) {
+        answerText = "In many jurisdictions, you are only required to provide physical identification if you are under suspect detainment or driving a motor vehicle. If simply walking down the street, ask: 'Officer, am I being detained under crime suspicion?' to see if identification is legally mandatory.";
+      } else {
+        answerText = "Thank you for joining our dialogue! We advocate for legal literacy and mutual de-escalation. We suggest checking our online Handouts Vault to download our routine citizen handbook, compiling deep procedural definitions and safe conversational scripts.";
+      }
+      newQuestion.answered = true;
+      newQuestion.answer = answerText;
+      newQuestion.repliedBy = "AI Campaign Advocate";
     }
     
     campaignData.questions.push(newQuestion);

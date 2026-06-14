@@ -6,7 +6,7 @@ import SocialShare from "./SocialShare";
 interface BlogSectionProps {
   key?: string;
   posts: BlogPost[];
-  onAddComment: (postId: string, name: string, commentText: string) => Promise<void>;
+  onAddComment: (postId: string, name: string, commentText: string) => Promise<any>;
   isAdmin: boolean;
   onDeletePost: (id: string) => Promise<void>;
 }
@@ -29,11 +29,15 @@ export default function BlogSection({ posts, onAddComment, isAdmin, onDeletePost
 
     setSubmittingComment(true);
     try {
-      await onAddComment(selectedPost.id, commentName || "Anonymous Supporter", commentText);
-      // Retrieve the updated post in local state
-      const updatedPost = posts.find(p => p.id === selectedPost.id);
-      if (updatedPost) {
-        setSelectedPost(updatedPost);
+      const newComment = await onAddComment(selectedPost.id, commentName || "Anonymous Supporter", commentText);
+      if (newComment) {
+        setSelectedPost(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            comments: [...(prev.comments || []), newComment]
+          };
+        });
       }
       setCommentText("");
     } catch (err) {

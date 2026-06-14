@@ -19,9 +19,24 @@ import JusticeShieldSection from "./components/JusticeShieldSection";
 
 export default function App() {
   const [data, setData] = useState<CivicShieldData | null>(null);
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [isAdminMode, setIsAdminMode] = useState(() => {
+    try {
+      return localStorage.getItem("civic_shield_admin_mode") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [loading, setLoading] = useState(true);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
+
+  // Sync admin mode to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("civic_shield_admin_mode", isAdminMode ? "true" : "false");
+    } catch (e) {
+      console.error("Local storage not writable:", e);
+    }
+  }, [isAdminMode]);
 
   // Fetch campaign database on mount
   useEffect(() => {
@@ -173,7 +188,7 @@ export default function App() {
 
   // Update blog comments list
   const handleAddComment = async (postId: string, name: string, commentText: string) => {
-    if (!data) return;
+    if (!data) return null;
     try {
       const res = await fetch(`/api/blog/${postId}/comment`, {
         method: "POST",
@@ -191,9 +206,11 @@ export default function App() {
       });
 
       setData({ ...data, posts: updatedPosts });
+      return commentObj;
     } catch (err: any) {
       console.error(err);
       setErrorNotice(err.message);
+      return null;
     }
   };
 

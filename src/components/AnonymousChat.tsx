@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Send, ShieldQuestion, BadgeHelp, Info, Sparkles, UserCheck } from "lucide-react";
+import { MessageSquare, X, Send, ShieldQuestion, BadgeHelp, Info, Sparkles, UserCheck, Trash2 } from "lucide-react";
 import { AnonymousQuestion } from "../types";
 
 interface AnonymousChatProps {
@@ -12,13 +12,21 @@ export default function AnonymousChat({ questions, onNewQuestion }: AnonymousCha
   const [activeTab, setActiveTab] = useState<'chat' | 'directory'>('chat');
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);
-  const [conversation, setConversation] = useState<Array<{ sender: 'user' | 'bot' | 'admin', text: string, time: string }>>([
-    {
-      sender: 'bot',
-      text: "Welcome to Civic Shield Anonymous Desk. Ask me anything about administrative litigation rules, self-legal representation protocols, or basic statutory self-defense. I'm here to eliminate fear and empower your voice.",
-      time: "Just now"
+  const [conversation, setConversation] = useState<Array<{ sender: 'user' | 'bot' | 'admin', text: string, time: string }>>(() => {
+    try {
+      const saved = localStorage.getItem("civic_shield_chat_history_v2");
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
     }
-  ]);
+    return [
+      {
+        sender: 'bot',
+        text: "Welcome to Civic Shield Anonymous Desk. Ask me anything about administrative litigation rules, self-legal representation protocols, or basic statutory self-defense. I'm here to eliminate fear and empower your voice.",
+        time: "Just now"
+      }
+    ];
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +36,15 @@ export default function AnonymousChat({ questions, onNewQuestion }: AnonymousCha
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [conversation, isOpen]);
+
+  // Sync conversation state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("civic_shield_chat_history_v2", JSON.stringify(conversation));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [conversation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,12 +133,29 @@ export default function AnonymousChat({ questions, onNewQuestion }: AnonymousCha
                 </p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-sm text-gray-400 hover:text-white hover:bg-[#002366]/40 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1.5 animate-in fade-in duration-200">
+              <button
+                onClick={() => {
+                  setConversation([
+                    {
+                      sender: 'bot',
+                      text: "Welcome to Civic Shield Anonymous Desk. Ask me anything about administrative litigation rules, self-legal representation protocols, or basic statutory self-defense. I'm here to eliminate fear and empower your voice.",
+                      time: "Just now"
+                    }
+                  ]);
+                }}
+                title="Clear Chat Conversation"
+                className="p-1 rounded-sm text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="p-1 rounded-sm text-gray-400 hover:text-white hover:bg-[#002366]/40 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Tabs */}

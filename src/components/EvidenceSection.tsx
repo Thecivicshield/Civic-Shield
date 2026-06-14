@@ -3,6 +3,27 @@ import { FileText, Video, Table, Eye, Download, Users, Trash2, Calendar, FileChe
 import { EvidenceItem } from "../types";
 import SocialShare from "./SocialShare";
 
+const isYouTubeUrl = (url: string) => {
+  return url.includes("youtube.com") || url.includes("youtu.be");
+};
+
+const getYouTubeEmbedUrl = (url: string) => {
+  try {
+    let videoId = "";
+    if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1].split(/[?#]/)[0];
+    } else if (url.includes("youtube.com/watch")) {
+      const urlParams = new URLSearchParams(url.split("?")[1]);
+      videoId = urlParams.get("v") || "";
+    } else if (url.includes("youtube.com/embed/")) {
+      videoId = url.split("youtube.com/embed/")[1].split(/[?#]/)[0];
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+  } catch (e) {
+    return url;
+  }
+};
+
 interface EvidenceSectionProps {
   key?: string;
   evidence: EvidenceItem[];
@@ -246,13 +267,25 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
             </div>
             
             <div className="bg-black aspect-video flex items-center justify-center text-center">
-              <video 
-                src={viewingVideo.fileUrl} 
-                controls 
-                autoPlay
-                className="w-full h-full"
-                referrerPolicy="no-referrer"
-              />
+              {isYouTubeUrl(viewingVideo.fileUrl) ? (
+                <iframe
+                  src={getYouTubeEmbedUrl(viewingVideo.fileUrl)}
+                  title={viewingVideo.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="w-full h-full"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <video 
+                  src={viewingVideo.fileUrl} 
+                  controls 
+                  autoPlay
+                  className="w-full h-full"
+                  referrerPolicy="no-referrer"
+                />
+              )}
             </div>
             
             <div className="p-4 bg-[#001233] text-xs text-gray-200 border-t border-[#d4af37]/10 space-y-1">
