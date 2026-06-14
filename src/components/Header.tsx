@@ -24,7 +24,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
 
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (typedKey === "shield2026" || typedKey.toLowerCase() === "admin") {
+    if (typedKey === "gpcivicshield") {
       setIsAdminMode(true);
       setIsLockOpen(false);
       setTypedKey("");
@@ -121,9 +121,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
                   }`}
                   autoFocus
                 />
-                <p className="text-center text-[9px] font-mono text-gray-500 pt-1.5 uppercase tracking-wider">
-                  System Passkey Hint: <span className="text-[#d4af37] font-semibold select-all font-mono">shield2026</span>
-                </p>
               </div>
 
               {wrongKey && (

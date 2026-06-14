@@ -28,10 +28,10 @@ export default function ImpactMetricsSection({
 
   // Fallback defaults
   const activeMetrics = metrics && metrics.length > 0 ? metrics : [
-    { label: "Cases Won & Settled", value: 148 },
-    { label: "Citizens Empowered", value: 4850 },
-    { label: "Handbooks Distributed", value: 3120 },
-    { label: "Procedural Clinics Hosted", value: 35 }
+    { label: "Supporters Recruited", value: 340 },
+    { label: "Students Engaged", value: 1250 },
+    { label: "Guides Distributed", value: 850 },
+    { label: "Campus Workshops", value: 18 }
   ];
 
   // Observe container size for responsiveness

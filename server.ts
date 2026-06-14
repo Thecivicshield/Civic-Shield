@@ -1,16 +1,12 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
 import { CivicShieldData, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, LayoutBlock } from "./src/types";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Increase limit to allow larger base64 file uploads (PDFs, videos, sheets)
 app.use(express.json({ limit: "50mb" }));
@@ -115,10 +111,10 @@ const initialData: CivicShieldData = {
       order: 5,
       customData: {
         metrics: [
-          { label: "Cases Won & Settled", value: 148 },
-          { label: "Citizens Empowered", value: 4850 },
-          { label: "Handbooks Distributed", value: 3120 },
-          { label: "Procedural Clinics Hosted", value: 35 }
+          { label: "Supporters Recruited", value: 340 },
+          { label: "Students Engaged", value: 1250 },
+          { label: "Guides Distributed", value: 850 },
+          { label: "Campus Workshops", value: 18 }
         ]
       }
     },
