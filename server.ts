@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
-import { createServer as createViteServer } from "vite";
 import nodemailer from "nodemailer";
 import { CivicShieldData, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, LayoutBlock, NotificationLog } from "./src/types";
 
@@ -990,6 +989,7 @@ app.post("/api/send-newsletter", (req, res) => {
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     // Development server with HMR disabled or enabled by control
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
