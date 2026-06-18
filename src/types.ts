@@ -101,6 +101,7 @@ export interface CivicShieldData {
   socialFeed?: SocialPost[];
   newsletters?: SentNewsletter[];
   notificationLogs?: NotificationLog[];
+  lastUpdated?: number;
 }
 
 export interface NotificationLog {

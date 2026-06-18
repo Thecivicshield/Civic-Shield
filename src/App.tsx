@@ -38,17 +38,64 @@ export default function App() {
     }
   }, [isAdminMode]);
 
+  // Keep client-side backup cache in sync with state changes
+  useEffect(() => {
+    if (data && isAdminMode) {
+      try {
+        localStorage.setItem("civic_shield_campaign_backup_v2", JSON.stringify(data));
+      } catch (e) {
+        console.error("Local storage backup error:", e);
+      }
+    }
+  }, [data, isAdminMode]);
+
   // Fetch campaign database on mount
   useEffect(() => {
     fetchCampaignData();
-  }, []);
+  }, [isAdminMode]);
 
   const fetchCampaignData = async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/campaign-data");
       if (!res.ok) throw new Error("Could not retrieve campaign configurations");
-      const dbData = await res.json();
+      let dbData = await res.json();
+      
+      // Admin Auto-Sync Layer: If the server database was reset (redeployed/rebooted)
+      // but the administrator possesses a newer backup in browser storage, auto-sync and restore it in the background!
+      if (isAdminMode) {
+        try {
+          const rawBackup = localStorage.getItem("civic_shield_campaign_backup_v2");
+          if (rawBackup) {
+            const parsedBackup = JSON.parse(rawBackup) as CivicShieldData;
+            const serverLastUpdated = dbData.lastUpdated || 0;
+            const backupLastUpdated = parsedBackup.lastUpdated || 0;
+            
+            if (backupLastUpdated > serverLastUpdated) {
+              console.log("🔄 Auto-Sync: Client backup is newer than Server database. Restoring automatically...");
+              const restoreRes = await fetch("/api/import-campaign-data", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(parsedBackup)
+              });
+              if (restoreRes.ok) {
+                dbData = parsedBackup;
+                // Highlight auto-restore with a non-intrusive notification
+                setErrorNotice("🔄 Automatic Sync: Restored your latest changes from browser backup after server reboot!");
+                setTimeout(() => setErrorNotice(null), 5000);
+              }
+            } else if (dbData) {
+              // Server is newer or equal, cache the latest server state onto client
+              localStorage.setItem("civic_shield_campaign_backup_v2", JSON.stringify(dbData));
+            }
+          } else if (dbData) {
+            // First time backup creation
+            localStorage.setItem("civic_shield_campaign_backup_v2", JSON.stringify(dbData));
+          }
+        } catch (backupErr) {
+          console.error("Auto-sync resolution error:", backupErr);
+        }
+      }
       
       // Auto-heal / Migrate configuration blocks with new sections
       const blockList = dbData.blocks || [];

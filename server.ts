@@ -320,6 +320,7 @@ function loadData(): CivicShieldData {
 // Help helper for writing data file
 function saveData(newData: CivicShieldData) {
   try {
+    newData.lastUpdated = Date.now();
     fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(newData, null, 2), "utf-8");
   } catch (error) {
     console.error("Failed to write to civic_data.json:", error);
