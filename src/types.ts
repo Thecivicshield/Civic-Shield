@@ -61,7 +61,7 @@ export interface AnonymousQuestion {
   answered: boolean;
   answer?: string;
   isPublic: boolean;
-  repliedBy?: 'AI Campaign Advocate' | 'Campaign Manager';
+  repliedBy?: string;
 }
 
 export interface NewsletterSub {
@@ -100,4 +100,15 @@ export interface CivicShieldData {
   subscribers: NewsletterSub[];
   socialFeed?: SocialPost[];
   newsletters?: SentNewsletter[];
+  notificationLogs?: NotificationLog[];
+}
+
+export interface NotificationLog {
+  id: string;
+  timestamp: string;
+  recipient: string;
+  subject: string;
+  body: string;
+  status: 'sent' | 'failed' | 'simulated';
+  previewUrl?: string;
 }

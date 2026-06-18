@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, Circle, Landmark, Settings, Flame } from "lucide-react";
+import { CheckCircle2, Circle, Landmark, Settings, Flame, Trash2, Plus } from "lucide-react";
 
 interface TimelineEvent {
   date: string;
@@ -13,10 +13,12 @@ interface TimelineSectionProps {
   events: TimelineEvent[];
   isAdmin: boolean;
   onUpdateEvent: (index: number, updated: TimelineEvent) => void;
+  onAddEvent?: () => void;
+  onDeleteEvent?: (index: number) => void;
   accentColor: string;
 }
 
-export default function TimelineSection({ events, isAdmin, onUpdateEvent, accentColor }: TimelineSectionProps) {
+export default function TimelineSection({ events, isAdmin, onUpdateEvent, onAddEvent, onDeleteEvent, accentColor }: TimelineSectionProps) {
 
   const handleFieldChange = (index: number, key: keyof TimelineEvent, val: any) => {
     const updated = { ...events[index], [key]: val };
@@ -122,11 +124,38 @@ export default function TimelineSection({ events, isAdmin, onUpdateEvent, accent
                   ) : (
                     <p className="text-xs text-gray-300/80 leading-relaxed font-sans font-light mt-1.5">{event.description}</p>
                   )}
+
+                  {isAdmin && (
+                    <div className="mt-3 pt-2.5 border-t border-[#d4af37]/15 flex justify-end">
+                      <button
+                        onClick={() => {
+                          if (confirm("Permanently delete this roadmap milestone?")) {
+                            onDeleteEvent && onDeleteEvent(idx);
+                          }
+                        }}
+                        className="p-1.5 rounded-sm bg-red-500/10 border border-red-500/15 hover:bg-red-500 text-red-400 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-[10px] font-mono uppercase font-bold"
+                        title="Delete Milestone"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
+
+        {isAdmin && onAddEvent && (
+          <div className="flex justify-center mt-12 animate-in fade-in duration-300">
+            <button
+              onClick={onAddEvent}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-sm bg-[#d4af37] text-[#001a4d] hover:bg-[#b08f25] text-xs font-mono font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg hover:scale-105 active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> Add Campaign Target Milestone
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

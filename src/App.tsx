@@ -231,6 +231,32 @@ export default function App() {
     }
   };
 
+  // Delete comment on blog post
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/blog/${postId}/comment/${commentId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Could not delete comment");
+      
+      const updatedPosts = data.posts.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: p.comments.filter(c => c.id !== commentId)
+          };
+        }
+        return p;
+      });
+      
+      setData({ ...data, posts: updatedPosts });
+    } catch (err: any) {
+      console.error(err);
+      setErrorNotice(err.message);
+    }
+  };
+
   // Upload Evidence File (Base64)
   const handleUploadFile = async (payload: {
     fileName: string;
@@ -488,6 +514,7 @@ export default function App() {
               questions={data?.questions || []}
               socialPosts={data?.socialFeed || []}
               newsletters={data?.newsletters || []}
+              notificationLogs={data?.notificationLogs || []}
               onSaveBlocks={handleSaveBlocks}
               onAddBlogPost={handleAddBlogPost}
               onUploadFile={handleUploadFile}
@@ -622,6 +649,11 @@ export default function App() {
               return (
                 <JusticeShieldSection
                   key={block.id}
+                  isAdmin={isAdminMode}
+                  basicLaws={block.customData.basicLaws}
+                  legalMyths={block.customData.legalMyths}
+                  onUpdateLaws={(nextLaws) => handleUpdateBlockData("justice-shield", { basicLaws: nextLaws })}
+                  onUpdateMyths={(nextMyths) => handleUpdateBlockData("justice-shield", { legalMyths: nextMyths })}
                 />
               );
 
@@ -648,6 +680,21 @@ export default function App() {
                     nextTimeline[index] = updated;
                     handleUpdateBlockData("timeline", { timeline: nextTimeline });
                   }}
+                  onAddEvent={() => {
+                    const originalTimeline = block.customData.timeline || [];
+                    const nextTimeline = [...originalTimeline, {
+                      date: "New Road target",
+                      title: "Click to edit target heading",
+                      description: "Click to write explanation for this campaign milestone milestone",
+                      completed: false
+                    }];
+                    handleUpdateBlockData("timeline", { timeline: nextTimeline });
+                  }}
+                  onDeleteEvent={(index) => {
+                    const originalTimeline = block.customData.timeline || [];
+                    const nextTimeline = originalTimeline.filter((_, idx) => idx !== index);
+                    handleUpdateBlockData("timeline", { timeline: nextTimeline });
+                  }}
                   accentColor={accentColor}
                 />
               );
@@ -669,6 +716,7 @@ export default function App() {
                   key={block.id}
                   posts={data?.posts || []}
                   onAddComment={handleAddComment}
+                  onDeleteComment={handleDeleteComment}
                   isAdmin={isAdminMode}
                   onDeletePost={handleDeletePost}
                 />

@@ -3,7 +3,8 @@ import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
 import { createServer as createViteServer } from "vite";
-import { CivicShieldData, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, LayoutBlock } from "./src/types";
+import nodemailer from "nodemailer";
+import { CivicShieldData, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, LayoutBlock, NotificationLog } from "./src/types";
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -449,6 +450,22 @@ app.post("/api/blog/:id/comment", (req, res) => {
   }
 });
 
+// Delete comment on blog post
+app.delete("/api/blog/:postId/comment/:commentId", (req, res) => {
+  try {
+    const { postId, commentId } = req.params;
+    const postIndex = campaignData.posts.findIndex((p) => p.id === postId);
+    if (postIndex !== -1) {
+      campaignData.posts[postIndex].comments = campaignData.posts[postIndex].comments.filter((c) => c.id !== commentId);
+      saveData(campaignData);
+      return res.json({ success: true, message: "Comment permanently deleted." });
+    }
+    res.status(404).json({ error: "Post not found." });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Create evidence file list entry
 app.post("/api/evidence", (req, res) => {
   try {
@@ -568,6 +585,180 @@ app.post("/api/upload", (req, res) => {
   }
 });
 
+// Smart context-matching offline fallback engine for Civic Shield
+function getOfflineSmartAnswer(text: string): { answered: boolean; answer?: string; repliedBy?: string } {
+  const query = text.toLowerCase();
+
+  if (query.includes("detained") || query.includes("arrest") || query.includes("police") || query.includes("stop") || query.includes("officer") || query.includes("cop") || query.includes("free to go")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "Civic Shield Stop Protocol:\n\n1. Confirm Status: Calmly ask, 'Am I being detained, or am I free to go?' If free to go, walk away.\n2. Inquire for Reason: If detained, ask, 'What is the specific reasonable suspicion for my detainment?' Forces a verbal record.\n3. Question Mandates: Ask, 'Am I required by law to provide identity under this specific detainment?'\n\nAlways remain respectful, avoid sudden movements, and record the interaction if safely possible. Our de-escalation checklist is in the Evidence Locker!"
+    };
+  }
+
+  if (query.includes("rti") || query.includes("right to information") || query.includes("transparency") || query.includes("public record") || query.includes("budget") || query.includes("government")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "RTI (Right to Information) Guide:\n\nUnder statutory transparency regulations (e.g., RTI Act, 2005), any citizen has the right to query public authorities regarding expenditure, orders, and administrative logs:\n- Submission: Formulate standard direct questions and submit to the designated Public Information Officer (PIO).\n- 30-Day Mandate: Authorities must supply the response within 30 days.\n- Templates: Download ready-made pre-formatted RTI draft boilerplate worksheets directly from our Evidence Locker!"
+    };
+  }
+
+  if (query.includes("pro-se") || query.includes("pro se") || query.includes("party-in-person") || query.includes("party in person") || query.includes("represent") || query.includes("attorney") || query.includes("lawyer") || query.includes("court")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "Party-in-Person (Pro-Se) Self-Representation Protocol:\n\nYou possess an absolute statutory right to represent yourself and plead your own case in court or tribunals (e.g. under Section 32 of the Advocates Act in India):\n- Cost Benefit: Useful for tenant disagreements, small consumer disputes, or minor municipal citations without heavy retainers.\n- Submission Rules: Ensure replies are cleanly numbered, indexed sequentially, and served officially to the registrar.\n- Templates: Ready boilerplate files are available in our Evidence Locker."
+    };
+  }
+
+  if (query.includes("traffic") || query.includes("car") || query.includes("vehicle") || query.includes("roadside") || query.includes("license") || query.includes("helmet") || query.includes("challan")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "Roadside Traffic Compliance Guidelines:\n\nDuring traffic or roadside stop checks:\n- Document Production: Lawfully requested, you must present your license, registration (RC), insurance, and PUC certificate. Digital copies (via DigiLocker or mParivahan) are completely valid and equal to physical files.\n- Search boundary: An officer cannot search the vehicle's interior gloveboxes or trunks without a valid warrant, consent, or probable cause.\n- Download our pocket-sized Traffic Compliance Handbook inside the Evidence Locker."
+    };
+  }
+
+  if (query.includes("rent") || query.includes("tenant") || query.includes("landlord") || query.includes("eviction") || query.includes("lease") || query.includes("apartment") || query.includes("housing")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "Tenant & Housing Dispute Rights:\n\nYour residence is protected by municipal tenancy rules:\n- Eviction Control: A landlord cannot evict you arbitrarily without giving a formal written notice period, usually 15-30 days.\n- Security Deposit: Withholding deposits is illegal unless structural damages are formally itemized and photographed.\n- Arbitrations: In case of threats or arbitrary utilities shutdown, immediately appeal to the local rent tribunal."
+    };
+  }
+
+  if (query.includes("help") || query.includes("recommend") || query.includes("how to") || query.includes("where") || query.includes("guide") || query.includes("book")) {
+    return {
+      answered: true,
+      repliedBy: "AI Shield (Offline Guard)",
+      answer: "How to begin exercising your civil liberties:\n\n1. Review 'The Justice Shield' board to unmask public misconceptions and legal realities.\n2. Open the 'Evidence & Legal Locker' section to download free procedural guide PDFs, RTI templates, and de-escalation protocol videos.\n3. Submit a specific topic in this Chat for guidance."
+    };
+  }
+
+  return {
+    answered: false
+  };
+}
+
+// Automatically send email notification to the civic campaign champion on new anonymous questions
+async function sendQuestionEmailNotification(question: AnonymousQuestion) {
+  const recipient = "thecivicshield@gmail.com";
+  const subject = `🛡️ [Civic Shield Alert] New Anonymous Question Received (${question.id})`;
+  const body = `Hello Civic Shield Champion,
+
+A new anonymous legal query has been submitted through your Civic Shield website:
+
+- Question ID: ${question.id}
+- Submitted At: ${question.timestamp}
+- Message Content:
+"${question.text}"
+
+Please visit your Administration Operations Center to review, answer, or publish this query publicly.
+
+Best regards,
+Civic Shield Alert System`;
+
+  const logId = "mail_" + Date.now();
+  const newLog: NotificationLog = {
+    id: logId,
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " + new Date().toLocaleDateString(),
+    recipient,
+    subject,
+    body,
+    status: 'simulated',
+    previewUrl: undefined
+  };
+
+  try {
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = process.env.SMTP_PORT;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+
+    let transporter;
+    if (smtpHost && smtpUser && smtpPass) {
+      transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(smtpPort || "587"),
+        secure: smtpPort === "465",
+        auth: {
+          user: smtpUser,
+          pass: smtpPass
+        }
+      });
+      newLog.status = 'sent';
+    } else {
+      // Create a test account automatically via Ethereal to output a genuine preview URL
+      const testAccount = await nodemailer.createTestAccount();
+      transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass
+        }
+      });
+    }
+
+    const info = await transporter.sendMail({
+      from: '"Civic Shield Notification" <no-reply@civicshield.org>',
+      to: recipient,
+      subject: subject,
+      text: body,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; max-width: 600px; color: #1e293b; background-color: #ffffff;">
+          <h2 style="color: #0f172a; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px;">🛡️ Civic Shield Notification</h2>
+          <p>Hello Civic Shield Champion,</p>
+          <p>A new anonymous legal query has been submitted through your Civic Shield website:</p>
+          <div style="background-color: #f8fafc; border-left: 4px solid #d4af37; padding: 15px; margin: 20px 0; border-radius: 4px; font-style: italic; color: #334155;">
+            "${question.text}"
+          </div>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold; color: #64748b; width: 120px;">Question ID:</td>
+              <td style="padding: 6px 0; font-family: monospace;">${question.id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; font-weight: bold; color: #64748b;">Submitted At:</td>
+              <td>${question.timestamp}</td>
+            </tr>
+          </table>
+          <p style="margin-bottom: 30px;">Please check your Operations Center Dashboard to answer or publish this question.</p>
+          <div style="font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+            This email was automatically triggered on anonymous question submit. For offline sandbox tests, log feeds are simulated via Ethereal.
+          </div>
+        </div>
+      `
+    });
+
+    if (newLog.status === 'simulated') {
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        newLog.previewUrl = previewUrl;
+        console.log(`[Email Notification] Email simulated on Ethereal sandbox. Preview: ${previewUrl}`);
+      }
+    } else {
+      console.log(`[Email Notification] Email sent successfully to ${recipient}. Message Id: ${info.messageId}`);
+    }
+  } catch (err: any) {
+    console.error("Failed to deliver question email notification:", err);
+    newLog.status = 'failed';
+    newLog.body = `${newLog.body}\n\n[ERROR LOG]: ${err.message || err}`;
+  }
+
+  // Push log to state
+  if (!campaignData.notificationLogs) {
+    campaignData.notificationLogs = [];
+  }
+  campaignData.notificationLogs.unshift(newLog);
+  if (campaignData.notificationLogs.length > 50) {
+    campaignData.notificationLogs = campaignData.notificationLogs.slice(0, 50);
+  }
+}
+
 // Submit an anonymous question (with OPTIONAL real-time smart answer from Gemini!)
 app.post("/api/questions", async (req, res) => {
   try {
@@ -585,17 +776,19 @@ app.post("/api/questions", async (req, res) => {
     };
     
     // If Gemini client is activated, generate a smart assistant response in real-time!
+    let geminiServiceError = null;
     if (aiClient) {
+      const campaignKnowledge = `
+        You are the Official AI Campaign Advocate of "Civic Shield", advocating for legal literacy, citizen defense, and mutual procedural dialogue using Indian and International law (e.g., Indian Constitution, RTI Act 2005, Advocates Act 1961, UDHR, ICCPR).
+        Campaign Goal: Bridge the path between citizens and legal authority, eliminate fear of procedures, and equip everyone with knowledge of basic laws so they can protect themselves.
+        Tone: Objective, supportive, professional, authoritative, reassuring, and non-escalating.
+        Key pillars: Bridge the Gap, Eliminate Fear, Citizen Defense, Civic Transparency.
+        Resources in the locker: Traffic Rules & Motor Vehicle Act handbook, Party-in-Person legal templates, RTI drafts, de-escalation video guide.
+        Frequently Asked: We aim to demystify trial procedures, High Court writ filings, RTI requests, speaking orders, and statutory terms.
+      `;
+
+      // Try primary model (gemini-3.5-flash)
       try {
-        const campaignKnowledge = `
-          You are the Official AI Campaign Advocate of "Civic Shield", advocating for legal literacy, citizen defense, and mutual procedural dialogue using Indian and International law (e.g., Indian Constitution, RTI Act 2005, Advocates Act 1961, UDHR, ICCPR).
-          Campaign Goal: Bridge the path between citizens and legal authority, eliminate fear of procedures, and equip everyone with knowledge of basic laws so they can protect themselves.
-          Tone: Objective, supportive, professional, authoritative, reassuring, and non-escalating.
-          Key pillars: Bridge the Gap, Eliminate Fear, Citizen Defense, Civic Transparency.
-          Resources in the locker: Traffic Rules & Motor Vehicle Act handbook, Party-in-Person legal templates, RTI drafts, de-escalation video guide.
-          Frequently Asked: We aim to demystify trial procedures, High Court writ filings, RTI requests, speaking orders, and statutory terms.
-        `;
-        
         const response = await aiClient.models.generateContent({
           model: "gemini-3.5-flash",
           contents: `Question: ${text}`,
@@ -610,33 +803,55 @@ app.post("/api/questions", async (req, res) => {
           newQuestion.answer = response.text.trim();
           newQuestion.repliedBy = "AI Campaign Advocate";
         }
-      } catch (gemError) {
-        console.error("Gemini AI generation failure, saving question for manual admin response:", gemError);
+      } catch (gemError: any) {
+        console.warn("Primary model 'gemini-3.5-flash' experienced an issue. Attempting fallback 'gemini-flash-latest'...", gemError.message || gemError);
+        geminiServiceError = gemError;
+        
+        // Retry with stable fallback model (gemini-flash-latest)
+        try {
+          const fallbackResponse = await aiClient.models.generateContent({
+            model: "gemini-flash-latest",
+            contents: `Question: ${text}`,
+            config: {
+              systemInstruction: `${campaignKnowledge}\nAnswer this user's question concisely, transparently, and professionally. End your answer reassuringly. Limit response to 120 words.`,
+              temperature: 0.7
+            }
+          });
+          if (fallbackResponse.text) {
+            newQuestion.answered = true;
+            newQuestion.answer = fallbackResponse.text.trim();
+            newQuestion.repliedBy = "AI Campaign Advocate (Standard)";
+            geminiServiceError = null; // Cleared on successful backup resolution!
+          }
+        } catch (fallbackError: any) {
+          console.error("Both primary and fallback Gemini generation models failed:", fallbackError.message || fallbackError);
+          geminiServiceError = fallbackError;
+        }
       }
     }
 
-    // Smart offline legal literacy responder fallback
+    // Try smart keyword-matching offline fallback before returning the completely generic offline alert
     if (!newQuestion.answered) {
-      const lower = text.toLowerCase();
-      let answerText = "";
-      if (lower.includes("detain") || lower.includes("free to go")) {
-        answerText = "Inquiries are completely voluntary. Under Articles 19 & 21 of the Indian Constitution, you are under no obligation to answer interrogative questioning. If detained under suspicion of an offense, you must cooperate but possess an absolute constitutional right to remain silent and seek immediate legal aid under Article 22(1).";
-      } else if (lower.includes("record") || lower.includes("camera") || lower.includes("video") || lower.includes("phone")) {
-        answerText = "You have a protected constitutional right under Article 19(1)(a) (Freedom of Speech and Expression) to record public officials carrying out their duties in plain public view. You must maintain a non-interference distance, remain respectful, and avoid restricted zones under official security acts.";
-      } else if (lower.includes("pro-se") || lower.includes("represent myself") || lower.includes("lawyer")) {
-        answerText = "Representing yourself ('Party-in-Person') is an absolute statutory right under Indian Law. Under Section 32 of the Advocates Act, 1961, any court or tribunal can permit a litigant to plead their own case directly, saving steep counsel charges.";
-      } else if (lower.includes("search") || lower.includes("consent") || lower.includes("warrant")) {
-        answerText = "Articles 21 (Personal Liberty) and privacy jurisprudence protect you against arbitrary searches of your body or private residence. Officers must present a valid warrant issued by a magistrate or satisfy specific acute emergency procedural codes. Ask calmly to inspect the written order.";
-      } else if (lower.includes("id ") || lower.includes("identify") || lower.includes("name") || lower.includes("license")) {
-        answerText = "Under Indian law, citizens are generally only required to produce address and ID proof under specific regulatory check duties (such as active driving of a motor vehicle governed by the Motor Vehicles Act or high-security area protocols). If approached casually in public spaces, respectfully ask: 'Am I being charged with any offense, or am I free to go?'";
-      } else {
-        answerText = "Thank you for joining our dialogue! We advocate for legal literacy and mutual de-escalation. We suggest checking our online Handouts Vault to download our standard citizen handbook, compiling deep procedural definitions and safe conversational scripts.";
+      const offlineMatch = getOfflineSmartAnswer(text);
+      if (offlineMatch.answered && offlineMatch.answer) {
+        newQuestion.answered = true;
+        newQuestion.answer = offlineMatch.answer;
+        newQuestion.repliedBy = offlineMatch.repliedBy || "AI Shield (Offline Guard)";
       }
-      newQuestion.answered = true;
-      newQuestion.answer = answerText;
-      newQuestion.repliedBy = "AI Campaign Advocate";
+    }
+
+    // Ultimate fallback if neither Gemini is successfully active nor keyword matched
+    if (!newQuestion.answered) {
+      newQuestion.answer = "Thank you for reaching out to Civic Shield! We have received your query. A human campaign advocate has been notified of your question, and we will review and reply here shortly.";
+      newQuestion.answered = false;
+      newQuestion.repliedBy = "Campaign Manager";
     }
     
+    // Send email notification in the background so the response is very fast for the user!
+    sendQuestionEmailNotification(newQuestion).catch((err) => {
+      console.error("Async email notification error:", err);
+    });
+
     campaignData.questions.push(newQuestion);
     saveData(campaignData);
     res.json(newQuestion);

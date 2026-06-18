@@ -7,11 +7,12 @@ interface BlogSectionProps {
   key?: string;
   posts: BlogPost[];
   onAddComment: (postId: string, name: string, commentText: string) => Promise<any>;
+  onDeleteComment?: (postId: string, commentId: string) => Promise<void>;
   isAdmin: boolean;
   onDeletePost: (id: string) => Promise<void>;
 }
 
-export default function BlogSection({ posts, onAddComment, isAdmin, onDeletePost }: BlogSectionProps) {
+export default function BlogSection({ posts, onAddComment, onDeleteComment, isAdmin, onDeletePost }: BlogSectionProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
@@ -247,7 +248,31 @@ export default function BlogSection({ posts, onAddComment, isAdmin, onDeletePost
                       <div key={comment.id} className="p-3.5 rounded-sm bg-[#001233]/40 border border-[#d4af37]/10 relative">
                         <div className="flex items-center justify-between text-[10px] font-mono text-gray-400">
                           <span className="text-[#d4af37] font-bold hover:text-white transition-colors">{comment.author}</span>
-                          <span>{comment.date}</span>
+                          <div className="flex items-center gap-2">
+                            <span>{comment.date}</span>
+                            {isAdmin && (
+                              <button
+                                onClick={async () => {
+                                  if (confirm("Delete this comment permanently?")) {
+                                    if (onDeleteComment) {
+                                      await onDeleteComment(selectedPost.id, comment.id);
+                                      setSelectedPost(prev => {
+                                        if (!prev) return null;
+                                        return {
+                                          ...prev,
+                                          comments: prev.comments.filter(c => c.id !== comment.id)
+                                        };
+                                      });
+                                    }
+                                  }
+                                }}
+                                className="p-1 rounded-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer"
+                                title="Delete comment permanently"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <p className="text-xs text-gray-300 font-sans mt-1.5 leading-relaxed font-light">{comment.text}</p>
                       </div>

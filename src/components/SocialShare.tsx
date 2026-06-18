@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Twitter, Facebook, Linkedin, Mail, Link, Check } from "lucide-react";
+import { Twitter, Facebook, Linkedin, Mail, Link, Check, Instagram } from "lucide-react";
 
 interface SocialShareProps {
   title: string;
@@ -10,6 +10,7 @@ interface SocialShareProps {
 
 export default function SocialShare({ title, text = "", shareUrl, inline = false }: SocialShareProps) {
   const [copied, setCopied] = useState(false);
+  const [instaNotification, setInstaNotification] = useState(false);
 
   // Fallback shared URL
   const actualUrl = shareUrl || window.location.href;
@@ -37,6 +38,13 @@ export default function SocialShare({ title, text = "", shareUrl, inline = false
       color: "hover:bg-blue-700/10 hover:text-blue-400 border-blue-500/20",
     },
     {
+      name: "Instagram",
+      icon: <Instagram className="w-3.5 h-3.5" />,
+      url: "https://www.instagram.com/",
+      color: "hover:bg-pink-500/10 hover:text-pink-400 border-pink-500/20",
+      customClick: true,
+    },
+    {
       name: "Email",
       icon: <Mail className="w-3.5 h-3.5" />,
       url: `mailto:?subject=${encodedTitle}&body=${encodedText}%0A%0ARead%20more%20here%3A%20${encodedUrl}`,
@@ -54,19 +62,36 @@ export default function SocialShare({ title, text = "", shareUrl, inline = false
     }
   };
 
+  const handleInstaClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(actualUrl);
+      setCopied(true);
+      setInstaNotification(true);
+      setTimeout(() => {
+        setCopied(false);
+        setInstaNotification(false);
+      }, 3500);
+      window.open("https://www.instagram.com/", "_blank", "referrerpolicy=no-referrer");
+    } catch (err) {
+      console.error("Failed to copy link for Instagram: ", err);
+    }
+  };
+
   if (inline) {
     return (
       <div id="social-share-inline" className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-[10px] font-mono uppercase text-gray-400 mr-1.5 select-none">Share:</span>
+        <span className="text-[10px] font-mono uppercase text-gray-400 mr-1.5 select-none font-semibold">Share:</span>
         {shareLinks.map((link) => (
           <a
             key={link.name}
             href={link.url}
+            onClick={link.customClick ? handleInstaClick : undefined}
             target="_blank"
             rel="noopener noreferrer"
             referrerPolicy="no-referrer"
             className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-100/10 bg-[#001233]/40 flex items-center justify-center text-gray-300 transition-all ${link.color}`}
-            title={`Share on ${link.name}`}
+            title={link.name === "Instagram" ? "Copy link and open Instagram" : `Share on ${link.name}`}
           >
             {link.icon}
           </a>
@@ -82,6 +107,11 @@ export default function SocialShare({ title, text = "", shareUrl, inline = false
         >
           {copied ? <Check className="w-3.5 h-3.5" /> : <Link className="w-3.5 h-3.5" />}
         </button>
+        {instaNotification && (
+          <span className="text-[9px] font-mono text-[#d4af37] animate-pulse">
+            Link Copied! Paste on Instagram.
+          </span>
+        )}
       </div>
     );
   }
@@ -94,11 +124,12 @@ export default function SocialShare({ title, text = "", shareUrl, inline = false
           <a
             key={link.name}
             href={link.url}
+            onClick={link.customClick ? handleInstaClick : undefined}
             target="_blank"
             rel="noopener noreferrer"
             referrerPolicy="no-referrer"
             className={`w-7 h-7 rounded-sm border bg-[#001a4d] flex items-center justify-center text-gray-300 transition-all ${link.color}`}
-            title={`Share on ${link.name}`}
+            title={link.name === "Instagram" ? "Copy link and open Instagram" : `Share on ${link.name}`}
           >
             {link.icon}
           </a>
@@ -114,6 +145,11 @@ export default function SocialShare({ title, text = "", shareUrl, inline = false
         >
           {copied ? <Check className="w-3.5 h-3.5" /> : <Link className="w-3.5 h-3.5" />}
         </button>
+        {instaNotification && (
+          <span className="text-[9.5px] font-mono text-[#d4af37] px-1">
+            Dispatch Link copied for Instagram pasting!
+          </span>
+        )}
       </div>
     </div>
   );

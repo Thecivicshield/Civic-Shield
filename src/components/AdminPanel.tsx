@@ -3,7 +3,7 @@ import {
   ArrowUp, ArrowDown, Eye, EyeOff, Layout, FileUp, ShieldAlert,
   Users, HelpCircle, Check, FileCheck, Trash2, Mail, Sparkles, Download
 } from "lucide-react";
-import { LayoutBlock, BlogPost, AnonymousQuestion, NewsletterSub, SocialPost, SentNewsletter } from "../types";
+import { LayoutBlock, BlogPost, AnonymousQuestion, NewsletterSub, SocialPost, SentNewsletter, NotificationLog } from "../types";
 
 interface AdminPanelProps {
   blocks: LayoutBlock[];
@@ -11,6 +11,7 @@ interface AdminPanelProps {
   questions: AnonymousQuestion[];
   socialPosts: SocialPost[];
   newsletters: SentNewsletter[];
+  notificationLogs?: NotificationLog[];
   onSaveBlocks: (newBlocks: LayoutBlock[]) => Promise<void>;
   onAddBlogPost: (title: string, content: string, author: string, imageUrl: string) => Promise<void>;
   onUploadFile: (payload: {
@@ -35,6 +36,7 @@ export default function AdminPanel({
   questions,
   socialPosts,
   newsletters,
+  notificationLogs = [],
   onSaveBlocks,
   onAddBlogPost,
   onUploadFile,
@@ -45,7 +47,7 @@ export default function AdminPanel({
   onSendNewsletter,
   accentColor
 }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<'layout' | 'upload' | 'blog' | 'qna' | 'social' | 'newsletters' | 'subs'>('layout');
+  const [activeTab, setActiveTab] = useState<'layout' | 'upload' | 'blog' | 'qna' | 'social' | 'newsletters' | 'subs' | 'mails'>('layout');
 
   // Social feed states
   const [socialPlatform, setSocialPlatform] = useState<"twitter" | "instagram" | "facebook" | "linkedin" | "youtube">("twitter");
@@ -346,7 +348,7 @@ export default function AdminPanel({
 
         {/* Toolbar tabs */}
         <div className="flex flex-wrap gap-2">
-          {(['layout', 'upload', 'blog', 'qna', 'social', 'newsletters', 'subs'] as const).map(tab => {
+          {(['layout', 'upload', 'blog', 'qna', 'social', 'newsletters', 'subs', 'mails'] as const).map(tab => {
             const labels = {
               layout: "Layout Sorter",
               upload: "Upload locker",
@@ -354,7 +356,8 @@ export default function AdminPanel({
               qna: "Answer Desk",
               social: "Social Stream",
               newsletters: "Broadcast Newsletters",
-              subs: "Supporter Emails"
+              subs: "Supporter Emails",
+              mails: "Mail Alerts & Logs ✉️"
             };
             return (
               <button
@@ -980,6 +983,92 @@ export default function AdminPanel({
               ))}
               {newsletters.length === 0 && (
                 <p className="text-center py-6 text-xs text-gray-400 italic">No broadcast logs in archive history.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Mail Alerts & Logs */}
+      {activeTab === 'mails' && (
+        <div className="space-y-4">
+          <div className="p-4 bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#d4af37] flex items-center gap-1.5 leading-none">
+                <Mail className="w-4 h-4" /> Live Question Notification Transmissions ({notificationLogs.length})
+              </h4>
+              <p className="text-[11px] text-gray-300 leading-relaxed font-sans font-light">
+                Whenever a user submits an anonymous question on the public chatbox, this mailbox logs the instant alert dispatches sent directly to <strong className="text-white">thecivicshield@gmail.com</strong>.
+              </p>
+            </div>
+            
+            <div className="text-[10px] font-mono text-[#d4af37] border border-[#d4af37]/20 px-2.5 py-1 bg-[#001233] uppercase">
+              Target: thecivicshield@gmail.com
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h5 className="text-[10px] font-mono uppercase tracking-widest text-[#d4af37]">Dispatched Mail Alerts Log ({notificationLogs.length})</h5>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+              {notificationLogs.map((log) => (
+                <div key={log.id} className="p-4 bg-[#001233] border border-[#d4af37]/15 hover:border-[#d4af37]/35 rounded-sm space-y-3 transition-all">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="space-y-1">
+                      <span className={`px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider rounded-sm mr-2 font-bold ${
+                        log.status === 'sent' 
+                          ? 'bg-green-500/10 border border-green-500/30 text-green-400' 
+                          : log.status === 'failed' 
+                          ? 'bg-red-500/10 border border-red-500/30 text-red-400' 
+                          : 'bg-amber-500/10 border border-amber-500/30 text-amber-400'
+                      }`}>
+                        {log.status === 'sent' ? 'SMTP DELIVERED' : log.status === 'failed' ? 'FAILED' : 'ETHEREAL SIMULATION'}
+                      </span>
+                      <span className="font-bold text-white text-xs sm:text-sm font-serif leading-snug">{log.subject}</span>
+                    </div>
+                    <div className="text-[9px] font-mono text-gray-400">
+                      ID: {log.id} • {log.timestamp}
+                    </div>
+                  </div>
+
+                  <div className="bg-[#001a4d] p-3 border border-[#d4af37]/10 rounded-sm">
+                    <p className="text-[11px] text-gray-300 whitespace-pre-wrap font-sans font-light leading-relaxed">{log.body}</p>
+                  </div>
+
+                  {log.previewUrl && (
+                    <div className="flex items-center gap-2 pt-1 border-t border-[#d4af37]/10">
+                      <span className="text-[10px] font-mono text-gray-400">💡 Testing Sandbox:</span>
+                      <a 
+                        href={log.previewUrl} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[11px] text-[#d4af37] font-bold hover:underline hover:text-white transition-all flex items-center gap-1"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 animate-pulse" /> Click here to open and read real sent email in Ethereal Sandbox Inbox!
+                      </a>
+                    </div>
+                  )}
+
+                  {!log.previewUrl && log.status === 'sent' && (
+                    <div className="text-[10px] font-mono text-green-400 italic">
+                      ✓ Delivered via custom SMTP configuration to candidate email server.
+                    </div>
+                  )}
+                  
+                  {log.status === 'failed' && (
+                    <div className="text-[10px] font-mono text-red-400 italic">
+                      ⚠ Delivery failed. Check server console or SMTP configuration credentials.
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {notificationLogs.length === 0 && (
+                <div className="text-center py-12 border border-[#d4af37]/10 bg-[#001233] p-6 rounded-sm space-y-2">
+                  <p className="text-xs text-gray-400 italic">No mail alert notifications logged.</p>
+                  <p className="text-[10px] text-gray-500 leading-normal">
+                    Submit an anonymous question in the Chatbox below to instantly trigger a test notification email dispatch!
+                  </p>
+                </div>
               )}
             </div>
           </div>

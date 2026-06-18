@@ -62,21 +62,12 @@ export default function AnonymousChat({ questions, onNewQuestion }: AnonymousCha
       // Send to full-stack API
       const result = await onNewQuestion(userMsg);
       if (result) {
-        if (result.answered && result.answer) {
-          // Gemini gave a direct answer
-          setConversation(prev => [...prev, { 
-            sender: 'bot', 
-            text: result.answer || "Thank you for your submission. Your question has been registered for review.", 
-            time: userTime 
-          }]);
-        } else {
-          // Awaiting manual reply
-          setConversation(prev => [...prev, { 
-            sender: 'bot', 
-            text: "Your anonymous question has been successfully submitted to the campaign managers. It will appear on our Public Q&A wall once answered!", 
-            time: userTime 
-          }]);
-        }
+        // Display the specific real-time answer or custom fallback returned by the backend
+        setConversation(prev => [...prev, { 
+          sender: 'bot', 
+          text: result.answer || "Your anonymous question has been successfully submitted to the campaign managers. It will appear on our Public Q&A wall once answered!", 
+          time: userTime 
+        }]);
       }
     } catch (err) {
       console.error(err);
