@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import { GoogleGenAI } from "@google/genai";
-import nodemailer from "nodemailer";
 import { CivicShieldData, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, LayoutBlock, NotificationLog } from "./src/types";
 
 const app = express();
@@ -676,6 +675,10 @@ Civic Shield Alert System`;
   };
 
   try {
+    // Dynamic import of nodemailer to shield the startup from module resolution errors
+    const nodemailerModule = await import("nodemailer");
+    const nodemailer = (nodemailerModule as any).default || nodemailerModule;
+
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT;
     const smtpUser = process.env.SMTP_USER;
