@@ -16,8 +16,12 @@ const DATA_FILE_PATH = path.join(process.cwd(), "civic_data.json");
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
 // Ensure uploads folder exists
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (error) {
+  console.warn("Could not create uploads directory (might be read-only filesystem):", error);
 }
 
 // Pre-seeded Initial Campaign Data (Royal Navy Blue / Gold Style)
@@ -987,21 +991,38 @@ app.post("/api/send-newsletter", (req, res) => {
 // ---------------- VITE INTERPOLATION ----------------
 
 async function startServer() {
-  if (process.env.NODE_ENV !== "production") {
-    // Development server with HMR disabled or enabled by control
-    const { createServer: createViteServer } = await (eval('import("vite")') as Promise<typeof import("vite")>);
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
+  const distPath = path.join(process.cwd(), "dist");
+  const isProd = process.env.NODE_ENV === "production" || fs.existsSync(distPath);
+
+  if (!isProd) {
+    try {
+      // Development server with HMR disabled or enabled by control
+      const { createServer: createViteServer } = await (eval('import("vite")') as Promise<typeof import("vite")>);
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+      console.log("Vite dev middleware loaded successfully.");
+    } catch (err) {
+      console.warn("Failed to load Vite dev middleware. Checking if dist folder can be served:", err);
+      if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+        app.get("*", (req, res) => {
+          res.sendFile(path.join(distPath, "index.html"));
+        });
+        console.log("Vite loading failed but dist directory exists. Serving static build instead.");
+      } else {
+        console.error("Critical: Vite failed to launch and no dist directory was found. App might be inaccessible.");
+      }
+    }
   } else {
     // Production serving
-    const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
     });
+    console.log("Serving static production build from:", distPath);
   }
   
   app.listen(PORT, "0.0.0.0", () => {
