@@ -358,6 +358,25 @@ app.get("/api/campaign-data", (req, res) => {
   res.json(campaignData);
 });
 
+// Import entirely formatted campaign data to restore backups / prevent resets across redeploys
+app.post("/api/import-campaign-data", (req, res) => {
+  try {
+    const data = req.body;
+    if (!data) {
+      return res.status(400).json({ error: "Empty request body." });
+    }
+    // Perform basic verification to confirm this is a valid civic_data.json schema
+    if (Array.isArray(data.blocks) && (Array.isArray(data.blogPosts) || Array.isArray(data.evidence))) {
+      campaignData = data;
+      saveData(campaignData);
+      return res.json({ success: true, message: "Campaign database imported successfully!" });
+    }
+    res.status(400).json({ error: "Invalid backup data structure. JSON must conform to civic_data.json layout." });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Update blocks layout (for complete customization & drag-n-drop sorting)
 app.post("/api/save-blocks", (req, res) => {
   try {
