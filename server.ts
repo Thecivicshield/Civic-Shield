@@ -989,7 +989,7 @@ app.post("/api/send-newsletter", (req, res) => {
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     // Development server with HMR disabled or enabled by control
-    const { createServer: createViteServer } = await import("vite");
+    const { createServer: createViteServer } = await (eval('import("vite")') as Promise<typeof import("vite")>);
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
