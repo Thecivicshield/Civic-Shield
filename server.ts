@@ -298,7 +298,8 @@ const initialData: CivicShieldData = {
       sentAt: "2026-06-13 11:20",
       recipientCount: 1
     }
-  ]
+  ],
+  notificationLogs: []
 };
 
 // Help helper for reading data file
