@@ -65,16 +65,16 @@ export const initialData: CivicShieldData = {
     }
   ],
   "visitorStats": {
-    "totalVisitors": 14892,
+    "totalVisitors": 14894,
     "gateEntries": 6420,
-    "chatInteractions": 983,
+    "chatInteractions": 992,
     "handbookDownloads": 3840,
     "templatesDeployed": 1250,
     "districtsEmpowered": 48,
-    "consultationsGiven": 983,
+    "consultationsGiven": 992,
     "pagesRead": 8740,
     "reviewsCount": 3,
-    "lastUpdated": 1789813269203
+    "lastUpdated": 1789895985216
   },
   "blocks": [
     {
@@ -372,5 +372,5 @@ export const initialData: CivicShieldData = {
     }
   ],
   "notificationLogs": [],
-  "lastUpdated": 1789813437448
+  "lastUpdated": 1789904217985
 };

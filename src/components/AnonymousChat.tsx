@@ -4,7 +4,7 @@ import {
   Sparkles, UserCheck, Trash2, FileText, Download, Cpu, HelpCircle,
   Plus, Link2, UploadCloud, CheckCircle2, ChevronDown, ChevronUp, RefreshCw,
   Scale, BookOpen, ShieldCheck, CornerDownLeft, Copy, Check, RotateCcw,
-  Globe, ExternalLink, Search
+  Globe, ExternalLink, Search, Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { AnonymousQuestion, EvidenceItem } from "../types";
@@ -123,6 +123,24 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
   const [activeTab, setActiveTab] = useState<'chat' | 'directory' | 'resources'>('chat');
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quickRead, setQuickRead] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem("civic_shield_quick_read");
+      return stored !== null ? stored === "true" : false;
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleQuickRead = () => {
+    setQuickRead(prev => {
+      const nextVal = !prev;
+      try {
+        localStorage.setItem("civic_shield_quick_read", String(nextVal));
+      } catch {}
+      return nextVal;
+    });
+  };
 
   // Resource Form States
   const [showAddForm, setShowAddForm] = useState(false);
@@ -219,6 +237,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
     time: string;
     sources?: Array<{ title: string; url: string }>;
     isGrounded?: boolean;
+    isQuickRead?: boolean;
   }>>(() => {
     try {
       const saved = localStorage.getItem("civic_shield_chat_history_v4");
@@ -313,7 +332,8 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: textToSend,
-          history: historyPayload
+          history: historyPayload,
+          quickRead: quickRead
         })
       });
 
@@ -325,7 +345,8 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             text: data.answer, 
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             sources: Array.isArray(data.sources) ? data.sources : [],
-            isGrounded: Boolean(data.sources && data.sources.length > 0)
+            isGrounded: Boolean(data.sources && data.sources.length > 0),
+            isQuickRead: Boolean(data.quickRead ?? quickRead)
           }]);
         } else {
           throw new Error("No answer in response");
@@ -339,7 +360,8 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             text: result.answer, 
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             sources: result.sources || [],
-            isGrounded: Boolean(result.sources && result.sources.length > 0)
+            isGrounded: Boolean(result.sources && result.sources.length > 0),
+            isQuickRead: quickRead
           }]);
         } else {
           const autoAnswer = getAutonomousLegalResponse(textToSend);
@@ -347,7 +369,8 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             sender: 'bot', 
             text: autoAnswer.answer, 
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isGrounded: false
+            isGrounded: false,
+            isQuickRead: quickRead
           }]);
         }
       }
@@ -359,7 +382,8 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
         sender: 'bot', 
         text: autoAnswer.answer, 
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isGrounded: false
+        isGrounded: false,
+        isQuickRead: quickRead
       }]);
     } finally {
       setLoading(false);
@@ -462,6 +486,27 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
+                {/* Quick Read Toggle Button */}
+                <button
+                  id="quick-read-header-toggle"
+                  type="button"
+                  onClick={toggleQuickRead}
+                  title={quickRead ? "Quick Read is ON: Generating concise, high-level summaries. Click to switch to detailed legal breakdown." : "Quick Read is OFF: Click to enable concise, high-level summaries."}
+                  className={`px-2 py-1 rounded text-[9px] font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
+                    quickRead
+                      ? "bg-[#ffd754] text-[#001233] border-[#ffd754] font-bold shadow-[0_0_8px_rgba(255,215,84,0.35)]"
+                      : "bg-[#001a4d]/80 text-gray-300 hover:text-white border-[#d4af37]/30 hover:border-[#d4af37]"
+                  }`}
+                >
+                  <Zap className={`w-3 h-3 ${quickRead ? "text-[#001233] fill-current" : "text-[#ffd754]"}`} />
+                  <span className="font-semibold tracking-wider">Quick Read</span>
+                  <span className={`text-[7.5px] font-bold px-1 py-0.2 rounded uppercase ${
+                    quickRead ? "bg-[#001233] text-[#ffd754]" : "bg-[#001233]/70 text-gray-400"
+                  }`}>
+                    {quickRead ? "ON" : "OFF"}
+                  </span>
+                </button>
+
                 <button
                   onClick={handleResetChat}
                   title="Reset conversation (New Chat)"
@@ -556,9 +601,14 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                           >
                             {msg.sender === 'bot' && (
                               <div className="flex items-center justify-between gap-1.5 font-mono text-[9px] uppercase tracking-wider text-[#d4af37] pb-1.5 mb-1.5 border-b border-[#d4af37]/15">
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
                                   <ShieldCheck className="w-3.5 h-3.5 text-[#d4af37]" />
                                   <span className="font-bold">Civic Shield AI Advocate</span>
+                                  {(msg.isQuickRead || msg.text.startsWith("⚡") || msg.text.includes("Quick Read")) && (
+                                    <span className="flex items-center gap-0.5 text-[7.5px] text-[#001233] bg-[#ffd754] px-1.5 py-0.2 rounded font-mono font-bold tracking-tight">
+                                      <Zap className="w-2.5 h-2.5 fill-current" /> QUICK READ
+                                    </span>
+                                  )}
                                   {msg.sources && msg.sources.length > 0 && (
                                     <span className="flex items-center gap-1 text-[7.5px] text-emerald-400 bg-emerald-950/60 px-1 py-0.2 rounded border border-emerald-500/30">
                                       <Globe className="w-2.5 h-2.5" /> GROUNDED
@@ -585,6 +635,41 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                               </div>
                             )}
                             {msg.sender === 'bot' ? renderFormattedMessage(msg.text) : msg.text}
+
+                            {/* Option to toggle between Quick Read summary and Full Legal Breakdown */}
+                            {msg.sender === 'bot' && (
+                              <div className="mt-2 pt-1.5 border-t border-[#d4af37]/15 flex items-center justify-between text-[9px]">
+                                {(msg.isQuickRead || msg.text.startsWith("⚡") || msg.text.includes("Quick Read")) ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const prevQ = conversation.slice(0, idx).reverse().find(m => m.sender === 'user')?.text || "";
+                                      handleSubmit(undefined, prevQ ? `Please provide the comprehensive in-depth legal analysis with full statutory provisions and Supreme Court case precedents for: ${prevQ}` : "Please provide the comprehensive in-depth legal analysis with full statutory provisions.");
+                                    }}
+                                    disabled={loading}
+                                    className="text-[#ffd754] hover:text-white flex items-center gap-1 font-mono transition-colors cursor-pointer"
+                                    title="Request full legal breakdown"
+                                  >
+                                    <BookOpen className="w-3 h-3 text-[#ffd754]" />
+                                    <span>Expand to Full Legal Breakdown</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const prevQ = conversation.slice(0, idx).reverse().find(m => m.sender === 'user')?.text || "";
+                                      handleSubmit(undefined, prevQ ? `Please summarize this into a concise Quick Read field brief: ${prevQ}` : "Please summarize this into a concise Quick Read field brief.");
+                                    }}
+                                    disabled={loading}
+                                    className="text-gray-400 hover:text-[#ffd754] flex items-center gap-1 font-mono transition-colors cursor-pointer"
+                                    title="Request condensed summary"
+                                  >
+                                    <Zap className="w-3 h-3 text-[#ffd754]" />
+                                    <span>Get Quick Read Summary</span>
+                                  </button>
+                                )}
+                              </div>
+                            )}
 
                             {/* Google Search Grounding Citations */}
                             {msg.sources && msg.sources.length > 0 && (
@@ -627,31 +712,66 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                         >
                           <div className="flex items-center justify-between text-[9px] font-mono text-[#ffd754] uppercase tracking-wider font-bold">
                             <span className="flex items-center gap-1.5">
-                              <Globe className="w-3.5 h-3.5 text-[#ffd754] animate-spin" />
-                              Searching Google & Verifying Legal Statutes...
+                              {quickRead ? (
+                                <Zap className="w-3.5 h-3.5 text-[#ffd754] animate-bounce" />
+                              ) : (
+                                <Globe className="w-3.5 h-3.5 text-[#ffd754] animate-spin" />
+                              )}
+                              {quickRead 
+                                ? "Gemini Synthesizing Quick Read Summary..." 
+                                : "Gemini Analyzing Statutes & Precedents..."}
                             </span>
                             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                           </div>
                           <p className="text-[10px] text-gray-300 font-sans">
-                            Gemini 3.8 Flash is cross-referencing real-time web databases, official case law, and constitutional precedents...
+                            {quickRead 
+                              ? "Compiling instant high-level verdict, essential constitutional rights, and immediate verbal script..." 
+                              : "Cross-referencing constitutional Articles, BNSS/CrPC procedural sections, and Supreme Court guidelines..."}
                           </p>
                         </motion.div>
                       )}
                     </div>
 
-                    {/* Quick Inquiry Prompts Carousel */}
-                    <div className="px-3 py-1.5 bg-[#001233]/70 border-t border-[#d4af37]/10 flex items-center gap-1.5 overflow-x-auto no-scrollbar select-none">
-                      <span className="text-[8px] font-mono text-[#d4af37] shrink-0 uppercase tracking-wider font-bold">Quick:</span>
-                      {QUICK_PROMPTS.map((qp, qpIdx) => (
+                    {/* Mode Switcher & Quick Inquiry Prompts Carousel */}
+                    <div className="px-3 py-1.5 bg-[#001233]/85 border-t border-[#d4af37]/15 flex items-center justify-between gap-2 text-[10px]">
+                      <div className="flex items-center gap-2 shrink-0">
                         <button
-                          key={qpIdx}
-                          onClick={() => handleSubmit(undefined, qp.text)}
-                          disabled={loading}
-                          className="shrink-0 text-[9px] font-mono px-2 py-0.5 bg-[#001a4d] hover:bg-[#d4af37] text-gray-300 hover:text-[#001233] border border-[#d4af37]/20 rounded-full transition-all cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50"
+                          id="quick-read-inline-toggle"
+                          type="button"
+                          onClick={toggleQuickRead}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[9px] font-mono font-bold transition-all cursor-pointer border ${
+                            quickRead
+                              ? "bg-[#ffd754] text-[#001233] border-[#ffd754] shadow-[0_0_8px_rgba(255,215,84,0.3)]"
+                              : "bg-[#001a4d] text-gray-400 border-[#d4af37]/20 hover:text-white hover:border-[#d4af37]/50"
+                          }`}
+                          title="Toggle Quick Read: Condensed summaries vs detailed legal responses"
                         >
-                          {qp.label}
+                          <Zap className={`w-3 h-3 ${quickRead ? "text-[#001233] fill-current" : "text-[#ffd754]"}`} />
+                          <span>Quick Read</span>
+                          <span className={`text-[7.5px] px-1 py-0.2 rounded font-sans uppercase font-bold ${
+                            quickRead ? "bg-[#001233] text-[#ffd754]" : "bg-[#001233] text-gray-400"
+                          }`}>
+                            {quickRead ? "ON" : "OFF"}
+                          </span>
                         </button>
-                      ))}
+                        <span className="text-[8.5px] font-mono text-gray-400 hidden sm:inline">
+                          {quickRead ? "⚡ Brief Mode Active" : "📚 Detailed Mode Active"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar select-none py-0.5">
+                        <span className="text-[8px] font-mono text-[#d4af37] shrink-0 uppercase tracking-wider font-bold">Quick:</span>
+                        {QUICK_PROMPTS.map((qp, qpIdx) => (
+                          <button
+                            key={qpIdx}
+                            onClick={() => handleSubmit(undefined, qp.text)}
+                            disabled={loading}
+                            className="shrink-0 text-[9px] font-mono px-2 py-0.5 bg-[#001a4d] hover:bg-[#d4af37] text-gray-300 hover:text-[#001233] border border-[#d4af37]/20 rounded-full transition-all cursor-pointer whitespace-nowrap active:scale-95 disabled:opacity-50"
+                          >
+                            {qp.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Form input */}

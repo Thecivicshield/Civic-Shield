@@ -200,13 +200,44 @@ async function syncWithFirestore() {
 }
 syncWithFirestore();
 
-// Dynamic Gemini Client getter (supports dynamic or runtime environment keys)
+// Dynamic Gemini Client getter (supports dynamic or runtime environment keys like GEMINI_API_KEY1)
+function getGeminiApiKey(): string | null {
+  const candidates = [
+    process.env.GEMINI_API_KEY1,
+    process.env.gemini_api_key_1,
+    process.env["GEMINI_API_KEY_1"],
+    process.env["gemini api key 1"],
+    process.env.GEMINI_API_KEY,
+    process.env.gemini_api_key
+  ];
+
+  for (const raw of candidates) {
+    if (raw && typeof raw === "string" && raw.trim().length > 0) {
+      const cleaned = raw.replace(/^["']|["']$/g, "").trim();
+      if (cleaned.length > 0) return cleaned;
+    }
+  }
+
+  // Scan case-insensitively
+  for (const key of Object.keys(process.env)) {
+    const lower = key.toLowerCase().replace(/[\s_-]+/g, "");
+    if (lower.includes("gemini") && (lower.includes("key1") || lower.includes("key") || lower.includes("1"))) {
+      const val = process.env[key];
+      if (val && typeof val === "string" && val.trim().length > 0) {
+        return val.replace(/^["']|["']$/g, "").trim();
+      }
+    }
+  }
+
+  return null;
+}
+
 function getGeminiClient(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (apiKey && apiKey.trim().length > 0) {
+  const apiKey = getGeminiApiKey();
+  if (apiKey && apiKey.length > 0) {
     try {
       return new GoogleGenAI({
-        apiKey: apiKey.trim(),
+        apiKey,
         httpOptions: {
           headers: {
             "User-Agent": "aistudio-build",
@@ -1059,8 +1090,22 @@ Civic Shield Alert System`;
 }
 
 // AI Legal Advice Engine with Google GenAI & Multi-Tier Resilient Pipeline
-async function generateAiLegalAnswer(text: string, history: Array<{ role: string; content: string }> = []): Promise<{ answer: string; repliedBy: string; sources?: Array<{ title: string; url: string }> }> {
-  const systemInstruction = `You are the Official AI Legal Advocate & Constitutional Advisor for Civic Shield (https://thecivicshield.org).
+async function generateAiLegalAnswer(
+  text: string, 
+  history: Array<{ role: string; content: string }> = [],
+  quickRead: boolean = false
+): Promise<{ answer: string; repliedBy: string; sources?: Array<{ title: string; url: string }> }> {
+  const systemInstruction = quickRead
+    ? `You are the Official AI Legal Advocate & Constitutional Advisor for Civic Shield (https://thecivicshield.org) operating in "Quick Read / Executive Brief" mode.
+The citizen requires a fast, high-level, ultra-condensed summary for immediate situational awareness (e.g., roadside traffic stop, urgent police questioning, rapid legal triage).
+
+STRICT CONDENSED FORMAT (Keep under 140 words total):
+⚡ **DIRECT VERDICT / BOTTOM LINE**: Exactly 1-2 punchy, unambiguous sentences answering the question directly.
+⚖️ **CORE LEGAL RIGHTS & STATUTES**: Exactly 2-3 brief bullet points (maximum 1 line each) highlighting the essential Articles/Sections/Precedents (e.g., Art 21, Sec 185 BNSS/165 CrPC, Puttaswamy).
+🎯 **WHAT TO DO / WHAT TO SAY**: A single, assertive, polite 1-2 sentence script or concrete action the citizen should immediately use.
+
+Do NOT provide lengthy historical background, academic treatise, or filler. Deliver only high-impact, actionable, scannable clarity.`
+    : `You are the Official AI Legal Advocate & Constitutional Advisor for Civic Shield (https://thecivicshield.org).
 You function as an intelligent, empathetic, authoritative, and practical AI legal assistant (similar to ChatGPT / Gemini) tailored for public legal literacy, constitutional rights, administrative justice, police interactions, RTI, tenant rights, consumer protection, and pro-se self-representation.
 
 Core Guidelines:
@@ -1108,51 +1153,11 @@ Core Guidelines:
       });
     }
 
-    // Step 1: Attempt Google Search Grounding with Gemini 3.8 Flash
-    // If search grounding hits plan rate limits / 429 quota, gracefully fall back to direct model generation
-    try {
-      const searchResponse = await geminiAi.models.generateContent({
-        model: "gemini-3.8-flash",
-        contents: formattedContents,
-        config: {
-          systemInstruction,
-          temperature: 0.5,
-          tools: [{ googleSearch: {} }]
-        }
-      });
-
-      if (searchResponse.text && searchResponse.text.trim().length > 0) {
-        const candidate = searchResponse.candidates?.[0];
-        const groundingChunks = (candidate as any)?.groundingMetadata?.groundingChunks;
-        const sources: Array<{ title: string; url: string }> = [];
-        if (Array.isArray(groundingChunks)) {
-          for (const chunk of groundingChunks) {
-            if (chunk.web?.uri) {
-              sources.push({
-                title: chunk.web.title || chunk.web.uri,
-                url: chunk.web.uri
-              });
-            }
-          }
-        }
-
-        return {
-          answer: searchResponse.text.trim(),
-          repliedBy: sources.length > 0
-            ? "AI Legal Advocate (Gemini 3.8 Flash + Google Search)"
-            : "AI Legal Advocate (Gemini 3.8 Flash)",
-          sources
-        };
-      }
-    } catch {
-      // If search grounding is quota-limited or temporarily unavailable, continue seamlessly to direct models
-    }
-
-    // Step 2: High-availability direct generation models
+    // Direct generation models (Gemini 3.1 Flash Lite, 3.8 Flash, 3.6 Flash)
     const directModels = [
+      { name: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash Lite" },
       { name: "gemini-3.8-flash", label: "Gemini 3.8 Flash" },
       { name: "gemini-3.6-flash", label: "Gemini 3.6 Flash" },
-      { name: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash Lite" },
       { name: "gemini-flash-latest", label: "Gemini Flash" }
     ];
 
@@ -1164,14 +1169,15 @@ Core Guidelines:
             contents: formattedContents,
             config: {
               systemInstruction,
-              temperature: 0.5,
+              temperature: quickRead ? 0.3 : 0.6,
+              maxOutputTokens: quickRead ? 600 : 1800,
             }
           });
 
           if (response.text && response.text.trim().length > 0) {
             return {
               answer: response.text.trim(),
-              repliedBy: `AI Legal Advocate (${modelConfig.label})`
+              repliedBy: `AI Legal Advocate (${modelConfig.label}${quickRead ? " • Quick Read" : ""})`
             };
           }
         } catch (modelErr: any) {
@@ -1213,8 +1219,8 @@ Core Guidelines:
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages,
-          max_tokens: 700,
-          temperature: 0.6
+          max_tokens: quickRead ? 280 : 700,
+          temperature: quickRead ? 0.3 : 0.6
         })
       });
 
@@ -1224,7 +1230,7 @@ Core Guidelines:
         if (content && content.trim()) {
           return {
             answer: content.trim(),
-            repliedBy: "AI Legal Advocate (OpenAI GPT-4o)"
+            repliedBy: `AI Legal Advocate (OpenAI GPT-4o${quickRead ? " • Quick Read" : ""})`
           };
         }
       }
@@ -1236,9 +1242,25 @@ Core Guidelines:
   // Tier 3: Autonomous Dynamic Legal Knowledge Engine
   const autoMatch = getAutonomousLegalResponse(text);
   if (autoMatch.answered && autoMatch.answer) {
+    let answerText = autoMatch.answer;
+    if (quickRead) {
+      const lines = answerText.split("\n").filter(l => l.trim().length > 0);
+      const topLines = lines.slice(0, 4).join("\n");
+      answerText = `⚡ **Quick Read Summary**\n\n${topLines}\n\n*Toggle off Quick Read for complete statutory provisions.*`;
+    }
     return {
-      answer: autoMatch.answer,
-      repliedBy: autoMatch.repliedBy || "AI Legal Advocate (Civic Shield Engine)"
+      answer: answerText,
+      repliedBy: (autoMatch.repliedBy || "AI Legal Advocate (Civic Shield Engine)") + (quickRead ? " • Quick Read" : "")
+    };
+  }
+
+  if (quickRead) {
+    return {
+      answer: `⚡ **Quick Read Summary: "${text.trim()}"**\n\n` +
+        `• **Direct Rule**: Officials must possess explicit statutory jurisdiction for any order. You always have the legal right to ask for the authorizing section.\n` +
+        `• **Constitutional Anchors**: Device privacy is protected under Article 21; right against self-incrimination is protected under Article 20(3). Recording in public is protected under Article 19(1)(a).\n` +
+        `• **What to Say**: *"Officer, I am cooperating with lawful directives. Please cite the specific statutory section authorizing this request."*`,
+      repliedBy: "AI Legal Advocate (Civic Shield Engine • Quick Read)"
     };
   }
 
@@ -1255,12 +1277,17 @@ Core Guidelines:
 // Interactive Multi-Turn AI Chat Endpoint (ChatGPT / Gemini style)
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, quickRead } = req.body;
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return res.status(400).json({ error: "Message cannot be empty." });
     }
 
-    const aiResult = await generateAiLegalAnswer(message.trim(), Array.isArray(history) ? history : []);
+    const isQuickRead = Boolean(quickRead);
+    const aiResult = await generateAiLegalAnswer(
+      message.trim(), 
+      Array.isArray(history) ? history : [],
+      isQuickRead
+    );
     
     // Track chat interaction count in visitor stats
     ensureVisitorStats();
@@ -1274,7 +1301,8 @@ app.post("/api/chat", async (req, res) => {
       success: true,
       answer: aiResult.answer,
       repliedBy: aiResult.repliedBy,
-      sources: aiResult.sources || []
+      sources: aiResult.sources || [],
+      quickRead: isQuickRead
     });
   } catch (error: any) {
     console.error("Error in /api/chat:", error);

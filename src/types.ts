@@ -85,6 +85,7 @@ export interface ChatMessage {
   time: string;
   sources?: Array<{ title: string; url: string }>;
   isGrounded?: boolean;
+  isQuickRead?: boolean;
 }
 
 export interface NewsletterSub {
