@@ -27,12 +27,12 @@ export default function FilingCabinetSection({
     switch (tab) {
       case "study":
         return {
-          title: "DRAWER I: STUDY CENTER",
+          title: "DRAWER I: STUDY CURRICULUM",
           code: "FILE-ARCHIVE-001 // SEC-A",
-          sub: "Mission Axioms, Foundational Pillars & Constitutional Network",
-          stamp: "VERIFIED MANDATES",
+          sub: "Rights, Rules, Regulations, Responsibilities & Definitions",
+          stamp: "LEGAL CURRICULUM",
           badgeColor: "border-[#d4af37] text-[#ffd754]",
-          desc: "Unsealed constitutional records and citizen legal literacy foundations."
+          desc: "Comprehensive study curriculum: learn citizen rights, police rules, and legal concepts with practical examples."
         };
       case "vault":
         return {

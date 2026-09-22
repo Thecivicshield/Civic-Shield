@@ -115,7 +115,7 @@ const DEFAULT_MYTHS: CivicMisconception[] = [
   {
     question: "Does an advocate assigned through the District Legal Services Authority (DLSA) have the right to demand separate filing fees or research markups?",
     myth: "MYTH: State-provided legal aid permits retroactive back-billing or supplementary fee demands from citizens.",
-    answerOnTrue: "No. Services provided through the SLSA, DLSA, or Supreme Court Legal Services Committee are 100% free of charge to eligible persons. Any request by an assigned advocate for private payments constitutes a severe professional misconduct under BCI rules."
+    answerOnTrue: "No. Services provided through the SLSA, DLSA, or Supreme Court Legal Services Committee are provided without private fees to eligible persons. Any request by an assigned advocate for private payments constitutes a severe professional misconduct under BCI rules."
   },
   {
     question: "Can the police detain you indefinitely at a local station without showing you to a judge as long as they call it questioning?",

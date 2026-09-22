@@ -1451,7 +1451,7 @@ export default function ConstitutionalNetwork() {
                           <Scroll className="w-4 h-4 text-black" /> Claim Sovereignty Certificate
                         </button>
                         <p className="text-center font-mono text-[7px] text-emerald-400 uppercase tracking-widest">
-                          ★ 100% LEGAL LITERCY CLEARANCE LOGGED
+                          ★ FULL LEGAL LITERACY CLEARANCE LOGGED
                         </p>
                       </motion.div>
                     );

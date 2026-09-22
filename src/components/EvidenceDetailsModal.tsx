@@ -355,12 +355,12 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
                   REGISTRY ID: X_{(item.id || "").slice(0, 8).toUpperCase()}
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                   <a
                     href={item.fileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3.5 py-1.5 bg-[#00f0ff]/10 hover:bg-[#00f0ff] text-[#00f0ff] hover:text-[#000d26] font-mono font-extrabold uppercase tracking-widest text-[9px] rounded-sm border border-[#00f0ff]/30 transition-all flex items-center gap-1.5"
+                    className="flex-1 sm:flex-initial px-3.5 py-2 sm:py-1.5 bg-[#00f0ff]/10 hover:bg-[#00f0ff] text-[#00f0ff] hover:text-[#000d26] font-mono font-extrabold uppercase tracking-widest text-[9px] rounded-sm border border-[#00f0ff]/30 transition-all flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
                     referrerPolicy="no-referrer"
                   >
                     <ExternalLink className="w-3 h-3" /> Raw Database File
@@ -368,7 +368,7 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
                   <a
                     href={item.fileUrl}
                     download
-                    className="px-3.5 py-1.5 bg-[#d4af37]/15 hover:bg-[#d4af37] text-[#ffd754] hover:text-[#000d26] font-mono font-extrabold uppercase tracking-widest text-[9px] rounded-sm border border-[#d4af37]/30 transition-all flex items-center gap-1.5"
+                    className="flex-1 sm:flex-initial px-3.5 py-2 sm:py-1.5 bg-[#d4af37]/15 hover:bg-[#d4af37] text-[#ffd754] hover:text-[#000d26] font-mono font-extrabold uppercase tracking-widest text-[9px] rounded-sm border border-[#d4af37]/30 transition-all flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0"
                     referrerPolicy="no-referrer"
                   >
                     <Download className="w-3 h-3" /> Raw Download
@@ -378,7 +378,7 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
             </div>
 
             {/* Right Column: Advanced Glassmorphic Metadata & Controls */}
-            <div className="md:col-span-5 flex flex-col justify-between overflow-y-auto bg-gradient-to-b from-[#00173f]/60 to-[#000a1d]/85 p-6 relative h-auto md:h-full">
+            <div className="md:col-span-5 flex flex-col justify-between overflow-y-auto bg-gradient-to-b from-[#00173f]/60 to-[#000a1d]/85 p-4 sm:p-6 relative h-auto md:h-full">
               {/* Back button/close button on top of column */}
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xs font-mono font-extrabold text-[#ffd754] tracking-widest uppercase flex items-center gap-1.5">
@@ -389,7 +389,7 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
                   {/* Bookmark CTA */}
                   <button
                     onClick={handleToggleBookmark}
-                    className={`p-1.5 rounded-sm border transition-all cursor-pointer ${
+                    className={`p-2 sm:p-1.5 rounded-sm border transition-all cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center ${
                       isBookmarked
                         ? "bg-[#ff0080]/20 border-[#ff0080] text-[#ff0080]"
                         : "bg-[#001233] border-[#d4af37]/20 text-[#ffd754] hover:bg-[#d4af37]/10"
@@ -401,7 +401,7 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
                   
                   <button
                     onClick={onClose}
-                    className="px-2.5 py-1 rounded-sm bg-[#001233] hover:bg-[#d4af37]/20 text-[#ffd754] hover:text-white border border-[#d4af37]/35 transition-all cursor-pointer font-mono text-[9.5px] uppercase tracking-wider font-bold"
+                    className="px-3 py-2 sm:px-2.5 sm:py-1 rounded-sm bg-[#001233] hover:bg-[#d4af37]/20 text-[#ffd754] hover:text-white border border-[#d4af37]/35 transition-all cursor-pointer font-mono text-[9.5px] uppercase tracking-wider font-bold min-h-[44px] sm:min-h-0 flex items-center justify-center"
                     title="Return to Vault"
                   >
                     Return to Vault
@@ -421,7 +421,7 @@ export default function EvidenceDetailsModal({ item, isOpen, onClose }: Evidence
                     <HolographicVerifiedBadge verifiedBy={item.verifiedBy} />
                   )}
                   <div className="text-[8px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-sm uppercase tracking-widest font-extrabold flex items-center gap-1">
-                    <CheckCircle2 className="w-2.5 h-2.5" /> 100% CIVIL SOUND
+                    <CheckCircle2 className="w-2.5 h-2.5" /> VERIFIED CIVIL RECORD
                   </div>
                 </div>
               </div>

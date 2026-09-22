@@ -262,7 +262,7 @@ export default function PillarsSection({
           </motion.div>
         )}
 
-        {/* CALLOUT TO OPEN THE BOOK OF STRATEGIC GOALS */}
+        {/* CALLOUT TO OPEN THE CIVIC READING LIBRARY */}
         {onOpenBookModal && (
           <div className="text-center pt-4">
             <button
@@ -273,7 +273,7 @@ export default function PillarsSection({
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#00173d] border border-[#d4af37]/50 text-[#ffd754] hover:bg-[#d4af37] hover:text-[#001a4d] transition-all font-mono text-xs font-bold uppercase tracking-wider cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]"
             >
               <BookOpen className="w-4 h-4" />
-              <span>Inspect Strategic Goals Codex (6 Directives)</span>
+              <span>Open Civic Library (Handbook of Rights, Goals & Mission)</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </button>
           </div>

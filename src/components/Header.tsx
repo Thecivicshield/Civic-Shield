@@ -56,7 +56,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
 
   // Track which section is currently active via scroll Intersection Observer
   useEffect(() => {
-    const sections = ["pillars", "impact-metrics", "justice-shield", "evidence", "blog", "timeline"];
+    const sections = ["introduction", "study", "impact-metrics", "justice-shield", "evidence", "blog", "timeline"];
     const observerOptions = {
       root: null,
       rootMargin: "-30% 0px -40% 0px", // triggers when section dominates screen
@@ -208,7 +208,8 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
   };
 
   const navLinks = [
-    { name: "About Us", href: "#pillars", targetId: "pillars" },
+    { name: "Introduction", href: "#introduction", targetId: "introduction" },
+    { name: "Study Rights & Law", href: "#study", targetId: "study" },
     { name: "Evidence Vault", href: "#evidence", targetId: "evidence" },
     { name: "Scenario Shield", href: "#justice-shield", targetId: "justice-shield" },
     { name: "Impact Ledger", href: "#impact-metrics", targetId: "impact-metrics" },
@@ -342,30 +343,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
               </a>
             );
           })}
-
-          {/* Handbook of Rights: like every other button with just a subtle difference */}
-          <button
-            type="button"
-            onClick={handleOpenHandbook}
-            className="relative text-[11px] font-bold tracking-wider uppercase h-full flex items-center gap-1.5 transition-colors duration-300 text-[#ffd754]/90 hover:text-white cursor-pointer group select-none"
-            title="Open Citizen Handbook of Rights"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#d4af37] group-hover:text-[#ffd754] transition-colors" />
-            <span>Handbook of Rights</span>
-            <span className="w-1 h-1 rounded-full bg-[#d4af37]/70 group-hover:bg-[#ffd754] transition-colors" />
-          </button>
-
-          {/* Our Goals: like every other button with just a subtle difference */}
-          <button
-            type="button"
-            onClick={handleOpenGoals}
-            className="relative text-[11px] font-bold tracking-wider uppercase h-full flex items-center gap-1.5 transition-colors duration-300 text-[#ffd754]/90 hover:text-white cursor-pointer group select-none"
-            title="Inspect Strategic Goals & Directives"
-          >
-            <Target className="w-3.5 h-3.5 text-[#d4af37] group-hover:text-[#ffd754] transition-colors" />
-            <span>Our Goals</span>
-            <span className="w-1 h-1 rounded-full bg-[#d4af37]/70 group-hover:bg-[#ffd754] transition-colors" />
-          </button>
         </nav>
 
         {/* Campaign Admin Switch & Hamburger Icon */}
@@ -387,7 +364,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
             onClick={handleToggleClick}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-sm text-[10.5px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer border ${
+            className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-sm text-[10.5px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer border min-h-[44px] shrink-0 ${
               isAdminMode 
                 ? "bg-[#d4af37] text-[#001a4d] border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.35)]" 
                 : "bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-[#001a4d] border-[#d4af37]/45"
@@ -411,10 +388,11 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
           {/* Hamburger Mobile Menu Toggle */}
           <motion.button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 text-gray-400 hover:text-white hover:bg-white/5 rounded-sm md:hidden cursor-pointer"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-sm md:hidden cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
             whileTap={{ scale: 0.92 }}
           >
-            {mobileMenuOpen ? <X className="w-5 h-5 text-[#d4af37]" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-6 h-6 text-[#d4af37]" /> : <Menu className="w-6 h-6" />}
           </motion.button>
         </div>
       </div>
@@ -430,32 +408,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
             className="absolute top-full left-0 right-0 bg-[#001233]/98 border-b border-[#d4af37]/25 overflow-hidden md:hidden shadow-2xl z-40 backdrop-blur-lg"
           >
             <div className="px-4 py-6 space-y-3 flex flex-col">
-              {/* Handbook of Rights (Mobile) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleOpenHandbook();
-                }}
-                className="text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center gap-2 text-[#ffd754] border-[#d4af37] hover:text-white transition-colors cursor-pointer text-left"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
-                <span>Handbook of Rights</span>
-              </button>
-
-              {/* Our Goals (Mobile) */}
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleOpenGoals();
-                }}
-                className="text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center gap-2 text-[#ffd754] border-[#d4af37] hover:text-white transition-colors cursor-pointer text-left"
-              >
-                <Target className="w-4 h-4 text-[#d4af37]" />
-                <span>Our Goals</span>
-              </button>
-
               {navLinks.map((link, idx) => {
                 const isActive = activeSection === link.targetId;
                 return (

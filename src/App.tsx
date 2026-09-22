@@ -9,7 +9,6 @@ import { AnimatePresence, motion } from "motion/react";
 import Header from "./components/Header";
 import AnonymousChat from "./components/AnonymousChat";
 import EvidenceSection from "./components/EvidenceSection";
-import PillarsSection from "./components/PillarsSection";
 import TimelineSection from "./components/TimelineSection";
 import BlogSection from "./components/BlogSection";
 import NewsletterSection from "./components/NewsletterSection";
@@ -29,9 +28,9 @@ import AchievementToast from "./components/AchievementToast";
 import LawBlueprint from "./components/LawBlueprint";
 import FloatingScrollIndicator from "./components/FloatingScrollIndicator";
 import ConstitutionalNetwork from "./components/ConstitutionalNetwork";
-import BookOfGoalsModal from "./components/BookOfGoalsModal";
-import BookWidget from "./components/BookWidget";
-import VintageBookWidget from "./components/VintageBookWidget";
+import CivicBookReaderModal from "./components/CivicBookReaderModal";
+import IntroductionSection from "./components/IntroductionSection";
+import StudySection from "./components/StudySection";
 import FilingCabinetSection from "./components/FilingCabinetSection";
 import BlueprintSectionTransition from "./components/BlueprintSectionTransition";
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -43,6 +42,8 @@ import { playSynthSound } from "./components/JusticeShieldSection";
 export default function App() {
   const [data, setData] = useState<CivicShieldData | null>(null);
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [readerVolume, setReaderVolume] = useState<"rights" | "goals" | "mission">("rights");
+  const [readerChapterIndex, setReaderChapterIndex] = useState(0);
   const [bookInitialGoalIndex, setBookInitialGoalIndex] = useState(0);
   const [activeFolderTab, setActiveFolderTab] = useState<"study" | "vault" | "dispatch">("study");
   const [mobileSectionFilter, setMobileSectionFilter] = useState<string>("pillars");
@@ -91,7 +92,10 @@ export default function App() {
     const handleTargetSwitch = (target: string) => {
       if (!target) return;
       const lower = target.toLowerCase();
-      if (
+      if (lower === "introduction" || lower.includes("intro")) {
+        const el = document.getElementById("introduction");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
+      } else if (
         lower === "evidence" || 
         lower === "justice-shield" || 
         lower === "impact-metrics" || 
@@ -110,22 +114,35 @@ export default function App() {
           setMobileSectionFilter("evidence");
         }
       } else if (
-        lower === "pillars" || 
+        lower === "study" || 
+        lower === "study-curriculum" || 
         lower === "constitutional-network" || 
-        lower.includes("pillar") || 
+        lower.includes("study") || 
+        lower.includes("right") || 
+        lower.includes("rule") || 
+        lower.includes("regulat") || 
+        lower.includes("responsib") || 
+        lower.includes("definit") || 
         lower.includes("law") || 
         lower.includes("case") || 
-        lower.includes("network") || 
-        lower.includes("study") || 
-        lower.includes("about") || 
-        lower.includes("charter")
+        lower.includes("network")
       ) {
         setActiveFolderTab("study");
         if (lower === "constitutional-network" || lower.includes("network")) {
           setMobileSectionFilter("constitutional-network");
         } else {
-          setMobileSectionFilter("pillars");
+          setMobileSectionFilter("study-curriculum");
         }
+      } else if (
+        lower === "reading-library" || 
+        lower.includes("library") || 
+        lower.includes("book") || 
+        lower.includes("handbook") || 
+        lower.includes("goal")
+      ) {
+        // Books reside strictly in the Introduction section
+        const el = document.getElementById("introduction") || document.getElementById("reading-library");
+        if (el) el.scrollIntoView({ behavior: "smooth" });
       } else if (
         lower === "blog" || 
         lower === "timeline" || 
@@ -185,27 +202,59 @@ export default function App() {
     // Run once on load
     handleHashChange();
 
-    const handleOpenBookEvent = (e: Event) => {
+    const handleOpenCivicBookUnified = (volume: "rights" | "goals" | "mission", chapterIndex: number = 0) => {
+      setReaderVolume(volume);
+      setReaderChapterIndex(chapterIndex);
+      setIsBookModalOpen(true);
+    };
+
+    const handleOpenBookGoalsEvent = (e: Event) => {
       try {
         const detail = (e as CustomEvent)?.detail;
-        if (detail?.initialIndex !== undefined) {
-          setBookInitialGoalIndex(detail.initialIndex);
-        }
-        setIsBookModalOpen(true);
+        handleOpenCivicBookUnified("goals", detail?.initialIndex ?? 0);
       } catch (err) {
-        console.warn("Error handling open book event:", err);
+        console.warn("Error handling open book of goals event:", err);
       }
     };
 
-    window.addEventListener("open-book-of-goals", handleOpenBookEvent as EventListener);
+    const handleOpenHandbookRightsEvent = () => {
+      handleOpenCivicBookUnified("rights", 0);
+    };
+
+    const handleOpenBookMissionEvent = () => {
+      handleOpenCivicBookUnified("mission", 0);
+    };
+
+    const handleOpenCivicBookCustomEvent = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent)?.detail;
+        handleOpenCivicBookUnified(detail?.volume || "rights", detail?.chapterIndex ?? 0);
+      } catch (err) {
+        console.warn("Error handling open civic book custom event:", err);
+      }
+    };
+
+    window.addEventListener("open-book-of-goals", handleOpenBookGoalsEvent as EventListener);
+    window.addEventListener("open-handbook-of-rights", handleOpenHandbookRightsEvent as EventListener);
+    window.addEventListener("open-book-of-mission", handleOpenBookMissionEvent as EventListener);
+    window.addEventListener("open-civic-book", handleOpenCivicBookCustomEvent as EventListener);
 
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
       window.removeEventListener("popstate", handleHashChange);
       window.removeEventListener("trigger-cabinet-nav", handleCabinetNavEvent as EventListener);
-      window.removeEventListener("open-book-of-goals", handleOpenBookEvent as EventListener);
+      window.removeEventListener("open-book-of-goals", handleOpenBookGoalsEvent as EventListener);
+      window.removeEventListener("open-handbook-of-rights", handleOpenHandbookRightsEvent as EventListener);
+      window.removeEventListener("open-book-of-mission", handleOpenBookMissionEvent as EventListener);
+      window.removeEventListener("open-civic-book", handleOpenCivicBookCustomEvent as EventListener);
     };
   }, [data]);
+
+  const handleOpenCivicBook = (volume: "rights" | "goals" | "mission", chapterIndex: number = 0) => {
+    setReaderVolume(volume);
+    setReaderChapterIndex(chapterIndex);
+    setIsBookModalOpen(true);
+  };
 
   const handleEnterWebsite = (sectionId?: string) => {
     setShowIntro(false);
@@ -229,12 +278,12 @@ export default function App() {
 
   // Sync mobileSectionFilter when activeFolderTab changes
   useEffect(() => {
-    const sectionsForStudy = ["pillars", "constitutional-network"];
+    const sectionsForStudy = ["study-curriculum", "constitutional-network"];
     const sectionsForVault = ["evidence", "justice-shield", "impact-metrics"];
     const sectionsForDispatch = ["blog", "timeline", "social-feed", "newsletter"];
 
     if (activeFolderTab === "study" && !sectionsForStudy.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
-      setMobileSectionFilter("pillars");
+      setMobileSectionFilter("study-curriculum");
     } else if (activeFolderTab === "vault" && !sectionsForVault.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
       setMobileSectionFilter("evidence");
     } else if (activeFolderTab === "dispatch" && !sectionsForDispatch.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
@@ -912,183 +961,30 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. HERO SECTION (Clean, elegant typography layout without the shield graphic) */}
-        {sortedBlocks
-          .filter((block) => block.id === "hero" && block.visible)
-          .map((block) => {
-            const titleText = block.customData.heroTitle || "CIVIC SHIELD";
-            const titleChars = Array.from(titleText);
-            return (
-              <section 
-                key={block.id}
-                className="relative py-10 sm:py-24 flex flex-col items-center justify-center overflow-hidden border-b border-[#d4af37]/25 text-center select-none bg-[#001233]"
-                style={{ 
-                  background: `radial-gradient(circle at center, #001a4d 0%, #001233 70%, #000a1a 100%)` 
-                }}
-              >
-                {/* Glowing background highlights and gold sweep layer */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[350px] rounded-full bg-[#d4af37]/[0.03] blur-[140px] pointer-events-none" />
-                
-                {/* Gold Light Sweep */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                  <div className="absolute top-0 bottom-0 w-[45%] bg-gradient-to-r from-transparent via-[#d4af37]/[0.05] to-transparent -skew-x-12 animate-[shimmerSweep_7s_infinite_ease-in-out]" />
-                </div>
-
-                <motion.div 
-                  style={{ y: scrollY * 0.18 }}
-                  className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 space-y-8"
-                >
-                  {/* Big Heading (Editable in-place if Manager Mode is ON) */}
-                  <div className="space-y-4">
-                    {isAdminMode ? (
-                      <div className="space-y-2 border border-dashed border-[#d4af37]/30 p-4 rounded-sm bg-[#001233]/90 max-w-2xl mx-auto">
-                        <span className="text-[9px] uppercase font-mono text-[#d4af37] font-bold block mb-1">Edit Banner Title & Subtitle</span>
-                        <input
-                          type="text"
-                          value={block.customData.heroTitle || ""}
-                          onChange={(e) => handleUpdateBlockData("hero", { heroTitle: e.target.value })}
-                          className="w-full text-center bg-[#001a4d] text-base font-serif font-semibold text-white focus:border-[#d4af37] focus:outline-none border border-[#d4af37]/20 rounded-sm px-2 py-1 uppercase tracking-wider"
-                        />
-                        <input
-                          type="text"
-                          value={block.customData.heroSubtitle || ""}
-                          onChange={(e) => handleUpdateBlockData("hero", { heroSubtitle: e.target.value })}
-                          className="w-full text-center bg-[#001a4d] text-xs text-gray-300 focus:border-[#d4af37] focus:outline-none border border-[#d4af37]/20 rounded-sm px-2 py-1 font-sans"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center">
-                        {/* Letter-by-letter title reveal */}
-                        <h1 className="text-4xl sm:text-6xl font-serif font-normal italic tracking-tight text-white leading-tight flex flex-wrap justify-center gap-x-1.5 max-w-3xl">
-                          {titleChars.map((char, charIdx) => (
-                            <motion.span
-                              key={charIdx}
-                              initial={{ opacity: 0, y: 15, filter: "blur(4px)" }}
-                              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                              transition={{
-                                duration: 0.6,
-                                delay: charIdx * 0.035,
-                                ease: [0.16, 1, 0.3, 1],
-                              }}
-                              className="inline-block select-text"
-                            >
-                              {char === " " ? "\u00A0" : char}
-                            </motion.span>
-                          ))}
-                        </h1>
-                        <motion.p 
-                          initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                          transition={{ 
-                            delay: Math.max(0.4, titleChars.length * 0.02), 
-                            duration: 0.85,
-                            ease: [0.16, 1, 0.3, 1]
-                          }}
-                          className="max-w-2xl mx-auto text-xs sm:text-sm text-gray-300 leading-relaxed font-sans font-light mt-4 select-text"
-                        >
-                          {block.customData.heroSubtitle}
-                        </motion.p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Urgent Action Alert / Notice block (Editable in-place) */}
-                  {block.customData.heroAlertText && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.8, duration: 0.6 }}
-                      className="max-w-3xl mx-auto p-4 sm:p-5 rounded-sm bg-[#d4af37]/10 border border-[#d4af37]/35 text-[#d4af37] space-y-1 text-center shadow-xl relative overflow-hidden flex flex-col sm:flex-row items-center gap-3 justify-center"
-                    >
-                      <AlertCircle className="w-5 h-5 shrink-0 text-[#d4af37] animate-pulse" />
-                      {isAdminMode ? (
-                        <div className="flex-1 text-left">
-                          <span className="text-[8px] uppercase font-mono text-[#d4af37] block mb-1">Edit Banner Notice Bubble</span>
-                          <textarea
-                            value={block.customData.heroAlertText || ""}
-                            onChange={(e) => handleUpdateBlockData("hero", { heroAlertText: e.target.value })}
-                            rows={2}
-                            className="w-full bg-[#001233]/90 border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none text-xs text-[#d4af37] rounded-sm p-1.5 font-sans"
-                          />
-                        </div>
-                      ) : (
-                        <p className="text-xs sm:text-sm font-bold leading-relaxed tracking-wide font-sans select-text">
-                          {block.customData.heroAlertText}
-                        </p>
-                      )}
-                    </motion.div>
-                  )}
-
-                  {/* Interactive Vintage Handbook Book Widget */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
-                    className="pt-2 flex justify-center"
-                  >
-                    <VintageBookWidget accentColor={accentColor} />
-                  </motion.div>
-
-                  {/* CTAs with Stagger animation */}
-                  <motion.div 
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ 
-                      delay: Math.max(0.6, titleChars.length * 0.025 + 0.25), 
-                      duration: 0.6,
-                      type: "spring",
-                      stiffness: 100,
-                      damping: 15
-                    }}
-                    className="flex flex-wrap items-center justify-center gap-3.5 pt-2"
-                  >
-                    <PremiumButton 
-                      href="#cabinet-stage" 
-                      variant="gold"
-                      onClick={(e) => {
-                        e?.preventDefault?.();
-                        setActiveFolderTab("vault");
-                        window.dispatchEvent(new CustomEvent("trigger-cabinet-nav", {
-                          detail: { targetId: "evidence", label: "Browse Vault & Rights" }
-                        }));
-                        setTimeout(() => {
-                          const el = document.getElementById("cabinet-stage") || document.getElementById("evidence");
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 50);
-                      }}
-                    >
-                      Browse Vault & Rights <ArrowUpRight className="w-4 h-4 ml-1 shrink-0" />
-                    </PremiumButton>
-                    <PremiumButton 
-                      href="#cabinet-stage" 
-                      variant="outline"
-                      onClick={(e) => {
-                        e?.preventDefault?.();
-                        setActiveFolderTab("dispatch");
-                        window.dispatchEvent(new CustomEvent("trigger-cabinet-nav", {
-                          detail: { targetId: "blog", label: "Recent Dispatches" }
-                        }));
-                        setTimeout(() => {
-                          const el = document.getElementById("cabinet-stage") || document.getElementById("blog");
-                          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }, 50);
-                      }}
-                    >
-                      Recent Dispatches
-                    </PremiumButton>
-                  </motion.div>
-                </motion.div>
-              </section>
-            );
-          })}
+        {/* 1. INTRODUCTION SECTION: Comprehensive introductory section with project purpose, what users can do, brief intro, and connected books/resources */}
+        <IntroductionSection
+          onOpenBookModal={(vol, chap) => handleOpenCivicBook(vol, chap || 0)}
+          onNavigateToStudy={() => {
+            setActiveFolderTab("study");
+            setMobileSectionFilter("study-curriculum");
+            setTimeout(() => {
+              const el = document.getElementById("study") || document.getElementById("cabinet-stage");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }, 60);
+          }}
+          onNavigateToVault={() => {
+            setActiveFolderTab("vault");
+            setMobileSectionFilter("evidence");
+            setTimeout(() => {
+              const el = document.getElementById("evidence") || document.getElementById("cabinet-stage");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }, 60);
+          }}
+        />
 
         {/* MOBILE QUICK ACTION DECK (Instant 1-tap jump to key tools & dossiers) */}
         <MobileQuickDeck
-          onOpenHandbook={() => window.dispatchEvent(new CustomEvent("open-handbook-of-rights"))}
-          onOpenGoals={() => {
-            setBookInitialGoalIndex(0);
-            setIsBookModalOpen(true);
-          }}
+          onOpenBook={(volume) => handleOpenCivicBook(volume, 0)}
           onNavigateToSection={(tab, section) => {
             setActiveFolderTab(tab);
             setMobileSectionFilter(section);
@@ -1142,22 +1038,11 @@ export default function App() {
                 switch (block.id) {
                   case "pillars":
                     return (
-                      <PillarsSection
-                        key={block.id}
-                        pillars={block.customData.pillars || []}
-                        isAdmin={isAdminMode}
-                        onUpdatePillar={(idx, updated) => {
-                          const originalPillars = block.customData.pillars || [];
-                          const nextPillars = [...originalPillars];
-                          nextPillars[idx] = updated;
-                          handleUpdateBlockData("pillars", { pillars: nextPillars });
-                        }}
-                        onOpenBookModal={(idx) => {
-                          if (idx !== undefined) setBookInitialGoalIndex(idx);
-                          setIsBookModalOpen(true);
-                        }}
-                        accentColor={accentColor}
-                      />
+                      <React.Fragment key={block.id}>
+                        {(!isMobile || mobileViewMode === "all" || mobileSectionFilter === "study-curriculum") && (
+                          <StudySection />
+                        )}
+                      </React.Fragment>
                     );
 
                   case "impact-metrics":
@@ -1347,7 +1232,7 @@ export default function App() {
             <span className="hidden md:inline">•</span>
             <span>NO COOKIE LOGGERS</span>
             <span className="hidden md:inline">•</span>
-            <span>100% LOCAL COMMUNITY FUNDED</span>
+            <span>COMMUNITY FUNDED CIVIC INITIATIVE</span>
           </div>
         </div>
       </footer>
@@ -1355,12 +1240,12 @@ export default function App() {
           {/* ACHIEVEMENT TOAST SYSTEM */}
           <AchievementToast />
 
-          {/* BOOK OF GOALS 3D TOME POPUP MODAL */}
-          <BookOfGoalsModal
+          {/* THE 3-VOLUME CIVIC ARCHIVE INTERACTIVE BOOK READER MODAL */}
+          <CivicBookReaderModal
             isOpen={isBookModalOpen}
             onClose={() => setIsBookModalOpen(false)}
-            initialGoalIndex={bookInitialGoalIndex}
-            accentColor={accentColor}
+            initialVolume={readerVolume}
+            initialChapterIndex={readerChapterIndex}
           />
 
           {/* FLOATING CHAT SYSTEM BOTTOM-RIGHT */}

@@ -286,7 +286,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
     { label: "⚖️ Pro-Se Representation", text: "How do I represent myself in court as a party-in-person without an expensive lawyer?" },
     { label: "📑 Filing an RTI", text: "How do I draft and file an RTI application to get government spending records?" },
     { label: "🏠 Tenant Eviction Shield", text: "Can my landlord evict me without notice or cut off electricity and water?" },
-    { label: "🛡️ Free Legal Aid NALSA", text: "Who qualifies for 100% free legal aid and how can I apply at DLSA/NALSA?" },
+    { label: "🛡️ Statutory Legal Aid NALSA", text: "Who qualifies for statutory legal aid and how can I apply at DLSA/NALSA?" },
     { label: "👮 FIR Registration", text: "What should I do if the police station refuses to register my FIR?" }
   ];
 

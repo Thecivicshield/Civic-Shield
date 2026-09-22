@@ -228,7 +228,7 @@ export const LEGAL_KNOWLEDGE_BASE: LegalKnowledgeTopic[] = [
     statute: "Motor Vehicles Act 1988 (Amended 2019) • Rule 139 Central Motor Vehicles Rules 1989",
     generateResponse: (_query: string) =>
       `### Roadside Traffic Checks & Citizen Protections\n\n` +
-      `1. **Digital Documents are 100% Valid:** Presenting your DL, RC, Insurance, and PUC via government DigiLocker or mParivahan apps is fully recognized under MoRTH rules. Physical confiscation is unlawful for standard checks.\n` +
+      `1. **Digital Documents are Fully Legally Valid:** Presenting your DL, RC, Insurance, and PUC via government DigiLocker or mParivahan apps is fully recognized under MoRTH rules. Physical confiscation is unlawful for standard checks.\n` +
       `2. **Key Snatching is Prohibited:** Traffic personnel cannot forcefully remove the keys from your vehicle's ignition.\n` +
       `3. **Towing With Passenger Inside:** Towing a vehicle while any occupant is inside is strictly prohibited.\n` +
       `4. **Breathalyzer Hygiene:** You are entitled to see a fresh disposable mouthpiece unwrapped before testing.\n` +

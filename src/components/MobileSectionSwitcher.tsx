@@ -27,8 +27,8 @@ export default function MobileSectionSwitcher({
     switch (activeTab) {
       case "study":
         return [
-          { id: "pillars", label: "Foundations & Pillars", icon: "🏛️" },
-          { id: "constitutional-network", label: "Global Network", icon: "🌐" }
+          { id: "study-curriculum", label: "Study Curriculum", icon: "⚖️" },
+          { id: "constitutional-network", label: "Interactive Case Network", icon: "🌐" }
         ];
       case "vault":
         return [
