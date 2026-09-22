@@ -273,6 +273,13 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
     }
   }, [conversation]);
 
+  // Global trigger listener
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener("open-anonymous-chat", handleOpen);
+    return () => window.removeEventListener("open-anonymous-chat", handleOpen);
+  }, []);
+
   const QUICK_PROMPTS = [
     { label: "🚦 Traffic Stop Rights", text: "What are my exact rights during a traffic stop check, and are digital documents on DigiLocker valid?" },
     { label: "🎥 Filming Police", text: "Do I have the constitutional right to record police officers in public spaces?" },
@@ -410,7 +417,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[450] cursor-pointer select-none group"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[450] cursor-pointer select-none group"
           >
             {/* Pulsing aura loops */}
             <div className="absolute inset-0 rounded-full bg-[#d4af37]/25 blur-md animate-ping" />
@@ -456,7 +463,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 25, transition: { duration: 0.18, ease: "easeOut" } }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[450] w-[calc(100vw-2rem)] sm:w-[440px] max-w-[440px] max-h-[85vh] h-[520px] sm:h-[580px] rounded-lg flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(212,175,55,0.25)] overflow-hidden border-2 border-[#d4af37]/60 bg-[#001a4d] font-sans"
+            className="fixed bottom-20 sm:bottom-6 right-2 sm:right-6 z-[450] w-[calc(100vw-1rem)] sm:w-[440px] max-w-[440px] max-h-[80vh] sm:max-h-[85vh] h-[500px] sm:h-[580px] rounded-lg flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(212,175,55,0.25)] overflow-hidden border-2 border-[#d4af37]/60 bg-[#001a4d] font-sans"
           >
             {/* Tech Corner Brackets */}
             <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-[#d4af37]" />

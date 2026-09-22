@@ -85,19 +85,19 @@ export default function FilingCabinetSection({
 
   return (
     <div id="cabinet-stage" className="scroll-mt-24">
-      <div id="filing-cabinet-container" className="max-w-6xl mx-auto px-3 sm:px-6 my-12 relative z-20">
+      <div id="filing-cabinet-container" className="max-w-6xl mx-auto px-3 sm:px-6 my-6 sm:my-12 relative z-20">
       
       {/* Central Records Office Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#ffd754] font-mono text-[10px] uppercase tracking-[0.25em] mb-2 font-bold shadow-sm">
+      <div className="text-center mb-5 sm:mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#ffd754] font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.25em] mb-2 font-bold shadow-sm">
           <Sparkles className="w-3.5 h-3.5" />
           <span>CIVIC SHIELD CENTRAL RECORD OFFICE</span>
         </div>
-        <h3 className="font-serif italic text-2xl sm:text-3xl text-white">
+        <h3 className="font-serif italic text-xl sm:text-3xl text-white">
           Filing Cabinet & Evidence Drawers
         </h3>
-        <p className="text-xs sm:text-sm text-gray-300 font-light mt-1.5 max-w-xl mx-auto">
-          Click any drawer handle to pull open the compartment and inspect unsealed case dossiers.
+        <p className="text-xs sm:text-sm text-gray-300 font-light mt-1 max-w-xl mx-auto">
+          Tap any drawer handle to pull open the compartment and inspect unsealed case dossiers.
         </p>
       </div>
 
@@ -181,27 +181,27 @@ export default function FilingCabinetSection({
         </div>
 
         {/* 3 Drawer Compartment Selector Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-8">
           
           {/* I. STUDY CENTER DRAWER */}
           <button
             id="cabinet-drawer-study"
             type="button"
             onClick={() => handleTabChange("study")}
-            className={`group relative p-4 rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
+            className={`group relative p-2 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
               activeTab === "study"
-                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
+                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-1 sm:ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
                 : "bg-[#030914]/80 border-slate-800/80 text-gray-400 hover:border-[#d4af37]/40 hover:text-white hover:bg-[#08152c]"
             }`}
           >
             {/* Drawer Pull Handle (Brass Hardware Visual) */}
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-16 h-3 rounded-b-md border-b-2 border-x-2 transition-all shadow-md ${
+            <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+              <div className={`w-8 sm:w-16 h-2 sm:h-3 rounded-b-md border-b sm:border-b-2 border-x sm:border-x-2 transition-all shadow-md ${
                 activeTab === "study" 
                   ? "bg-gradient-to-r from-[#d4af37] via-[#ffd754] to-[#d4af37] border-[#fff3b0]" 
                   : "bg-[#182333] border-slate-700 group-hover:border-[#d4af37]/60"
               }`} />
-              <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border uppercase font-bold ${
+              <span className={`font-mono text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded border uppercase font-bold ${
                 activeTab === "study" ? "bg-[#ffd754]/20 border-[#ffd754] text-[#ffd754]" : "bg-black/40 border-slate-800 text-gray-500"
               }`}>
                 01
@@ -210,18 +210,18 @@ export default function FilingCabinetSection({
 
             {/* Label Card Plaque */}
             <div className="space-y-0.5">
-              <h4 className={`font-serif font-bold text-sm sm:text-base leading-tight ${
+              <h4 className={`font-serif font-bold text-xs sm:text-base leading-tight truncate ${
                 activeTab === "study" ? "text-[#ffd754]" : "text-gray-200 group-hover:text-white"
               }`}>
-                I. Study Center
+                Study
               </h4>
-              <p className="text-[11px] text-gray-400 font-light truncate">
+              <p className="text-[11px] text-gray-400 font-light truncate hidden sm:block">
                 Mission Axioms & Network
               </p>
             </div>
 
-            {/* Status indicator bar */}
-            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+            {/* Status indicator bar (desktop only for height conservation) */}
+            <div className="mt-3 pt-2 border-t border-white/5 hidden sm:flex items-center justify-between text-[10px] font-mono">
               <span className={activeTab === "study" ? "text-[#ffd754] font-bold" : "text-gray-500"}>
                 {activeTab === "study" ? "DRAWER PULLED OPEN" : "CLICK TO UNSEAL"}
               </span>
@@ -234,20 +234,20 @@ export default function FilingCabinetSection({
             id="cabinet-drawer-vault"
             type="button"
             onClick={() => handleTabChange("vault")}
-            className={`group relative p-4 rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
+            className={`group relative p-2 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
               activeTab === "vault"
-                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
+                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-1 sm:ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
                 : "bg-[#030914]/80 border-slate-800/80 text-gray-400 hover:border-[#d4af37]/40 hover:text-white hover:bg-[#08152c]"
             }`}
           >
             {/* Drawer Pull Handle (Brass Hardware Visual) */}
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-16 h-3 rounded-b-md border-b-2 border-x-2 transition-all shadow-md ${
+            <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+              <div className={`w-8 sm:w-16 h-2 sm:h-3 rounded-b-md border-b sm:border-b-2 border-x sm:border-x-2 transition-all shadow-md ${
                 activeTab === "vault" 
                   ? "bg-gradient-to-r from-[#d4af37] via-[#ffd754] to-[#d4af37] border-[#fff3b0]" 
                   : "bg-[#182333] border-slate-700 group-hover:border-[#d4af37]/60"
               }`} />
-              <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border uppercase font-bold ${
+              <span className={`font-mono text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded border uppercase font-bold ${
                 activeTab === "vault" ? "bg-[#ffd754]/20 border-[#ffd754] text-[#ffd754]" : "bg-black/40 border-slate-800 text-gray-500"
               }`}>
                 02
@@ -256,18 +256,18 @@ export default function FilingCabinetSection({
 
             {/* Label Card Plaque */}
             <div className="space-y-0.5">
-              <h4 className={`font-serif font-bold text-sm sm:text-base leading-tight ${
+              <h4 className={`font-serif font-bold text-xs sm:text-base leading-tight truncate ${
                 activeTab === "vault" ? "text-[#ffd754]" : "text-gray-200 group-hover:text-white"
               }`}>
-                II. Evidence Vault
+                Vault
               </h4>
-              <p className="text-[11px] text-gray-400 font-light truncate">
+              <p className="text-[11px] text-gray-400 font-light truncate hidden sm:block">
                 Handouts, Simulator & Metrics
               </p>
             </div>
 
-            {/* Status indicator bar */}
-            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+            {/* Status indicator bar (desktop only for height conservation) */}
+            <div className="mt-3 pt-2 border-t border-white/5 hidden sm:flex items-center justify-between text-[10px] font-mono">
               <span className={activeTab === "vault" ? "text-[#ffd754] font-bold" : "text-gray-500"}>
                 {activeTab === "vault" ? "DRAWER PULLED OPEN" : "CLICK TO UNSEAL"}
               </span>
@@ -280,20 +280,20 @@ export default function FilingCabinetSection({
             id="cabinet-drawer-dispatch"
             type="button"
             onClick={() => handleTabChange("dispatch")}
-            className={`group relative p-4 rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
+            className={`group relative p-2 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all cursor-pointer border overflow-hidden ${
               activeTab === "dispatch"
-                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
+                ? "bg-gradient-to-b from-[#1b2b48] via-[#0f1d33] to-[#091120] border-[#ffd754] shadow-[0_0_25px_rgba(212,175,55,0.4)] ring-1 sm:ring-2 ring-[#ffd754]/40 translate-y-[-2px]"
                 : "bg-[#030914]/80 border-slate-800/80 text-gray-400 hover:border-[#d4af37]/40 hover:text-white hover:bg-[#08152c]"
             }`}
           >
             {/* Drawer Pull Handle (Brass Hardware Visual) */}
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-16 h-3 rounded-b-md border-b-2 border-x-2 transition-all shadow-md ${
+            <div className="flex items-center justify-between mb-1.5 sm:mb-3">
+              <div className={`w-8 sm:w-16 h-2 sm:h-3 rounded-b-md border-b sm:border-b-2 border-x sm:border-x-2 transition-all shadow-md ${
                 activeTab === "dispatch" 
                   ? "bg-gradient-to-r from-[#d4af37] via-[#ffd754] to-[#d4af37] border-[#fff3b0]" 
                   : "bg-[#182333] border-slate-700 group-hover:border-[#d4af37]/60"
               }`} />
-              <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded border uppercase font-bold ${
+              <span className={`font-mono text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.5 rounded border uppercase font-bold ${
                 activeTab === "dispatch" ? "bg-[#ffd754]/20 border-[#ffd754] text-[#ffd754]" : "bg-black/40 border-slate-800 text-gray-500"
               }`}>
                 03
@@ -302,18 +302,18 @@ export default function FilingCabinetSection({
 
             {/* Label Card Plaque */}
             <div className="space-y-0.5">
-              <h4 className={`font-serif font-bold text-sm sm:text-base leading-tight ${
+              <h4 className={`font-serif font-bold text-xs sm:text-base leading-tight truncate ${
                 activeTab === "dispatch" ? "text-[#ffd754]" : "text-gray-200 group-hover:text-white"
               }`}>
-                III. Dispatch Room
+                Dispatch
               </h4>
-              <p className="text-[11px] text-gray-400 font-light truncate">
+              <p className="text-[11px] text-gray-400 font-light truncate hidden sm:block">
                 Chronicles, Roadmap & Gazette
               </p>
             </div>
 
-            {/* Status indicator bar */}
-            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+            {/* Status indicator bar (desktop only for height conservation) */}
+            <div className="mt-3 pt-2 border-t border-white/5 hidden sm:flex items-center justify-between text-[10px] font-mono">
               <span className={activeTab === "dispatch" ? "text-[#ffd754] font-bold" : "text-gray-500"}>
                 {activeTab === "dispatch" ? "DRAWER PULLED OPEN" : "CLICK TO UNSEAL"}
               </span>
@@ -372,6 +372,9 @@ export default function FilingCabinetSection({
             </div>
           </motion.div>
         </AnimatePresence>
+
+        {/* Scroll anchor for mobile section navigation */}
+        <div id="cabinet-content-anchor" className="scroll-mt-24" />
 
         {/* DRAWER INTERIOR STAGE: Unfolds child components with seamless 500ms blueprint transition */}
         <AnimatePresence mode="wait">

@@ -34,6 +34,10 @@ import BookWidget from "./components/BookWidget";
 import VintageBookWidget from "./components/VintageBookWidget";
 import FilingCabinetSection from "./components/FilingCabinetSection";
 import BlueprintSectionTransition from "./components/BlueprintSectionTransition";
+import MobileBottomNav from "./components/MobileBottomNav";
+import MobileSectionSwitcher from "./components/MobileSectionSwitcher";
+import MobileQuickDeck from "./components/MobileQuickDeck";
+import MobileScrollToTop from "./components/MobileScrollToTop";
 import { playSynthSound } from "./components/JusticeShieldSection";
 
 export default function App() {
@@ -41,6 +45,9 @@ export default function App() {
   const [isBookModalOpen, setIsBookModalOpen] = useState(false);
   const [bookInitialGoalIndex, setBookInitialGoalIndex] = useState(0);
   const [activeFolderTab, setActiveFolderTab] = useState<"study" | "vault" | "dispatch">("study");
+  const [mobileSectionFilter, setMobileSectionFilter] = useState<string>("pillars");
+  const [mobileViewMode, setMobileViewMode] = useState<"focused" | "all">("focused");
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
   const [isAdminMode, setIsAdminMode] = useState(() => {
     try {
       return localStorage.getItem("civic_shield_admin_mode") === "true";
@@ -52,6 +59,15 @@ export default function App() {
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const isFormallyLoaded = React.useRef(false);
   const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,6 +102,13 @@ export default function App() {
         lower.includes("ev_")
       ) {
         setActiveFolderTab("vault");
+        if (lower === "justice-shield" || lower.includes("shield")) {
+          setMobileSectionFilter("justice-shield");
+        } else if (lower === "impact-metrics" || lower.includes("metric")) {
+          setMobileSectionFilter("impact-metrics");
+        } else {
+          setMobileSectionFilter("evidence");
+        }
       } else if (
         lower === "pillars" || 
         lower === "constitutional-network" || 
@@ -98,6 +121,11 @@ export default function App() {
         lower.includes("charter")
       ) {
         setActiveFolderTab("study");
+        if (lower === "constitutional-network" || lower.includes("network")) {
+          setMobileSectionFilter("constitutional-network");
+        } else {
+          setMobileSectionFilter("pillars");
+        }
       } else if (
         lower === "blog" || 
         lower === "timeline" || 
@@ -112,6 +140,15 @@ export default function App() {
         lower.includes("gazette")
       ) {
         setActiveFolderTab("dispatch");
+        if (lower === "timeline" || lower.includes("timeline") || lower.includes("road")) {
+          setMobileSectionFilter("timeline");
+        } else if (lower === "social-feed" || lower.includes("social")) {
+          setMobileSectionFilter("social-feed");
+        } else if (lower === "newsletter" || lower.includes("news")) {
+          setMobileSectionFilter("newsletter");
+        } else {
+          setMobileSectionFilter("blog");
+        }
       }
     };
 
@@ -189,6 +226,21 @@ export default function App() {
       }, 100);
     }
   };
+
+  // Sync mobileSectionFilter when activeFolderTab changes
+  useEffect(() => {
+    const sectionsForStudy = ["pillars", "constitutional-network"];
+    const sectionsForVault = ["evidence", "justice-shield", "impact-metrics"];
+    const sectionsForDispatch = ["blog", "timeline", "social-feed", "newsletter"];
+
+    if (activeFolderTab === "study" && !sectionsForStudy.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
+      setMobileSectionFilter("pillars");
+    } else if (activeFolderTab === "vault" && !sectionsForVault.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
+      setMobileSectionFilter("evidence");
+    } else if (activeFolderTab === "dispatch" && !sectionsForDispatch.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
+      setMobileSectionFilter("blog");
+    }
+  }, [activeFolderTab]);
 
   // Track unique website visit on mount
   useEffect(() => {
@@ -814,7 +866,7 @@ export default function App() {
         <span>Legal Lit Alliance: Erasing fear, empowering citizens, and defending fundamental liberties</span>
       </div>
 
-      <main className="flex-grow">
+      <main className="flex-grow pb-24 md:pb-0">
         
         {/* Floating Admin Mode Control overlay on top */}
         {isAdminMode && (
@@ -869,7 +921,7 @@ export default function App() {
             return (
               <section 
                 key={block.id}
-                className="relative py-20 sm:py-28 flex flex-col items-center justify-center overflow-hidden border-b border-[#d4af37]/25 text-center select-none bg-[#001233]"
+                className="relative py-10 sm:py-24 flex flex-col items-center justify-center overflow-hidden border-b border-[#d4af37]/25 text-center select-none bg-[#001233]"
                 style={{ 
                   background: `radial-gradient(circle at center, #001a4d 0%, #001233 70%, #000a1a 100%)` 
                 }}
@@ -1030,6 +1082,28 @@ export default function App() {
             );
           })}
 
+        {/* MOBILE QUICK ACTION DECK (Instant 1-tap jump to key tools & dossiers) */}
+        <MobileQuickDeck
+          onOpenHandbook={() => window.dispatchEvent(new CustomEvent("open-handbook-of-rights"))}
+          onOpenGoals={() => {
+            setBookInitialGoalIndex(0);
+            setIsBookModalOpen(true);
+          }}
+          onNavigateToSection={(tab, section) => {
+            setActiveFolderTab(tab);
+            setMobileSectionFilter(section);
+            setMobileViewMode("focused");
+            setTimeout(() => {
+              const el = document.getElementById("cabinet-content-anchor") || document.getElementById("cabinet-stage");
+              if (el) {
+                const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+                window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+              }
+            }, 60);
+          }}
+          onOpenChat={() => window.dispatchEvent(new CustomEvent("open-anonymous-chat"))}
+        />
+
         {/* SUBTLE BLUEPRINT SHIELD SECTION TRANSITION */}
         <BlueprintSectionTransition
           label="ARCHITECTURAL LEGAL ARCHIVE"
@@ -1041,9 +1115,28 @@ export default function App() {
           activeTab={activeFolderTab} 
           onSelectTab={setActiveFolderTab}
         >
+          {/* Mobile Sub-Tab Section Switcher (compact single-section focused view) */}
+          <MobileSectionSwitcher
+            activeTab={activeFolderTab}
+            activeSection={mobileSectionFilter}
+            onSelectSection={(sec) => {
+              setMobileSectionFilter(sec);
+              setMobileViewMode("focused");
+            }}
+            viewMode={mobileViewMode}
+            onToggleViewMode={setMobileViewMode}
+          />
+
           {/* Render blocks assigned to the currently unsealed drawer */}
           {sortedBlocks
-            .filter((block) => block.id !== "hero" && block.visible && isBlockInActiveTab(block.id))
+            .filter((block) => {
+              if (block.id === "hero" || !block.visible) return false;
+              if (!isBlockInActiveTab(block.id)) return false;
+              if (isMobile && mobileViewMode === "focused") {
+                return block.id === mobileSectionFilter;
+              }
+              return true;
+            })
             .map((block, index) => {
               const blockContent = (() => {
                 switch (block.id) {
@@ -1277,6 +1370,32 @@ export default function App() {
             evidence={data?.evidence || []}
             onAddEvidence={handleUploadFile}
           />
+
+          {/* MOBILE BOTTOM NAVIGATION DOCK (Persistent touch-optimized bottom bar) */}
+          <MobileBottomNav
+            activeTab={activeFolderTab}
+            activeSection={mobileSectionFilter}
+            onNavigate={(tab, section) => {
+              setActiveFolderTab(tab);
+              if (section) {
+                setMobileSectionFilter(section);
+                setMobileViewMode("focused");
+              }
+              setTimeout(() => {
+                const el = document.getElementById("cabinet-content-anchor") || document.getElementById("cabinet-stage");
+                if (el) {
+                  const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+                  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+                }
+              }, 60);
+            }}
+            onOpenChat={() => {
+              window.dispatchEvent(new CustomEvent("open-anonymous-chat"));
+            }}
+          />
+
+          {/* MOBILE QUICK SCROLL-TO-TOP BUTTON */}
+          <MobileScrollToTop />
         </motion.div>
       )}
 
