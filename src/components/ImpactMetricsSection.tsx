@@ -306,7 +306,7 @@ export default function ImpactMetricsSection({
     >
       {/* Background radial elements */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,#001a4d_0%,#001233_70%)] pointer-events-none" />
-      <div className="absolute -bottom-24 right-12 w-[450px] h-[450px] rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute -bottom-24 right-0 sm:right-12 w-72 h-72 sm:w-[450px] sm:h-[450px] rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         

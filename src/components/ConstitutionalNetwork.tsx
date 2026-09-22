@@ -1542,7 +1542,7 @@ export default function ConstitutionalNetwork() {
                 <div className="py-2">
                   <p className="font-mono text-[8px] uppercase tracking-widest text-slate-500">THIS CERTIFICATE IS GRANTED UNTO</p>
                   <div className="min-h-[50px] flex items-center justify-center">
-                    <p className="font-serif italic font-extrabold text-3xl sm:text-4xl text-[#1c1c1c] tracking-wide border-b-2 border-slate-300 px-6 pb-2 min-w-[200px]">
+                    <p className="font-serif italic font-extrabold text-2xl sm:text-4xl text-[#1c1c1c] tracking-wide border-b-2 border-slate-300 px-4 sm:px-6 pb-2 min-w-[160px] max-w-full break-words">
                       {userCertName || "Master Advocate"}
                     </p>
                   </div>

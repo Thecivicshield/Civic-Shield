@@ -437,7 +437,7 @@ export default function JusticeShieldSection({
       className="py-24 bg-[#001a4d] border-t border-[#d4af37]/25 relative overflow-hidden"
     >
       {/* Background visual accents */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[600px] aspect-square rounded-full bg-[#d4af37]/5 blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         

@@ -122,6 +122,18 @@ export default function VintageBookWidget({ accentColor = "#D4AF37" }: VintageBo
   };
 
   useEffect(() => {
+    const handleOpenHandbook = () => {
+      try {
+        playPageSound();
+      } catch (e) {}
+      setIsOpen(true);
+      trackPageRead(currentPage);
+    };
+    window.addEventListener("open-handbook-of-rights", handleOpenHandbook);
+    return () => window.removeEventListener("open-handbook-of-rights", handleOpenHandbook);
+  }, [currentPage]);
+
+  useEffect(() => {
     fetchReviews();
   }, []);
 

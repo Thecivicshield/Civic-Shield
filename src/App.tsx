@@ -75,18 +75,53 @@ export default function App() {
     const handleTargetSwitch = (target: string) => {
       if (!target) return;
       const lower = target.toLowerCase();
-      if (lower.includes("evidence") || lower.includes("metric") || lower.includes("vault") || lower.includes("shield") || lower.includes("ev_")) {
+      if (
+        lower === "evidence" || 
+        lower === "justice-shield" || 
+        lower === "impact-metrics" || 
+        lower.includes("evidence") || 
+        lower.includes("metric") || 
+        lower.includes("vault") || 
+        lower.includes("shield") || 
+        lower.includes("ev_")
+      ) {
         setActiveFolderTab("vault");
-      } else if (lower.includes("pillar") || lower.includes("law") || lower.includes("case") || lower.includes("network") || lower.includes("study") || lower.includes("about") || lower.includes("charter")) {
+      } else if (
+        lower === "pillars" || 
+        lower === "constitutional-network" || 
+        lower.includes("pillar") || 
+        lower.includes("law") || 
+        lower.includes("case") || 
+        lower.includes("network") || 
+        lower.includes("study") || 
+        lower.includes("about") || 
+        lower.includes("charter")
+      ) {
         setActiveFolderTab("study");
-      } else if (lower.includes("blog") || lower.includes("timeline") || lower.includes("news") || lower.includes("social") || lower.includes("dispatch") || lower.includes("road") || lower.includes("gazette")) {
+      } else if (
+        lower === "blog" || 
+        lower === "timeline" || 
+        lower === "social-feed" || 
+        lower === "newsletter" || 
+        lower.includes("blog") || 
+        lower.includes("timeline") || 
+        lower.includes("news") || 
+        lower.includes("social") || 
+        lower.includes("dispatch") || 
+        lower.includes("road") || 
+        lower.includes("gazette")
+      ) {
         setActiveFolderTab("dispatch");
       }
     };
 
     const handleHashChange = () => {
-      const hash = window.location.hash;
+      const hash = window.location.hash.replace("#", "");
       if (hash) {
+        setShowIntro(false);
+        try {
+          sessionStorage.setItem("civic_shield_intro_passed", "true");
+        } catch (e) {}
         handleTargetSwitch(hash);
       }
     };
@@ -95,6 +130,10 @@ export default function App() {
       try {
         const detail = (e as CustomEvent)?.detail;
         if (detail?.targetId) {
+          setShowIntro(false);
+          try {
+            sessionStorage.setItem("civic_shield_intro_passed", "true");
+          } catch (e) {}
           handleTargetSwitch(detail.targetId);
         }
       } catch (err) {
@@ -755,6 +794,9 @@ export default function App() {
           setBookInitialGoalIndex(0);
           setIsBookModalOpen(true);
         }}
+        onOpenHandbookOfRights={() => {
+          window.dispatchEvent(new CustomEvent("open-handbook-of-rights"));
+        }}
       />
 
       {/* Connection / Error banners */}
@@ -833,7 +875,7 @@ export default function App() {
                 }}
               >
                 {/* Glowing background highlights and gold sweep layer */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full bg-[#d4af37]/[0.03] blur-[140px] pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[350px] rounded-full bg-[#d4af37]/[0.03] blur-[140px] pointer-events-none" />
                 
                 {/* Gold Light Sweep */}
                 <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -1157,7 +1199,7 @@ export default function App() {
               const sectionMeta = getSectionMeta(block.id);
 
               return (
-                <React.Fragment key={block.id}>
+                <div id={block.id} key={block.id} className="scroll-mt-24 w-full">
                   {index > 0 && (
                     <BlueprintSectionTransition
                       label={sectionMeta.label}
@@ -1168,7 +1210,7 @@ export default function App() {
                   <ScrollReveal index={index}>
                     {blockContent}
                   </ScrollReveal>
-                </React.Fragment>
+                </div>
               );
             })}
         </FilingCabinetSection>

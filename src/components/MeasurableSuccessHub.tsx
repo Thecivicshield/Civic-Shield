@@ -112,10 +112,10 @@ Official Civic Defense Matrix: https://thecivicshield.org`;
   const progressPercent = Math.min(100, Math.round((currentTotalEmpowered / nextGoal) * 100));
 
   return (
-    <section id="measurable-success" className="py-16 px-4 sm:px-6 relative overflow-hidden bg-gradient-to-b from-[#000d26] via-[#001233] to-[#000a1a]">
+    <section id="impact-metrics" className="py-16 px-4 sm:px-6 relative overflow-hidden bg-gradient-to-b from-[#000d26] via-[#001233] to-[#000a1a]">
       {/* Background Subtle Grid & Lighting Accent */}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#d4af37]/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[350px] bg-[#d4af37]/5 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         

@@ -348,7 +348,7 @@ export default function CyberHUD() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 30 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-6 right-6 z-[48] flex flex-col w-80 sm:w-[350px] p-4 rounded-sm border border-[#d4af37]/35 bg-[#000a20]/95 backdrop-blur-md shadow-2xl text-left text-white font-mono pointer-events-auto select-none"
+            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[48] flex flex-col w-[calc(100vw-2rem)] sm:w-[350px] max-w-[350px] p-4 rounded-sm border border-[#d4af37]/35 bg-[#000a20]/95 backdrop-blur-md shadow-2xl text-left text-white font-mono pointer-events-auto select-none"
           >
             {/* Scifi Header */}
             <div className="flex items-center justify-between border-b border-[#d4af37]/20 pb-2 mb-3">

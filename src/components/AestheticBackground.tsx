@@ -326,7 +326,7 @@ export default function AestheticBackground() {
       </svg>
 
       {/* 5. Giant glowing rotating shield outline */}
-      <div className="absolute top-[25%] left-1/2 -translate-x-1/2 w-[700px] h-[700px] opacity-[0.012] pointer-events-none select-none">
+      <div className="absolute top-[25%] left-1/2 -translate-x-1/2 w-full max-w-[700px] aspect-square opacity-[0.012] pointer-events-none select-none">
         <svg
           className="w-full h-full text-[#d4af37] animate-[spin_130s_linear_infinite]"
           viewBox="0 0 100 100"

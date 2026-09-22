@@ -410,7 +410,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.94 }}
             transition={{ type: "spring", stiffness: 350, damping: 25 }}
-            className="fixed bottom-6 right-6 z-[450] cursor-pointer select-none group"
+            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[450] cursor-pointer select-none group"
           >
             {/* Pulsing aura loops */}
             <div className="absolute inset-0 rounded-full bg-[#d4af37]/25 blur-md animate-ping" />
@@ -456,7 +456,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 25, transition: { duration: 0.18, ease: "easeOut" } }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[450] w-[calc(100vw-2rem)] sm:w-[440px] max-h-[85vh] h-[580px] rounded-lg flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(212,175,55,0.25)] overflow-hidden border-2 border-[#d4af37]/60 bg-[#001a4d] font-sans"
+            className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-[450] w-[calc(100vw-2rem)] sm:w-[440px] max-w-[440px] max-h-[85vh] h-[520px] sm:h-[580px] rounded-lg flex flex-col shadow-[0_20px_60px_rgba(0,0,0,0.85),0_0_30px_rgba(212,175,55,0.25)] overflow-hidden border-2 border-[#d4af37]/60 bg-[#001a4d] font-sans"
           >
             {/* Tech Corner Brackets */}
             <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-[#d4af37]" />
@@ -486,27 +486,6 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                {/* Quick Read Toggle Button */}
-                <button
-                  id="quick-read-header-toggle"
-                  type="button"
-                  onClick={toggleQuickRead}
-                  title={quickRead ? "Quick Read is ON: Generating concise, high-level summaries. Click to switch to detailed legal breakdown." : "Quick Read is OFF: Click to enable concise, high-level summaries."}
-                  className={`px-2 py-1 rounded text-[9px] font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
-                    quickRead
-                      ? "bg-[#ffd754] text-[#001233] border-[#ffd754] font-bold shadow-[0_0_8px_rgba(255,215,84,0.35)]"
-                      : "bg-[#001a4d]/80 text-gray-300 hover:text-white border-[#d4af37]/30 hover:border-[#d4af37]"
-                  }`}
-                >
-                  <Zap className={`w-3 h-3 ${quickRead ? "text-[#001233] fill-current" : "text-[#ffd754]"}`} />
-                  <span className="font-semibold tracking-wider">Quick Read</span>
-                  <span className={`text-[7.5px] font-bold px-1 py-0.2 rounded uppercase ${
-                    quickRead ? "bg-[#001233] text-[#ffd754]" : "bg-[#001233]/70 text-gray-400"
-                  }`}>
-                    {quickRead ? "ON" : "OFF"}
-                  </span>
-                </button>
-
                 <button
                   onClick={handleResetChat}
                   title="Reset conversation (New Chat)"

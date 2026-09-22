@@ -8,9 +8,10 @@ interface HeaderProps {
   primaryColor: string;
   accentColor: string;
   onOpenBookOfGoals?: () => void;
+  onOpenHandbookOfRights?: () => void;
 }
 
-export default function Header({ isAdminMode, setIsAdminMode, primaryColor, accentColor, onOpenBookOfGoals }: HeaderProps) {
+export default function Header({ isAdminMode, setIsAdminMode, primaryColor, accentColor, onOpenBookOfGoals, onOpenHandbookOfRights }: HeaderProps) {
   const [isLockOpen, setIsLockOpen] = useState(false);
   const [typedKey, setTypedKey] = useState("");
   const [wrongKey, setWrongKey] = useState(false);
@@ -215,17 +216,72 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
     { name: "Roadmap", href: "#timeline", targetId: "timeline" }
   ];
 
+  const scrollToTargetElement = (targetId: string) => {
+    let attempts = 0;
+    const maxAttempts = 35; // check for up to ~1.4 seconds through tab switch and layout transitions
+    const checkInterval = setInterval(() => {
+      attempts++;
+      const el = document.getElementById(targetId);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        if (rect.height > 0 || attempts > 8) {
+          clearInterval(checkInterval);
+          const headerOffset = isScrolled ? 72 : 92;
+          const elementTop = rect.top + window.pageYOffset;
+          const targetScroll = Math.max(0, elementTop - headerOffset);
+          window.scrollTo({
+            top: targetScroll,
+            behavior: "smooth"
+          });
+
+          // Post-layout secondary adjustment to ensure pinpoint exact section positioning
+          setTimeout(() => {
+            const recheck = document.getElementById(targetId);
+            if (recheck) {
+              const currentOffset = isScrolled ? 72 : 92;
+              const newTop = recheck.getBoundingClientRect().top + window.pageYOffset - currentOffset;
+              if (Math.abs(window.pageYOffset - newTop) > 20) {
+                window.scrollTo({ top: Math.max(0, newTop), behavior: "smooth" });
+              }
+            }
+          }, 300);
+        }
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        const fallback = document.getElementById("cabinet-stage");
+        if (fallback) {
+          const fallbackTop = fallback.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: Math.max(0, fallbackTop), behavior: "smooth" });
+        }
+      }
+    }, 40);
+  };
+
   const handleNavClick = (e: React.MouseEvent, targetId: string, label: string) => {
     e.preventDefault();
     window.dispatchEvent(new CustomEvent("trigger-cabinet-nav", {
       detail: { targetId, label }
     }));
-    setTimeout(() => {
-      const el = document.getElementById(targetId) || document.getElementById("cabinet-stage");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 60);
+    try {
+      window.history.pushState(null, "", `#${targetId}`);
+    } catch (err) {}
+    scrollToTargetElement(targetId);
+  };
+
+  const handleOpenHandbook = () => {
+    if (onOpenHandbookOfRights) {
+      onOpenHandbookOfRights();
+    } else {
+      window.dispatchEvent(new CustomEvent("open-handbook-of-rights"));
+    }
+  };
+
+  const handleOpenGoals = () => {
+    if (onOpenBookOfGoals) {
+      onOpenBookOfGoals();
+    } else {
+      window.dispatchEvent(new CustomEvent("open-book-of-goals"));
+    }
   };
 
   return (
@@ -261,18 +317,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 h-full">
-          <button
-            onClick={() => {
-              if (onOpenBookOfGoals) onOpenBookOfGoals();
-              else window.dispatchEvent(new CustomEvent("open-book-of-goals"));
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-[#d4af37]/15 border border-[#d4af37]/50 text-[#ffd754] hover:bg-[#d4af37] hover:text-[#001a4d] transition-all text-[11px] font-bold uppercase tracking-wider cursor-pointer shadow-[0_0_10px_rgba(212,175,55,0.2)]"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Handbook of Rights</span>
-          </button>
-
+        <nav className="hidden md:flex items-center gap-5 lg:gap-6 h-full">
           {navLinks.map((link) => {
             const isActive = activeSection === link.targetId;
             return (
@@ -297,6 +342,30 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
               </a>
             );
           })}
+
+          {/* Handbook of Rights: like every other button with just a subtle difference */}
+          <button
+            type="button"
+            onClick={handleOpenHandbook}
+            className="relative text-[11px] font-bold tracking-wider uppercase h-full flex items-center gap-1.5 transition-colors duration-300 text-[#ffd754]/90 hover:text-white cursor-pointer group select-none"
+            title="Open Citizen Handbook of Rights"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#d4af37] group-hover:text-[#ffd754] transition-colors" />
+            <span>Handbook of Rights</span>
+            <span className="w-1 h-1 rounded-full bg-[#d4af37]/70 group-hover:bg-[#ffd754] transition-colors" />
+          </button>
+
+          {/* Our Goals: like every other button with just a subtle difference */}
+          <button
+            type="button"
+            onClick={handleOpenGoals}
+            className="relative text-[11px] font-bold tracking-wider uppercase h-full flex items-center gap-1.5 transition-colors duration-300 text-[#ffd754]/90 hover:text-white cursor-pointer group select-none"
+            title="Inspect Strategic Goals & Directives"
+          >
+            <Target className="w-3.5 h-3.5 text-[#d4af37] group-hover:text-[#ffd754] transition-colors" />
+            <span>Our Goals</span>
+            <span className="w-1 h-1 rounded-full bg-[#d4af37]/70 group-hover:bg-[#ffd754] transition-colors" />
+          </button>
         </nav>
 
         {/* Campaign Admin Switch & Hamburger Icon */}
@@ -327,14 +396,14 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
             {isAdminMode ? (
               <>
                 <Unlock className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Manager Active</span>
-                <span className="inline xs:hidden">Active</span>
+                <span className="hidden sm:inline">Manager Active</span>
+                <span className="inline sm:hidden">Active</span>
               </>
             ) : (
               <>
                 <Lock className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Manager Login</span>
-                <span className="inline xs:hidden">Login</span>
+                <span className="hidden sm:inline">Manager Login</span>
+                <span className="inline sm:hidden">Login</span>
               </>
             )}
           </motion.button>
@@ -360,16 +429,31 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
             transition={{ duration: 0.35, ease: "easeInOut" }}
             className="absolute top-full left-0 right-0 bg-[#001233]/98 border-b border-[#d4af37]/25 overflow-hidden md:hidden shadow-2xl z-40 backdrop-blur-lg"
           >
-            <div className="px-4 py-6 space-y-4 flex flex-col">
+            <div className="px-4 py-6 space-y-3 flex flex-col">
+              {/* Handbook of Rights (Mobile) */}
               <button
+                type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  if (onOpenBookOfGoals) onOpenBookOfGoals();
-                  else window.dispatchEvent(new CustomEvent("open-book-of-goals"));
+                  handleOpenHandbook();
                 }}
-                className="flex items-center gap-2 p-2.5 rounded bg-[#d4af37]/20 border border-[#d4af37] text-[#ffd754] font-bold text-xs uppercase tracking-wider text-left"
+                className="text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center gap-2 text-[#ffd754] border-[#d4af37] hover:text-white transition-colors cursor-pointer text-left"
               >
-                <Target className="w-4 h-4" /> Strategic Goals & Directives
+                <ShieldCheck className="w-4 h-4 text-[#d4af37]" />
+                <span>Handbook of Rights</span>
+              </button>
+
+              {/* Our Goals (Mobile) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleOpenGoals();
+                }}
+                className="text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center gap-2 text-[#ffd754] border-[#d4af37] hover:text-white transition-colors cursor-pointer text-left"
+              >
+                <Target className="w-4 h-4 text-[#d4af37]" />
+                <span>Our Goals</span>
               </button>
 
               {navLinks.map((link, idx) => {
@@ -385,7 +469,7 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
                     initial={{ opacity: 0, x: -15 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className={`text-xs font-bold uppercase tracking-wider py-1 border-l-2 pl-3 ${
+                    className={`text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center ${
                       isActive 
                         ? "text-[#d4af37] border-[#d4af37]" 
                         : "text-gray-300 border-transparent hover:text-white"

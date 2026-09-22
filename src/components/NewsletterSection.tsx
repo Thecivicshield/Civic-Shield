@@ -42,8 +42,8 @@ export default function NewsletterSection({ onSubscribe }: NewsletterSectionProp
       className="py-24 bg-[#001a4d] border-t border-[#d4af37]/25 relative overflow-hidden"
     >
       {/* Decorative Blur Backgrounds */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#d4af37]/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#002366]/50 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-72 h-72 sm:w-[400px] sm:h-[400px] bg-[#d4af37]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 sm:w-[400px] sm:h-[400px] bg-[#002366]/50 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 text-center space-y-8">
         
