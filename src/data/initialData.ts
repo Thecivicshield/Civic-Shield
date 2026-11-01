@@ -4,373 +4,373 @@ export const initialData: CivicShieldData = {
   "masterPasscode": "lol12ymn",
   "bookReviews": [
     {
-      "id": "rev_1",
       "bookTitle": "The Sovereign Defense Doctrine",
       "chapterTitle": "Chapter I: The 3 Inviolable Rules",
-      "reviewerName": "Adv. Rajesh M. (High Court)",
-      "rating": 5,
-      "reviewText": "The procedural clarity on D.K. Basu arrest memorandums and non-consensual search objections is impeccable. Essential reading for every citizen.",
+      "verified": true,
       "date": "2026-06-18",
-      "verified": true
+      "reviewerName": "Adv. Rajesh M. (High Court)",
+      "reviewText": "The procedural clarity on D.K. Basu arrest memorandums and non-consensual search objections is impeccable. Essential reading for every citizen.",
+      "id": "rev_1",
+      "rating": 5
     },
     {
-      "id": "rev_2",
-      "bookTitle": "The Sovereign Defense Doctrine",
       "chapterTitle": "Chapter II: Sanctity of the Digital Device",
-      "reviewerName": "Priya S. (Civic Researcher)",
+      "bookTitle": "The Sovereign Defense Doctrine",
       "rating": 5,
-      "reviewText": "Citing Puttaswamy and Article 20(3) saved our student group when municipal officials attempted an illegal phone sweep. Clear, fearless, and legally ironclad.",
+      "verified": true,
+      "reviewerName": "Priya S. (Civic Researcher)",
       "date": "2026-06-22",
-      "verified": true
+      "reviewText": "Citing Puttaswamy and Article 20(3) saved our student group when municipal officials attempted an illegal phone sweep. Clear, fearless, and legally ironclad.",
+      "id": "rev_2"
     },
     {
-      "id": "rev_3",
+      "date": "2026-06-25",
       "bookTitle": "The Sovereign Defense Doctrine",
-      "chapterTitle": "Chapter III: Pro-Se Self Representation",
-      "reviewerName": "Vikram K. (Community Organizer)",
       "rating": 5,
       "reviewText": "Filed my first Section 32 application without spending thousands on private retainers. The indexed boilerplate drafting format is golden.",
-      "date": "2026-06-25",
-      "verified": true
+      "chapterTitle": "Chapter III: Pro-Se Self Representation",
+      "verified": true,
+      "id": "rev_3",
+      "reviewerName": "Vikram K. (Community Organizer)"
     }
   ],
   "caseFiles": [
     {
-      "id": "cf_1",
       "caseNumber": "WP(C)-2026-089",
-      "title": "Illegal Roadside Vehicle Seizure Quashed",
-      "category": "Motor Vehicle Rights",
-      "status": "precedent",
-      "description": "Landmark ruling clarifying that electronic DigiLocker records under Rule 139 CMVR cannot be arbitrarily rejected by inspecting officers.",
-      "type": "pdf",
-      "fileName": "MVA_Rule139_Compliance_Order.pdf",
-      "fileUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
-      "uploadedAt": "2026-05-14",
       "fileSize": "1.8 MB",
-      "verifiedBy": "Civic Legal Research Desk"
+      "uploadedAt": "2026-05-14",
+      "title": "Illegal Roadside Vehicle Seizure Quashed",
+      "status": "precedent",
+      "verifiedBy": "Civic Legal Research Desk",
+      "id": "cf_1",
+      "type": "pdf",
+      "category": "Motor Vehicle Rights",
+      "fileUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
+      "fileName": "MVA_Rule139_Compliance_Order.pdf",
+      "description": "Landmark ruling clarifying that electronic DigiLocker records under Rule 139 CMVR cannot be arbitrarily rejected by inspecting officers."
     },
     {
-      "id": "cf_2",
-      "caseNumber": "CIC-RTI-2026-441",
-      "title": "Municipal Road Tender Audit Penalty Enforced",
-      "category": "Right to Information",
-      "status": "settled",
+      "fileSize": "640 KB",
       "description": "Section 20(1) penalty of ₹25,000 imposed on Public Information Officer for withholding ward road expenditure balance sheets.",
       "type": "spreadsheet",
-      "fileName": "Ward_14_Tender_Audit_Ledger.xlsx",
+      "verifiedBy": "State Transparency Wing",
+      "status": "settled",
       "fileUrl": "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
+      "title": "Municipal Road Tender Audit Penalty Enforced",
       "uploadedAt": "2026-06-02",
-      "fileSize": "640 KB",
-      "verifiedBy": "State Transparency Wing"
+      "category": "Right to Information",
+      "caseNumber": "CIC-RTI-2026-441",
+      "fileName": "Ward_14_Tender_Audit_Ledger.xlsx",
+      "id": "cf_2"
     }
   ],
   "visitorStats": {
-    "totalVisitors": 14894,
-    "gateEntries": 6420,
-    "chatInteractions": 992,
-    "handbookDownloads": 3840,
-    "templatesDeployed": 1250,
-    "districtsEmpowered": 48,
     "consultationsGiven": 992,
-    "pagesRead": 8740,
     "reviewsCount": 3,
-    "lastUpdated": 1789895985216
+    "districtsEmpowered": 48,
+    "totalVisitors": 14894,
+    "lastUpdated": 1789895985216,
+    "handbookDownloads": 3840,
+    "pagesRead": 8740,
+    "templatesDeployed": 1250,
+    "chatInteractions": 992,
+    "gateEntries": 6420
   },
   "blocks": [
     {
       "id": "hero",
-      "title": "Hero Searchlight",
-      "visible": true,
       "order": 1,
       "customData": {
         "heroTitle": "CIVIC SHIELD",
         "heroSubtitle": "Bridging the gap between citizens and legal authority. We eliminate fear, advocate for legal literacy, and empower you with knowledge of basic laws so you can protect yourself and your family with confidence.",
-        "heroAlertText": "ALERT: Our upcoming virtual 'Know-Your-Rights Procedural Clinic' is scheduled for June 28th. Reserve your free handbook below.",
         "primaryColor": "#0F264A",
+        "heroAlertText": "ALERT: Our upcoming virtual 'Know-Your-Rights Procedural Clinic' is scheduled for June 28th. Reserve your free handbook below.",
         "accentColor": "#D4AF37"
-      }
+      },
+      "title": "Hero Searchlight",
+      "visible": true
     },
     {
-      "id": "pillars",
-      "title": "Campaign Core Pillars",
-      "visible": true,
-      "order": 2,
       "customData": {
         "pillars": [
           {
-            "title": "Overcome My Fear of Encounters",
             "description": "Conquering the anxiety of administrative or roadside stops by learning my exact, verified rights so I can speak with composure and confidence.",
-            "iconName": "ShieldAlert"
+            "iconName": "ShieldAlert",
+            "title": "Overcome My Fear of Encounters"
           },
           {
-            "title": "Protect My Family, Land, & Home",
             "description": "Equipping my household with standardized, robust administrative templates to defend our private property against unauthorized municipal overreaches.",
-            "iconName": "Landmark"
+            "iconName": "Landmark",
+            "title": "Protect My Family, Land, & Home"
           },
           {
-            "title": "Speak Personally, Advocate Competently",
+            "iconName": "Scale",
             "description": "Developing my self-representation skills so I can confidently voice my challenges and protect my interests directly in local public hearings.",
-            "iconName": "Scale"
+            "title": "Speak Personally, Advocate Competently"
           },
           {
-            "title": "Hold Our Local Servants Accountable",
             "description": "Independently auditing government spending and public asset indexes to ensure that municipal authorities operate with full transparency for the community.",
+            "title": "Hold Our Local Servants Accountable",
             "iconName": "Eye"
           }
         ]
-      }
+      },
+      "id": "pillars",
+      "order": 2,
+      "visible": true,
+      "title": "Campaign Core Pillars"
     },
     {
-      "id": "evidence",
-      "title": "Legal Library & Handouts",
-      "visible": true,
-      "order": 3,
       "customData": {
         "accentColor": "#D4AF37"
-      }
+      },
+      "title": "Legal Library & Handouts",
+      "visible": true,
+      "id": "evidence",
+      "order": 3
     },
     {
-      "id": "timeline",
-      "title": "Campaign Roadmap",
-      "visible": true,
-      "order": 4,
       "customData": {
         "timeline": [
           {
+            "description": "Released our 6-segment citizen syllabus covering fundamental civil liberties and constitutional interaction protocols.",
             "date": "May 10, 2026",
             "title": "Digital Curriculum Drafted",
-            "description": "Released our 6-segment citizen syllabus covering fundamental civil liberties and constitutional interaction protocols.",
             "completed": true
           },
           {
             "date": "June 1, 2026",
             "title": "Locker Vault Release",
-            "description": "Uploaded the Pro-Se Administrative Response template pack to help people represent themselves in local hearings.",
-            "completed": true
+            "completed": true,
+            "description": "Uploaded the Pro-Se Administrative Response template pack to help people represent themselves in local hearings."
           },
           {
             "date": "June 28, 2026",
+            "completed": false,
             "title": "National Know-Your-Rights Webinar",
-            "description": "Host a nationwide mock interaction call covering safe legal triggers, consent boundaries, and detainment thresholds.",
-            "completed": false
+            "description": "Host a nationwide mock interaction call covering safe legal triggers, consent boundaries, and detainment thresholds."
           },
           {
-            "date": "July 20, 2026",
             "title": "Municipal Authority Exchange",
+            "date": "July 20, 2026",
             "description": "First collaborative workshop linking civic council, defense lawyers, and municipal officials to set transparent procedural benchmarks.",
             "completed": false
           }
         ]
-      }
+      },
+      "visible": true,
+      "order": 4,
+      "id": "timeline",
+      "title": "Campaign Roadmap"
     },
     {
-      "id": "impact-metrics",
       "title": "Impact Metrics Chart",
       "visible": true,
-      "order": 5,
       "customData": {
         "metrics": [
           {
-            "label": "Cases Won & Settled",
-            "value": 148
+            "value": 148,
+            "label": "Cases Won & Settled"
           },
           {
-            "label": "Citizens Empowered",
-            "value": 4850
+            "value": 4850,
+            "label": "Citizens Empowered"
           },
           {
-            "label": "Handbooks Distributed",
-            "value": 3120
+            "value": 3120,
+            "label": "Handbooks Distributed"
           },
           {
-            "label": "Procedural Clinics Hosted",
-            "value": 35
+            "value": 35,
+            "label": "Procedural Clinics Hosted"
           }
         ]
-      }
+      },
+      "id": "impact-metrics",
+      "order": 5
     },
     {
-      "id": "justice-shield",
-      "title": "The Justice Shield",
-      "visible": true,
       "order": 6,
-      "customData": {}
+      "id": "justice-shield",
+      "customData": {},
+      "title": "The Justice Shield",
+      "visible": true
     },
     {
-      "id": "constitutional-network",
-      "title": "Constitutional Defense Network",
-      "visible": true,
       "order": 7,
-      "customData": {}
+      "id": "constitutional-network",
+      "visible": true,
+      "customData": {},
+      "title": "Constitutional Defense Network"
     },
     {
-      "id": "blog",
-      "title": "Campaign Dispatches",
-      "visible": true,
       "order": 8,
+      "id": "blog",
+      "visible": true,
+      "title": "Campaign Dispatches",
       "customData": {}
     },
     {
       "id": "social-feed",
       "title": "Social Stream",
+      "customData": {},
       "visible": true,
-      "order": 9,
-      "customData": {}
+      "order": 9
     },
     {
+      "order": 10,
+      "customData": {},
       "id": "newsletter",
       "title": "Pledge Subscription",
-      "visible": true,
-      "order": 10,
-      "customData": {}
+      "visible": true
     }
   ],
   "posts": [
     {
-      "id": "post_1",
-      "title": "How to Safely Handle Roadside Traffic Inspections",
-      "content": "Roadside stops often trigger panic. The key is understanding that protocol protects both parties. Under Indian Motor Vehicle regulations and Supreme Court directives, a police officer cannot remove your ignition key or physically seize your phone without judicial warrant. Always ask politely: 'Am I being detained, Officer, or am I free to proceed?' Keep your DigiLocker verified digital documents ready.",
-      "date": "2026-05-18",
-      "author": "Legal Defense Coordinator",
       "imageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=1200",
+      "id": "post_1",
       "comments": [
         {
-          "id": "c_1",
-          "author": "Aarav Patel",
           "text": "This simple question changed how I approach traffic checkpoints. Calm clarity works miracles.",
-          "date": "2026-05-20"
+          "author": "Aarav Patel",
+          "date": "2026-05-20",
+          "id": "c_1"
         }
-      ]
+      ],
+      "content": "Roadside stops often trigger panic. The key is understanding that protocol protects both parties. Under constitutional due process and traffic safety regulations, an officer cannot remove your ignition key or physically seize your phone without judicial warrant. Always ask politely: 'Am I being detained, Officer, or am I free to proceed?' Keep your verified credentials and documentation ready.",
+      "title": "How to Safely Handle Roadside Traffic Inspections",
+      "author": "Legal Defense Coordinator",
+      "date": "2026-05-18"
     },
     {
+      "imageUrl": "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=1200",
+      "author": "Procedural Clinic Lead",
+      "date": "2026-06-05",
       "id": "post_2",
       "title": "Representing Yourself in Consumer & Municipal Disputes",
-      "content": "The belief that you must always hire expensive legal counsel for basic disputes is a common misconception. Section 32 of the Advocates Act 1961 gives any citizen the inherent right to appear as a Party-in-Person. Our standardized boilerplate filing templates format your facts and legal citations in a way court registries accept seamlessly.",
-      "date": "2026-06-05",
-      "author": "Procedural Clinic Lead",
-      "imageUrl": "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=1200",
+      "content": "The belief that you must always hire expensive legal counsel for basic disputes is a common misconception. Procedural common-law and statutory doctrines give any citizen the inherent right to appear as a self-represented litigant (Party-in-Person / Pro-Se). Our standardized boilerplate filing templates format your facts and legal citations in a way court registries accept seamlessly.",
       "comments": []
     }
   ],
   "evidence": [
     {
-      "id": "ev_1",
-      "title": "Citizen Roadside Rights Pocket Guide",
-      "description": "Quick-reference pocket card containing exact legal citations, Supreme Court directives, and polite scripts for traffic stops.",
-      "type": "pdf",
-      "fileName": "Roadside_Rights_Pocket_Card.pdf",
-      "fileUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
-      "uploadedAt": "2026-05-10",
       "fileSize": "1.2 MB",
-      "verifiedBy": "Supreme Court Bar Advisor"
+      "uploadedAt": "2026-05-10",
+      "title": "Citizen Roadside Rights Pocket Guide",
+      "type": "pdf",
+      "fileUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
+      "id": "ev_1",
+      "description": "Quick-reference pocket card containing exact legal citations, constitutional directives, and polite scripts for traffic stops.",
+      "verifiedBy": "Constitutional Law Counsel",
+      "fileName": "Roadside_Rights_Pocket_Card.pdf"
     },
     {
-      "id": "ev_2",
-      "title": "Pro-Se Courtroom Appearance Template Pack",
       "description": "Standardized Section 32 notice and affidavit templates for self-representation in municipal and consumer disputes.",
-      "type": "spreadsheet",
-      "fileName": "ProSe_Filing_Template_Pack.zip",
-      "fileUrl": "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800",
       "uploadedAt": "2026-05-25",
       "fileSize": "3.4 MB",
-      "verifiedBy": "Civic Legal Council"
+      "fileName": "ProSe_Filing_Template_Pack.zip",
+      "id": "ev_2",
+      "verifiedBy": "Civic Legal Council",
+      "type": "spreadsheet",
+      "title": "Pro-Se Courtroom Appearance Template Pack",
+      "fileUrl": "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&q=80&w=800"
     },
     {
-      "id": "ev_3",
-      "title": "Right to Information (RTI) Master Filing Kit",
-      "description": "Form A templates, fee calculation matrices, and First Appellate Authority appeal formats for auditing municipal records.",
-      "type": "pdf",
-      "fileName": "RTI_Master_Kit_2026.pdf",
       "fileUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800",
+      "title": "Right to Information (RTI) Master Filing Kit",
+      "type": "pdf",
       "uploadedAt": "2026-06-02",
+      "fileName": "RTI_Master_Kit_2026.pdf",
+      "description": "Form A templates, fee calculation matrices, and First Appellate Authority appeal formats for auditing municipal records.",
+      "verifiedBy": "State Transparency Committee",
       "fileSize": "2.1 MB",
-      "verifiedBy": "State Transparency Committee"
+      "id": "ev_3"
     }
   ],
   "questions": [
     {
-      "id": "q_1",
-      "text": "Can an officer seize my smartphone during a regular vehicle inspection?",
+      "answer": "No. Under Article 20(3) of the Constitution and the landmark Puttaswamy privacy judgment, your digital device is protected against arbitrary searches. An officer cannot force you to unlock your phone, reveal passwords, or browse through chats without a specific judicial search warrant or formal FIR seizure memo under Section 102 CrPC / Section 107 BNSS.",
       "timestamp": "10:30 AM 2026-06-12",
       "answered": true,
-      "answer": "No. Under Article 20(3) of the Constitution and the landmark Puttaswamy privacy judgment, your digital device is protected against arbitrary searches. An officer cannot force you to unlock your phone, reveal passwords, or browse through chats without a specific judicial search warrant or formal FIR seizure memo under Section 102 CrPC / Section 107 BNSS.",
+      "text": "Can an officer seize my smartphone during a regular vehicle inspection?",
       "isPublic": true,
-      "repliedBy": "AI Legal Advocate (Civic Shield)"
+      "repliedBy": "AI Legal Advocate (Civic Shield)",
+      "id": "q_1"
     },
     {
-      "id": "q_2",
-      "text": "What should I do if a police officer refuses to register an FIR for theft?",
-      "timestamp": "02:15 PM 2026-06-15",
-      "answered": true,
-      "answer": "Under the Supreme Court mandate in Lalita Kumari v. Govt of UP, registration of an FIR is mandatory for cognizable offenses. If an officer refuses, you can: (1) Submit a written complaint to the Superintendent of Police (SP) under Sec 154(3) CrPC / Sec 173(3) BNSS by registered post, or (2) File an application before the Magistrate under Sec 156(3) CrPC.",
+      "repliedBy": "AI Legal Advocate (Civic Shield)",
       "isPublic": true,
-      "repliedBy": "AI Legal Advocate (Civic Shield)"
+      "answered": true,
+      "text": "What should I do if a police officer refuses to register a formal crime complaint?",
+      "timestamp": "02:15 PM 2026-06-15",
+      "answer": "Under mandatory incident reporting directives, registration of a formal crime complaint is mandatory for serious offenses. If an officer refuses, you can: (1) Submit a formal written complaint to the supervisory Police Chief or Department Inspector by certified mail, or (2) File a formal petition directly before the local judicial Magistrate or court clerk.",
+      "id": "q_2"
     }
   ],
   "subscribers": [
     {
       "id": "sub_1",
-      "email": "thecivicshield@gmail.com",
-      "subscribedAt": "2026-05-01 09:00:00"
+      "subscribedAt": "2026-05-01 09:00:00",
+      "email": "thecivicshield@gmail.com"
     }
   ],
   "socialFeed": [
     {
-      "id": "soc_3",
-      "platform": "twitter",
-      "username": "Civic Shield Campaign",
-      "handle": "@TheCivicShield",
-      "content": "⚠️ Know your basic words! If an administrative officer starts questioning you in public, calmly ask: 'Am I being detained, or am I free to go?'\n\nIf free, you can walk away. If detained, you are protected from random interrogations. Knowledge bridges the gap! ⚖️ #LegalLiteracy #CivicShield",
+      "comments": 12,
       "timestamp": "1 hour ago",
-      "likes": 142,
       "shares": 56,
-      "comments": 12
+      "platform": "twitter",
+      "handle": "@TheCivicShield",
+      "likes": 142,
+      "id": "soc_3",
+      "username": "Civic Shield Campaign",
+      "content": "⚠️ Know your basic words! If an administrative officer starts questioning you in public, calmly ask: 'Am I being detained, or am I free to go?'\n\nIf free, you can walk away. If detained, you are protected from random interrogations. Knowledge bridges the gap! ⚖️ #LegalLiteracy #CivicShield"
     },
     {
-      "id": "soc_2",
-      "platform": "instagram",
-      "username": "Civic Shield",
-      "handle": "@thecivicshield",
-      "content": "Our central mission is bridging the critical gap between citizens and legal authority. Reciprocal respect can only emerge when citizens know their basic rights and authorities respect procedural boundaries. \n\nWe eliminate fear by teaching you basic laws. Click our link in bio to download our Free compliance and de-escalation toolkit PDFs! 📚🛡️",
       "imageUrl": "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=800",
-      "timestamp": "4 hours ago",
+      "content": "Our central mission is bridging the critical gap between citizens and legal authority. Reciprocal respect can only emerge when citizens know their basic rights and authorities respect procedural boundaries. \n\nWe eliminate fear by teaching you basic laws. Click our link in bio to download our Free compliance and de-escalation toolkit PDFs! 📚🛡️",
+      "platform": "instagram",
+      "id": "soc_2",
       "likes": 289,
-      "shares": 89,
-      "comments": 24
+      "handle": "@thecivicshield",
+      "comments": 24,
+      "timestamp": "4 hours ago",
+      "username": "Civic Shield",
+      "shares": 89
     },
     {
-      "id": "soc_1",
-      "platform": "linkedin",
-      "username": "Civic Shield Foundation",
-      "handle": "linkedin.com/company/civicshield",
-      "content": "Did you know? Representing yourself in local courts ('Pro-Se') is a constitutional absolute. However, filing municipal objection paperwork can feel incredibly scary.\n\nTo make this easy, we've uploaded clean, standardized boilerplate templates for objection responses directly to our online Evidence Room. Learn how to speak the institutional language and stand tall with confidence. 📚🛡️",
-      "timestamp": "1 day ago",
       "likes": 195,
       "shares": 72,
-      "comments": 15
+      "timestamp": "1 day ago",
+      "username": "Civic Shield Foundation",
+      "comments": 15,
+      "handle": "linkedin.com/company/civicshield",
+      "content": "Did you know? Representing yourself in local courts ('Pro-Se') is a constitutional absolute. However, filing municipal objection paperwork can feel incredibly scary.\n\nTo make this easy, we've uploaded clean, standardized boilerplate templates for objection responses directly to our online Evidence Room. Learn how to speak the institutional language and stand tall with confidence. 📚🛡️",
+      "id": "soc_1",
+      "platform": "linkedin"
     },
     {
+      "content": "📺 NEW VIDEO RELEASE: Walking through an active police detainment step-by-step. Discover how to politely resist unconstitutional searches while remaining fully compliant with officers' safe verbal requests. Watch the full simulation on our channel and learn how to guard your legal rights easily!",
       "id": "soc_youtube_1",
-      "platform": "youtube",
       "username": "Civic Shield Channel",
       "handle": "youtube.com/@civicshield",
-      "content": "📺 NEW VIDEO RELEASE: Walking through an active police detainment step-by-step. Discover how to politely resist unconstitutional searches while remaining fully compliant with officers' safe verbal requests. Watch the full simulation on our channel and learn how to guard your legal rights easily!",
-      "timestamp": "2 days ago",
       "likes": 412,
+      "timestamp": "2 days ago",
+      "comments": 48,
       "shares": 155,
-      "comments": 48
+      "platform": "youtube"
     }
   ],
   "newsletters": [
     {
-      "id": "news_1",
-      "subject": "Launching the Civic Shield Legal Literacy Vault!",
       "badge": "Campaign Launch",
       "body": "Dear Supporters,\n\nWe are absolutely thrilled to broadcast our very first Civic Shield digital archive dispatch! Our absolute aim is to bridge the hostile communication gap between our citizens and municipal authorial forces.\n\nInside our public evidence drawer, you will find our newly compiled civilian guide to police encounters, along with court boilerplate filing indexes. Please share these with family, neighbors, and colleagues. We eliminate fear with pure knowledge.\n\nIn solidarity,\nThe Civic Shield Coordinator Team",
+      "recipientCount": 1,
+      "subject": "Launching the Civic Shield Legal Literacy Vault!",
       "sentAt": "2026-06-13 11:20",
-      "recipientCount": 1
+      "id": "news_1"
     }
   ],
   "notificationLogs": [],
-  "lastUpdated": 1789904217985
+  "lastUpdated": 1793515815717
 };

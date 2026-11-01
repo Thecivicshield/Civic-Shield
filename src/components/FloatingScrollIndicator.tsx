@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useScroll, motion, AnimatePresence } from "motion/react";
 import { Shield, Sparkles, BookOpen, Compass, Award, X, ChevronRight, FileText, CheckCircle2 } from "lucide-react";
-import SovereignQuizArena from "./SovereignQuizArena";
 
 // Map section DOM element IDs to user-friendly legal names
 const SECTION_NAMES: Record<string, { title: string; desc: string }> = {
@@ -141,7 +140,6 @@ export default function FloatingScrollIndicator() {
   const { scrollYProgress } = useScroll();
   const [activeSection, setActiveSection] = useState<string>("hero");
   const [unlockedSections, setUnlockedSections] = useState<Set<string>>(new Set(["hero"]));
-  const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const [discoveryNotification, setDiscoveryNotification] = useState<{
     id: string;
@@ -686,19 +684,6 @@ export default function FloatingScrollIndicator() {
                 })}
               </div>
 
-              {/* Sovereign Trial Quiz Arena CTA */}
-              <div className="mt-2 relative">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsQuizOpen(true);
-                  }}
-                  className="w-full text-center py-1.5 bg-gradient-to-r from-[#d4af37]/15 to-[#d4af37]/35 hover:from-[#d4af37] hover:to-[#ffd754] text-[#d4af37] hover:text-[#001233] text-[9px] uppercase font-mono font-extrabold rounded-sm border border-[#d4af37]/40 transition-all cursor-pointer shadow-md tracking-widest flex items-center justify-center gap-1.5"
-                >
-                  <Award className="w-3.5 h-3.5 animate-bounce" /> Enter Trial Arena
-                </button>
-              </div>
-
               {/* Progress counter */}
               <div className="mt-3 pt-2.5 border-t border-[#d4af37]/10 flex items-center justify-between font-mono text-[8px] text-gray-400">
                 <span>PROGRESS:</span>
@@ -710,13 +695,6 @@ export default function FloatingScrollIndicator() {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Sovereign Trial Quiz Arena Modal */}
-      <SovereignQuizArena
-        isOpen={isQuizOpen}
-        onClose={() => setIsQuizOpen(false)}
-        unlockedSections={unlockedSections}
-      />
     </>
   );
 }

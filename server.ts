@@ -136,11 +136,24 @@ function saveData(newData: CivicShieldData) {
       console.warn("Failed writing to data/journal_store.json:", e);
     }
 
-    // 2. Write to civic_data.json
+    // 2. Write to civic_data.json (canonical master)
     try {
       fs.writeFileSync(CIVIC_DATA_PATH, jsonStr, "utf-8");
     } catch (e) {
       console.warn("Failed writing to civic_data.json:", e);
+    }
+
+    // 2b. Also sync to secondary workspace backup files if present so all JSON files match
+    const altBackups = [
+      path.join(process.cwd(), "civic_data (2).json"),
+      path.join(process.cwd(), "civic_data (1).json")
+    ];
+    for (const altPath of altBackups) {
+      try {
+        if (fs.existsSync(altPath)) {
+          fs.writeFileSync(altPath, jsonStr, "utf-8");
+        }
+      } catch (e) {}
     }
 
     // 3. Automatically sync changes directly to src/data/initialData.ts for redeployment retention
@@ -315,6 +328,33 @@ app.post("/api/update-passcode", (req, res) => {
     saveData(campaignData);
     console.log("✓ Master passcode successfully updated and saved across disk stores and initialData.ts");
     res.json({ success: true, message: "Master passcode updated and permanently synced across redeployments!" });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Force-sync current campaignData to all disk JSON files and initialData.ts
+app.post("/api/sync-to-json-file", (req, res) => {
+  try {
+    saveData(campaignData);
+    res.json({
+      success: true,
+      message: "Master database successfully committed and synchronized across civic_data.json, data/journal_store.json, and src/data/initialData.ts!",
+      lastUpdated: campaignData.lastUpdated,
+      questionsCount: campaignData.questions?.length || 0,
+      evidenceCount: campaignData.evidence?.length || 0
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Download / export current master JSON file
+app.get("/api/export-master-json", (req, res) => {
+  try {
+    res.setHeader("Content-Disposition", 'attachment; filename="civic_data.json"');
+    res.setHeader("Content-Type", "application/json");
+    res.send(JSON.stringify(campaignData, null, 2));
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -904,7 +944,7 @@ app.delete("/api/subscribe/:id", (req, res) => {
 // File upload (base64 upload for PDFs, videos, images, sheets)
 app.post("/api/upload", (req, res) => {
   try {
-    const { fileName, fileType, fileData, title, description, verifiedBy } = req.body;
+    const { fileName, fileType, fileData, title, description, verifiedBy, status, submittedBy } = req.body;
     if (!fileName || !fileData) {
       return res.status(400).json({ error: "Missing uploaded file components." });
     }
@@ -935,16 +975,22 @@ app.post("/api/upload", (req, res) => {
       calculatedSize = (buffer.length / (1024 * 1024)).toFixed(2) + " MB";
     }
     
+    // Check if submitted resource requires approval
+    const isPending = status === "pending" || (typeof verifiedBy === "string" && verifiedBy.toLowerCase().includes("pending"));
+    const resourceStatus = isPending ? "pending" : (status || "approved");
+
     const newEvidence: EvidenceItem = {
       id: "ev_" + Date.now(),
       title: title || finalFileName,
-      description: description || "Uploaded PDF/Video material",
+      description: description || "Uploaded citizen legal resource material",
       type: fileType || "pdf",
       fileName: finalFileName,
       fileUrl: fileUrl,
       uploadedAt: new Date().toISOString().split("T")[0],
       fileSize: calculatedSize,
-      verifiedBy: verifiedBy || "Campaign Coordinator"
+      verifiedBy: isPending ? "Pending Verification" : (verifiedBy || "Campaign Legal Desk"),
+      status: resourceStatus,
+      submittedBy: submittedBy || (isPending ? "Citizen Contributor" : "Campaign Administrator")
     };
     
     campaignData.evidence.unshift(newEvidence);
@@ -954,6 +1000,35 @@ app.post("/api/upload", (req, res) => {
   } catch (error: any) {
     console.error("Upload process crash:", error);
     res.status(500).json({ error: "Failed to upload file to the server: " + error.message });
+  }
+});
+
+// Approve a submitted legal resource
+app.post("/api/evidence/:id/approve", (req, res) => {
+  try {
+    const { id } = req.params;
+    const evIndex = campaignData.evidence.findIndex((e) => e.id === id);
+    if (evIndex !== -1) {
+      campaignData.evidence[evIndex].status = "approved";
+      campaignData.evidence[evIndex].verifiedBy = "Campaign Legal Desk (Approved)";
+      saveData(campaignData);
+      return res.json({ success: true, evidence: campaignData.evidence[evIndex] });
+    }
+    res.status(404).json({ error: "Legal resource not found." });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Reject or Remove a submitted legal resource
+app.post("/api/evidence/:id/reject", (req, res) => {
+  try {
+    const { id } = req.params;
+    campaignData.evidence = campaignData.evidence.filter((e) => e.id !== id);
+    saveData(campaignData);
+    res.json({ success: true, message: "Resource submission removed." });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -1294,15 +1369,35 @@ app.post("/api/chat", async (req, res) => {
     if (campaignData.visitorStats) {
       campaignData.visitorStats.chatInteractions = (campaignData.visitorStats.chatInteractions || 0) + 1;
       campaignData.visitorStats.consultationsGiven = (campaignData.visitorStats.consultationsGiven || 0) + 1;
-      saveData(campaignData);
     }
+
+    // Record every Q&A into campaignData.questions so it can be reviewed, edited, and added to the FAQ
+    const recordedQA: AnonymousQuestion = {
+      id: "qa_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+      text: message.trim(),
+      answer: aiResult.answer,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " • " + new Date().toLocaleDateString(),
+      answered: true,
+      repliedBy: aiResult.repliedBy || "AI Legal Advocate",
+      sources: aiResult.sources || [],
+      isPublic: false,
+      isFAQ: false,
+      category: isQuickRead ? "Quick Read" : "Constitutional Rights"
+    };
+
+    if (!Array.isArray(campaignData.questions)) {
+      campaignData.questions = [];
+    }
+    campaignData.questions.unshift(recordedQA);
+    saveData(campaignData);
 
     return res.json({
       success: true,
       answer: aiResult.answer,
       repliedBy: aiResult.repliedBy,
       sources: aiResult.sources || [],
-      quickRead: isQuickRead
+      quickRead: isQuickRead,
+      recordedQA: recordedQA
     });
   } catch (error: any) {
     console.error("Error in /api/chat:", error);
@@ -1323,7 +1418,9 @@ app.post("/api/questions", async (req, res) => {
       text,
       timestamp: timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + " " + new Date().toLocaleDateString(),
       answered: false,
-      isPublic: true
+      isPublic: true,
+      isFAQ: false,
+      category: "Citizen Query"
     };
     
     // Generate authoritative legal answer in real time using Gemini AI with Google Search Grounding
@@ -1346,11 +1443,74 @@ app.post("/api/questions", async (req, res) => {
       console.error("Async email notification error:", err);
     });
 
-    campaignData.questions.push(newQuestion);
+    campaignData.questions.unshift(newQuestion);
     saveData(campaignData);
     res.json(newQuestion);
   } catch (e: any) {
     console.error("Error submitting question:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Full update / edit a question & answer (for adding or refining FAQ entries)
+app.put("/api/questions/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text, answer, repliedBy, isPublic, isFAQ, category } = req.body;
+    const qIndex = campaignData.questions.findIndex((q) => q.id === id);
+    if (qIndex !== -1) {
+      if (typeof text === "string" && text.trim().length > 0) {
+        campaignData.questions[qIndex].text = text.trim();
+      }
+      if (typeof answer === "string") {
+        campaignData.questions[qIndex].answer = answer;
+        campaignData.questions[qIndex].answered = !!answer.trim();
+      }
+      if (typeof repliedBy === "string") {
+        campaignData.questions[qIndex].repliedBy = repliedBy;
+      }
+      if (typeof isPublic === "boolean") {
+        campaignData.questions[qIndex].isPublic = isPublic;
+      }
+      if (typeof isFAQ === "boolean") {
+        campaignData.questions[qIndex].isFAQ = isFAQ;
+        if (isFAQ) {
+          campaignData.questions[qIndex].isPublic = true;
+        }
+      }
+      if (typeof category === "string") {
+        campaignData.questions[qIndex].category = category;
+      }
+      saveData(campaignData);
+      return res.json({ success: true, question: campaignData.questions[qIndex] });
+    }
+    res.status(404).json({ error: "Question not found." });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Toggle FAQ status on a question & answer
+app.post("/api/questions/:id/toggle-faq", (req, res) => {
+  try {
+    const { id } = req.params;
+    const qIndex = campaignData.questions.findIndex((q) => q.id === id);
+    if (qIndex !== -1) {
+      const currentFaq = Boolean(campaignData.questions[qIndex].isFAQ);
+      const nextFaq = !currentFaq;
+      campaignData.questions[qIndex].isFAQ = nextFaq;
+      if (nextFaq) {
+        campaignData.questions[qIndex].isPublic = true;
+      }
+      saveData(campaignData);
+      return res.json({ 
+        success: true, 
+        isFAQ: nextFaq, 
+        question: campaignData.questions[qIndex] 
+      });
+    }
+    res.status(404).json({ error: "Question not found." });
+  } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
 });

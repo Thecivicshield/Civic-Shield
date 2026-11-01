@@ -4,7 +4,7 @@ import {
   Users, HelpCircle, Check, FileCheck, Trash2, Mail, Sparkles, Download, Copy,
   Github, RefreshCw, LogOut, CheckCircle2, AlertTriangle, Key, BookOpen, Scale,
   FileText, Shield, Plus, Edit2, CheckCircle, Search, Star, ExternalLink, Lock,
-  ClipboardCopy, ClipboardCheck, Code2, FileCode, CheckSquare, FileJson, Globe
+  ClipboardCopy, ClipboardCheck, Code2, FileCode, CheckSquare, FileJson, Globe, X
 } from "lucide-react";
 import { 
   LayoutBlock, BlogPost, AnonymousQuestion, NewsletterSub, SocialPost, 
@@ -49,6 +49,17 @@ interface AdminPanelProps {
   onDeleteSubscriber: (id: string) => Promise<void>;
   onDeleteEvidence: (id: string) => Promise<void>;
   onUpdateEvidence: (id: string, updatedFields: Partial<EvidenceItem>) => Promise<void>;
+  onApproveEvidence?: (id: string) => Promise<void>;
+  onRejectEvidence?: (id: string) => Promise<void>;
+  onUpdateQuestion?: (id: string, payload: {
+    text: string;
+    answer: string;
+    repliedBy: string;
+    isPublic: boolean;
+    isFAQ?: boolean;
+    category?: string;
+  }) => Promise<void>;
+  onToggleFaq?: (id: string) => Promise<void>;
   onUpdateStatutes?: (statutes: Statute[]) => void;
   onUpdateMyths?: (myths: Array<{ question: string; myth: string; answerOnTrue: string }>) => void;
   onUpdateCaseFiles?: (caseFiles: CaseFile[]) => void;
@@ -88,6 +99,10 @@ export default function AdminPanel({
   onDeleteSubscriber,
   onDeleteEvidence,
   onUpdateEvidence,
+  onApproveEvidence,
+  onRejectEvidence,
+  onUpdateQuestion,
+  onToggleFaq,
   onUpdateStatutes,
   onUpdateMyths,
   onUpdateCaseFiles,
@@ -226,6 +241,116 @@ export default function AdminPanel({
   // Q&A reply states
   const [replies, setReplies] = useState<{ [qId: string]: string }>({});
   const [replyStatus, setReplyStatus] = useState<{ [qId: string]: string }>({});
+
+  // Q&A moderation & FAQ states
+  const [adminQSearch, setAdminQSearch] = useState("");
+  const [adminQFilter, setAdminQFilter] = useState<'all' | 'faq' | 'unanswered' | 'answered'>('all');
+  const [editingQ, setEditingQ] = useState<AnonymousQuestion | null>(null);
+  const [editQForm, setEditQForm] = useState({
+    text: "",
+    answer: "",
+    repliedBy: "Campaign Legal Desk",
+    category: "Legal Guidance",
+    isPublic: true,
+    isFAQ: false
+  });
+  const [isSavingQ, setIsSavingQ] = useState(false);
+  const [faqTogglingId, setFaqTogglingId] = useState<string | null>(null);
+  const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
+  const [isSyncingJson, setIsSyncingJson] = useState(false);
+  const [approvingEvId, setApprovingEvId] = useState<string | null>(null);
+  const [rejectingEvId, setRejectingEvId] = useState<string | null>(null);
+
+  // Trigger server sync to master JSON file
+  const handleSyncToMasterJson = async () => {
+    setIsSyncingJson(true);
+    setSyncStatusMsg(null);
+    try {
+      const res = await fetch("/api/sync-to-json-file", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setSyncStatusMsg("✓ Master database permanently synchronized across all local storage and JSON files!");
+      } else {
+        throw new Error(data.error || "Failed to synchronize to disk JSON");
+      }
+    } catch (err: any) {
+      setSyncStatusMsg("Error syncing: " + err.message);
+    } finally {
+      setIsSyncingJson(false);
+      setTimeout(() => setSyncStatusMsg(null), 5000);
+    }
+  };
+
+  // Open edit Q&A modal
+  const handleOpenEditQ = (q: AnonymousQuestion) => {
+    setEditingQ(q);
+    setEditQForm({
+      text: q.text || "",
+      answer: q.answer || "",
+      repliedBy: q.repliedBy || "Campaign Legal Desk",
+      category: q.category || "Legal Guidance",
+      isPublic: q.isPublic !== false,
+      isFAQ: Boolean(q.isFAQ)
+    });
+  };
+
+  // Save edited Q&A
+  const handleSaveEditedQ = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQ) return;
+    setIsSavingQ(true);
+    try {
+      if (onUpdateQuestion) {
+        await onUpdateQuestion(editingQ.id, editQForm);
+      } else if (onAnswerQuestion) {
+        await onAnswerQuestion(editingQ.id, editQForm.answer, editQForm.repliedBy, editQForm.isPublic);
+      }
+      setEditingQ(null);
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsSavingQ(false);
+    }
+  };
+
+  // Toggle FAQ single click
+  const handleToggleFaqClick = async (qId: string) => {
+    if (!onToggleFaq) return;
+    setFaqTogglingId(qId);
+    try {
+      await onToggleFaq(qId);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFaqTogglingId(null);
+    }
+  };
+
+  // Approve pending evidence item
+  const handleApproveEvidenceClick = async (id: string) => {
+    if (!onApproveEvidence) return;
+    setApprovingEvId(id);
+    try {
+      await onApproveEvidence(id);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setApprovingEvId(null);
+    }
+  };
+
+  // Reject pending evidence item
+  const handleRejectEvidenceClick = async (id: string) => {
+    if (!onRejectEvidence) return;
+    setRejectingEvId(id);
+    try {
+      await onRejectEvidence(id);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRejectingEvId(null);
+    }
+  };
 
   // Layout order drag states
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -1754,52 +1879,356 @@ export default function AdminPanel({
             )}
           </form>
 
-          {/* Citizen Q&A Moderation List */}
-          <div className="space-y-3">
-            <h5 className="text-xs font-mono font-bold uppercase text-gray-400">
-              Citizen Queries & Consultations ({questions.length})
-            </h5>
-            {questions.map((q) => (
-              <div key={q.id} className="p-4 bg-[#001a4d] border border-[#d4af37]/20 rounded-sm space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] font-mono text-gray-400">{q.timestamp}</span>
-                  <button
-                    onClick={() => onDeleteQuestion(q.id)}
-                    className="text-red-400 hover:text-red-300 p-1 cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <p className="text-xs font-serif font-semibold text-white">"{q.text}"</p>
-                {q.answer && (
-                  <div className="p-3 bg-black/30 border-l-2 border-[#d4af37] rounded-sm text-xs text-gray-300 space-y-1.5">
-                    <span className="text-[9px] font-mono text-[#d4af37] block font-bold">Answer ({q.repliedBy || "AI Advocate"}):</span>
-                    <div className="leading-relaxed">{q.answer}</div>
-                    {q.sources && q.sources.length > 0 && (
-                      <div className="pt-2 border-t border-[#d4af37]/15 text-[9px] space-y-1">
-                        <span className="text-[#ffd754] font-mono font-bold flex items-center gap-1">
-                          <Globe className="w-2.5 h-2.5" /> Citations ({q.sources.length}):
+          {/* Citizen Q&A Moderation & FAQ Curation */}
+          <div className="space-y-4">
+            {/* Header and Master Sync Bar */}
+            <div className="p-4 bg-[#001433] border border-[#d4af37]/35 rounded-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+              <div>
+                <h5 className="text-xs font-mono font-bold uppercase text-white flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-[#ffd754]" />
+                  Citizen Queries & FAQ Curation Desk ({questions.length})
+                </h5>
+                <p className="text-[10px] text-gray-300 font-sans mt-0.5">
+                  Approve legal answers, toggle featured status for citizen FAQs, and synchronize permanent disk records.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSyncToMasterJson}
+                  disabled={isSyncingJson}
+                  className="py-1.5 px-3 bg-[#d4af37] hover:bg-[#b08f25] disabled:opacity-50 text-[#001233] font-mono font-bold text-[10px] rounded-sm flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm"
+                  title="Synchronize all data to civic_data.json and data/journal_store.json"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isSyncingJson ? 'animate-spin' : ''}`} />
+                  {isSyncingJson ? "Syncing Disk..." : "Sync to Master JSON"}
+                </button>
+
+                <a
+                  href="/api/export-master-json"
+                  download="civic_data.json"
+                  className="py-1.5 px-3 bg-[#001a4d] hover:bg-[#002266] border border-[#d4af37]/40 text-[#d4af37] font-mono font-bold text-[10px] rounded-sm flex items-center gap-1.5 transition-colors"
+                  title="Download copy of database"
+                >
+                  <Download className="w-3 h-3" />
+                  Export JSON
+                </a>
+              </div>
+            </div>
+
+            {syncStatusMsg && (
+              <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs rounded-sm font-mono flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{syncStatusMsg}</span>
+              </div>
+            )}
+
+            {/* Filter and Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                <button
+                  type="button"
+                  onClick={() => setAdminQFilter('all')}
+                  className={`px-3 py-1 text-[10px] font-mono rounded-sm transition-colors cursor-pointer ${
+                    adminQFilter === 'all'
+                      ? 'bg-[#d4af37] text-[#001233] font-bold'
+                      : 'bg-[#001a4d] text-gray-300 hover:text-white border border-[#d4af37]/20'
+                  }`}
+                >
+                  All ({questions.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminQFilter('faq')}
+                  className={`px-3 py-1 text-[10px] font-mono rounded-sm transition-colors cursor-pointer flex items-center gap-1 ${
+                    adminQFilter === 'faq'
+                      ? 'bg-amber-400 text-black font-bold'
+                      : 'bg-[#001a4d] text-amber-300 hover:text-amber-200 border border-amber-500/30'
+                  }`}
+                >
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  Featured FAQs ({questions.filter(q => q.isFAQ).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminQFilter('answered')}
+                  className={`px-3 py-1 text-[10px] font-mono rounded-sm transition-colors cursor-pointer ${
+                    adminQFilter === 'answered'
+                      ? 'bg-emerald-600 text-white font-bold'
+                      : 'bg-[#001a4d] text-gray-300 hover:text-white border border-[#d4af37]/20'
+                  }`}
+                >
+                  Answered ({questions.filter(q => !!q.answer).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAdminQFilter('unanswered')}
+                  className={`px-3 py-1 text-[10px] font-mono rounded-sm transition-colors cursor-pointer ${
+                    adminQFilter === 'unanswered'
+                      ? 'bg-red-600 text-white font-bold'
+                      : 'bg-[#001a4d] text-gray-300 hover:text-white border border-[#d4af37]/20'
+                  }`}
+                >
+                  Pending Reply ({questions.filter(q => !q.answer).length})
+                </button>
+              </div>
+
+              <div className="relative min-w-[200px] sm:w-64">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Filter queries, answers..."
+                  value={adminQSearch}
+                  onChange={(e) => setAdminQSearch(e.target.value)}
+                  className="w-full bg-[#001233] text-xs text-white border border-[#d4af37]/25 rounded-sm pl-8 pr-2.5 py-1.5 focus:outline-none focus:border-[#d4af37]"
+                />
+              </div>
+            </div>
+
+            {/* Questions List */}
+            <div className="space-y-3">
+              {questions
+                .filter((q) => {
+                  if (adminQFilter === 'faq' && !q.isFAQ) return false;
+                  if (adminQFilter === 'answered' && !q.answer) return false;
+                  if (adminQFilter === 'unanswered' && q.answer) return false;
+                  if (adminQSearch.trim()) {
+                    const query = adminQSearch.toLowerCase();
+                    const textMatch = q.text?.toLowerCase().includes(query);
+                    const answerMatch = q.answer?.toLowerCase().includes(query);
+                    const catMatch = q.category?.toLowerCase().includes(query);
+                    if (!textMatch && !answerMatch && !catMatch) return false;
+                  }
+                  return true;
+                })
+                .map((q) => (
+                  <div key={q.id} className="p-4 bg-[#001a4d] border border-[#d4af37]/20 rounded-sm space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {q.isFAQ && (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/50 px-2 py-0.5 rounded-sm">
+                            <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                            FEATURED FAQ
+                          </span>
+                        )}
+                        <span className="text-[9px] font-mono text-gray-400">{q.timestamp}</span>
+                        {q.category && (
+                          <span className="text-[9px] font-mono bg-[#001233] text-[#d4af37] px-2 py-0.5 rounded-sm border border-[#d4af37]/20">
+                            {q.category}
+                          </span>
+                        )}
+                        <span className={`text-[8.5px] font-mono px-1.5 py-0.5 rounded-sm ${q.isPublic !== false ? 'bg-emerald-950 text-emerald-400' : 'bg-gray-800 text-gray-400'}`}>
+                          {q.isPublic !== false ? 'Public' : 'Private'}
                         </span>
-                        <div className="flex flex-wrap gap-1">
-                          {q.sources.map((s, si) => (
-                            <a
-                              key={si}
-                              href={s.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-1.5 py-0.5 bg-[#001433] hover:bg-[#d4af37]/20 border border-[#d4af37]/30 text-gray-200 rounded-sm text-[8.5px] truncate max-w-[180px]"
-                            >
-                              {s.title || s.url}
-                            </a>
-                          ))}
-                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {onToggleFaq && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleFaqClick(q.id)}
+                            disabled={faqTogglingId === q.id}
+                            className={`px-2 py-1 text-[9.5px] font-mono rounded-sm flex items-center gap-1 transition-colors cursor-pointer ${
+                              q.isFAQ
+                                ? 'bg-amber-400 text-black font-bold hover:bg-amber-300'
+                                : 'bg-[#001233] text-gray-300 hover:text-amber-300 border border-[#d4af37]/30'
+                            }`}
+                            title="Toggle whether this question appears as a verified FAQ"
+                          >
+                            <Star className={`w-3 h-3 ${q.isFAQ ? 'fill-black' : ''}`} />
+                            {q.isFAQ ? "Remove FAQ" : "★ Add to FAQ"}
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditQ(q)}
+                          className="px-2 py-1 text-[9.5px] font-mono bg-[#001233] hover:bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/30 rounded-sm flex items-center gap-1 cursor-pointer transition-colors"
+                          title="Edit question text, answer, expert byline, or category"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          Edit Q&A
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onDeleteQuestion(q.id)}
+                          className="text-red-400 hover:text-red-300 p-1 cursor-pointer rounded-sm hover:bg-red-950/40"
+                          title="Delete Q&A"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-xs font-serif font-semibold text-white">"{q.text}"</p>
+
+                    {q.answer ? (
+                      <div className="p-3 bg-black/30 border-l-2 border-[#d4af37] rounded-sm text-xs text-gray-300 space-y-1.5">
+                        <span className="text-[9px] font-mono text-[#d4af37] block font-bold">
+                          Answer ({q.repliedBy || "AI Legal Advocate"}):
+                        </span>
+                        <div className="leading-relaxed whitespace-pre-line">{q.answer}</div>
+                        {q.sources && q.sources.length > 0 && (
+                          <div className="pt-2 border-t border-[#d4af37]/15 text-[9px] space-y-1">
+                            <span className="text-[#ffd754] font-mono font-bold flex items-center gap-1">
+                              <Globe className="w-2.5 h-2.5" /> Citations ({q.sources.length}):
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {q.sources.map((s, si) => (
+                                <a
+                                  key={si}
+                                  href={s.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-1.5 py-0.5 bg-[#001433] hover:bg-[#d4af37]/20 border border-[#d4af37]/30 text-gray-200 rounded-sm text-[8.5px] truncate max-w-[180px]"
+                                >
+                                  {s.title || s.url}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-2.5 bg-amber-950/20 border border-amber-500/20 rounded-sm flex items-center justify-between">
+                        <span className="text-[10px] font-mono text-amber-300">Awaiting expert response</span>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditQ(q)}
+                          className="px-2 py-0.5 bg-[#d4af37] text-black font-mono text-[9px] font-bold rounded-sm hover:bg-[#b08f25] cursor-pointer"
+                        >
+                          Provide Answer
+                        </button>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                ))}
+
+              {questions.length === 0 && (
+                <div className="p-6 bg-[#001a4d] border border-[#d4af37]/20 rounded-sm text-center text-xs text-gray-400">
+                  No citizen queries or consultations recorded yet.
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* Edit Q&A Modal */}
+          {editingQ && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
+              <div className="bg-[#00163a] border border-[#d4af37]/50 rounded-sm w-full max-w-xl p-6 space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between pb-3 border-b border-[#d4af37]/20">
+                  <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-[#ffd754] flex items-center gap-2">
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Edit Citizen Query & Legal Response
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setEditingQ(null)}
+                    className="text-gray-400 hover:text-white p-1 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveEditedQ} className="space-y-3 text-left">
+                  <div>
+                    <label className="text-[9px] font-mono uppercase text-gray-300 block mb-1">
+                      Citizen Question
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={editQForm.text}
+                      onChange={(e) => setEditQForm({ ...editQForm, text: e.target.value })}
+                      className="w-full bg-[#001233] text-xs text-white border border-[#d4af37]/25 rounded-sm p-2"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[9px] font-mono uppercase text-[#ffd754] block mb-1">
+                      Legal Answer / Response
+                    </label>
+                    <textarea
+                      rows={5}
+                      value={editQForm.answer}
+                      onChange={(e) => setEditQForm({ ...editQForm, answer: e.target.value })}
+                      className="w-full bg-[#001233] text-xs text-white border border-[#d4af37]/25 rounded-sm p-2"
+                      placeholder="Write verified legal advice and statutory guidance..."
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[9px] font-mono uppercase text-gray-300 block mb-1">
+                        Replied By / Expert
+                      </label>
+                      <input
+                        type="text"
+                        value={editQForm.repliedBy}
+                        onChange={(e) => setEditQForm({ ...editQForm, repliedBy: e.target.value })}
+                        className="w-full bg-[#001233] text-xs text-white border border-[#d4af37]/25 rounded-sm p-2"
+                        placeholder="e.g. Legal Research Team"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[9px] font-mono uppercase text-gray-300 block mb-1">
+                        Category
+                      </label>
+                      <input
+                        type="text"
+                        value={editQForm.category}
+                        onChange={(e) => setEditQForm({ ...editQForm, category: e.target.value })}
+                        className="w-full bg-[#001233] text-xs text-white border border-[#d4af37]/25 rounded-sm p-2"
+                        placeholder="e.g. Fundamental Rights, Police Stops"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-6 pt-2 pb-1">
+                    <label className="flex items-center gap-2 text-xs text-white cursor-pointer font-mono">
+                      <input
+                        type="checkbox"
+                        checked={editQForm.isPublic}
+                        onChange={(e) => setEditQForm({ ...editQForm, isPublic: e.target.checked })}
+                        className="rounded accent-[#d4af37]"
+                      />
+                      Make Publicly Viewable
+                    </label>
+
+                    <label className="flex items-center gap-2 text-xs text-amber-300 cursor-pointer font-mono font-bold">
+                      <input
+                        type="checkbox"
+                        checked={editQForm.isFAQ}
+                        onChange={(e) => setEditQForm({ ...editQForm, isFAQ: e.target.checked })}
+                        className="rounded accent-amber-400"
+                      />
+                      ★ Pin as Featured FAQ in Vault
+                    </label>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#d4af37]/20">
+                    <button
+                      type="button"
+                      onClick={() => setEditingQ(null)}
+                      className="px-4 py-2 bg-transparent hover:bg-white/5 text-gray-300 text-xs font-mono rounded-sm cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSavingQ}
+                      className="px-5 py-2 bg-[#d4af37] hover:bg-[#b08f25] disabled:opacity-50 text-[#001233] font-mono font-bold text-xs uppercase rounded-sm cursor-pointer transition-colors shadow-md"
+                    >
+                      {isSavingQ ? "Saving Changes..." : "Save Changes & Update JSON Database"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1898,18 +2327,90 @@ export default function AdminPanel({
             </button>
           </form>
 
-          {/* Evidence List */}
+          {/* Pending Submissions Queue */}
+          {evidence.filter(ev => ev.status === 'pending').length > 0 && (
+            <div className="space-y-3 p-4 bg-amber-950/25 border border-amber-500/35 rounded-sm">
+              <div className="flex items-center justify-between">
+                <h5 className="text-xs font-mono font-bold uppercase text-amber-300 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  Pending Citizen Resource Submissions ({evidence.filter(ev => ev.status === 'pending').length})
+                </h5>
+                <span className="text-[10px] font-mono text-amber-400/90 font-bold">Needs Verification & Approval</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {evidence.filter(ev => ev.status === 'pending').map((ev) => (
+                  <div key={ev.id} className="p-4 bg-[#001433] border border-amber-500/40 rounded-sm space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-sm uppercase font-bold border border-amber-500/30">
+                        Pending Review
+                      </span>
+                      <span className="text-[9px] font-mono text-gray-400">{ev.uploadedAt || "Recently"}</span>
+                    </div>
+                    <div>
+                      <h6 className="text-xs font-serif font-bold text-white">{ev.title}</h6>
+                      <p className="text-[11px] text-gray-300 mt-1 line-clamp-2">{ev.description}</p>
+                      {ev.submittedBy && (
+                        <p className="text-[9px] font-mono text-gray-400 mt-1">Submitted by: <span className="text-amber-200">{ev.submittedBy}</span></p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 pt-2 border-t border-white/10">
+                      {ev.fileUrl && (
+                        <a
+                          href={ev.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2 py-1 text-[10px] font-mono bg-[#001a4d] hover:bg-[#002266] text-gray-200 border border-[#d4af37]/30 rounded-sm flex items-center gap-1"
+                        >
+                          <Eye className="w-3 h-3 text-[#d4af37]" /> Inspect
+                        </a>
+                      )}
+                      {onApproveEvidence && (
+                        <button
+                          type="button"
+                          onClick={() => handleApproveEvidenceClick(ev.id)}
+                          disabled={approvingEvId === ev.id}
+                          className="flex-1 py-1 px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-[10px] rounded-sm flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                        >
+                          <Check className="w-3 h-3" />
+                          {approvingEvId === ev.id ? "Approving..." : "Approve & Publish to Vault"}
+                        </button>
+                      )}
+                      {onRejectEvidence && (
+                        <button
+                          type="button"
+                          onClick={() => handleRejectEvidenceClick(ev.id)}
+                          disabled={rejectingEvId === ev.id}
+                          className="py-1 px-2.5 bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-500/30 font-mono text-[10px] rounded-sm flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-50"
+                          title="Reject Submission"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          {rejectingEvId === ev.id ? "..." : "Reject"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Active Documents List */}
           <div className="space-y-3">
             <h5 className="text-xs font-mono font-bold uppercase text-gray-400">
-              Active Documents ({evidence.length})
+              Active Vault Documents ({evidence.filter(ev => ev.status !== 'pending').length})
             </h5>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {evidence.map((ev) => (
+              {evidence.filter(ev => ev.status !== 'pending').map((ev) => (
                 <div key={ev.id} className="p-4 bg-[#001a4d] border border-[#d4af37]/20 rounded-sm space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono bg-[#d4af37]/15 text-[#d4af37] px-2 py-0.5 rounded-sm uppercase font-bold">
-                      {ev.type}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-mono bg-[#d4af37]/15 text-[#d4af37] px-2 py-0.5 rounded-sm uppercase font-bold">
+                        {ev.type}
+                      </span>
+                      <span className="text-[9px] font-mono bg-emerald-950 text-emerald-400 border border-emerald-500/25 px-1.5 py-0.5 rounded-sm">
+                        Verified
+                      </span>
+                    </div>
                     <button
                       onClick={() => onDeleteEvidence(ev.id)}
                       className="text-red-400 hover:text-red-300 p-1 cursor-pointer"

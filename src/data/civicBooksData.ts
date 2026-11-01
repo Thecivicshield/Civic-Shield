@@ -36,21 +36,21 @@ export const CIVIC_BOOKS: Record<"rights" | "goals" | "mission", CivicBook> = {
     volumeNumber: "VOLUME I",
     title: "Handbook of Citizen Rights",
     displayTitle: "Handbook of Citizen Rights",
-    subtitle: "Practical Procedural Shields & Statutory Safeguards Under Indian Law",
+    subtitle: "Practical Procedural Shields & Universal Constitutional Safeguards",
     edition: "2026 Sovereign Edition",
     coverColor: "from-[#0a192f] via-[#0f274a] to-[#051124]",
     accentColor: "#d4af37",
     insignia: "scale",
     readTime: "4 min read",
     chapterCountLabel: "5 Concise Chapters",
-    summary: "Clear, non-repetitive procedural scripts for police stops, device privacy, Section 41A, FIR filing, and roadside encounters.",
+    summary: "Clear, non-repetitive procedural scripts for police stops, device privacy, notice of appearance, incident filing, and roadside encounters.",
     chapters: [
       {
         id: "stop-rules",
         number: "01",
         title: "The 3 Inviolable Stop Rules",
         subtitle: "How to Establish Immediate Legal Grounding During Any Stop",
-        statuteRef: "Article 21 & D.K. Basu Guidelines (Supreme Court of India)",
+        statuteRef: "Universal Constitutional Due Process & Custodial Precedents",
         badge: "ROADSIDE & ENCOUNTER",
         summary: "When approached by law enforcement, avoid argumentation. Instead, use these 3 exact procedural questions to clarify your legal status instantly.",
         corePoints: [
@@ -97,48 +97,48 @@ export const CIVIC_BOOKS: Record<"rights" | "goals" | "mission", CivicBook> = {
       {
         id: "arrest-safeguards",
         number: "03",
-        title: "Arrest Safeguards & Section 41A",
+        title: "Custodial Limits & Notice Requirements",
         subtitle: "Strict Statutory Limits on Direct Police Custody",
-        statuteRef: "Section 41A CrPC / Sec 35 BNSS & Arnesh Kumar v. State of Bihar",
+        statuteRef: "Universal Due Process & Statutory Summons Precedents",
         badge: "CUSTODIAL PROTECTION",
-        summary: "Direct arrest is not automatic in modern criminal procedure. In offenses carrying penalties under 7 years, direct arrest is unlawful without special recorded reasons.",
+        summary: "Direct arrest is not automatic in modern criminal procedure. In non-violent offenses or preliminary inquiries, direct arrest is unlawful without special recorded reasons.",
         corePoints: [
           {
             heading: "Notice of Appearance First",
-            text: "Under Section 41A CrPC, police must first issue a formal Notice of Appearance requiring you to join investigation, rather than arresting you directly.",
-            script: "“Under Section 41A and the Supreme Court's Arnesh Kumar ruling, please provide a written Notice of Appearance specifying the investigation date.”"
+            text: "Under statutory due process standards, officers must first issue a formal Notice of Appearance requiring you to attend an inquiry, rather than arresting you directly.",
+            script: "“Under statutory due process guidelines, please provide a written Notice of Appearance specifying the inquiry date.”"
           },
           {
             heading: "Right to Inform Family & Legal Counsel",
-            text: "Within 8 to 12 hours of arrest, police must inform a friend or family member designated by you, and you have the right to meet with your advocate during interrogation.",
-            script: "“I request to contact my family member and speak with my legal advocate immediately under D.K. Basu guidelines.”"
+            text: "Promptly upon any detention, officers must allow you to notify a designated friend or family member, and you possess the right to consult legal counsel before interrogation.",
+            script: "“I request to contact my family and speak with my legal counsel immediately under established procedural safeguards.”"
           },
           {
-            heading: "Mandatory Medical Examination",
-            text: "You are legally entitled to a certified medical examination upon arrest to document physical health and ensure protection against custodial abuse.",
-            script: "“I request a recorded medical examination before the magistrate or medical officer under Section 54 CrPC.”"
+            heading: "Mandatory Independent Record & Medical Review",
+            text: "You are legally entitled to have your physical condition certified upon custody to prevent undisclosed abuse and document all personal possessions.",
+            script: "“I request an official recorded custody memo and a certified medical examination as required by law.”"
           }
         ],
-        takeaway: "Arrest must be an exception, not the default tool for harassment. A Notice of Appearance is the lawful statutory standard."
+        takeaway: "Arrest must be an exception, not the default tool for harassment. A written Notice of Appearance is the lawful statutory standard."
       },
       {
         id: "fir-rights",
         number: "04",
-        title: "FIR Registration & Station Protocols",
+        title: "Crime Incident Reporting & Precinct Protocols",
         subtitle: "Your Rights When Registering Complaints or Visiting Police Stations",
-        statuteRef: "Section 154 CrPC & Lalita Kumari v. Govt of UP",
+        statuteRef: "Mandatory Incident Reporting & Public Precinct Regulations",
         badge: "STATION PROTOCOLS",
         summary: "Police stations can be intimidating environments. Knowing your statutory entitlements prevents unlawful refusals and delays.",
         corePoints: [
           {
-            heading: "Mandatory 'Zero FIR'",
-            text: "A police station CANNOT refuse to register an FIR simply because the crime occurred outside their jurisdiction. They must register a 'Zero FIR' and transfer it to the concerned precinct.",
-            script: "“Under Supreme Court guidelines, this station is mandated to lodge a Zero FIR and transfer the file to the jurisdictional station.”"
+            heading: "Mandatory Incident Registration",
+            text: "A police precinct CANNOT refuse to register a formal crime complaint simply because the crime occurred outside their immediate territory. They must register the report and transfer the file.",
+            script: "“Under binding statutory directives, this station is mandated to record this incident report and transfer the file to the jurisdictional unit.”"
           },
           {
-            heading: "Free Certified Copy of FIR",
-            text: "You are legally entitled to receive an immediate, free of cost, signed copy of the FIR as soon as it is registered (Section 154(2) CrPC).",
-            script: "“Please provide my free certified copy of the registered First Information Report now.”"
+            heading: "Free Certified Copy of Report",
+            text: "You are legally entitled to receive an immediate, free of cost, signed copy of the registered complaint as soon as it is entered into the official docket.",
+            script: "“Please provide my free certified copy of the registered crime report now.”"
           },
           {
             heading: "Protections for Women Citizens",
@@ -255,7 +255,7 @@ export const CIVIC_BOOKS: Record<"rights" | "goals" | "mission", CivicBook> = {
           },
           {
             heading: "Our Strategic Solution",
-            text: "Every published guide is peer-reviewed by retired jurists and academic scholars strictly against binding Supreme Court precedents."
+            text: "Every published guide is peer-reviewed by retired jurists and academic scholars strictly against binding constitutional precedents."
           },
           {
             heading: "Target Benchmark",

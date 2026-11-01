@@ -33,8 +33,7 @@ export default function MobileSectionSwitcher({
       case "vault":
         return [
           { id: "evidence", label: "Evidence Files", icon: "📂" },
-          { id: "justice-shield", label: "Scenario Shield", icon: "🛡️" },
-          { id: "impact-metrics", label: "Impact Ledger", icon: "📊" }
+          { id: "justice-shield", label: "Scenario Shield", icon: "🛡️" }
         ];
       case "dispatch":
         return [

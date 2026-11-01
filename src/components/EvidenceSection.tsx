@@ -111,26 +111,26 @@ export const INSTANT_RIGHTS_REGISTRY: ConstitutionalRightDossier[] = [
     category: "property",
     categoryLabel: "Property & Municipal Defense",
     title: "Protection Against Arbitrary Demolition & Natural Justice Rule",
-    statute: "Article 300A, Constitution of India / Principles of Natural Justice",
-    landmarkCase: "Olga Tellis v. BMC (1985) / Supreme Court Demolition Guidelines (2024)",
-    summary: "No municipal corporation, development authority, or administrative body can demolish residential or commercial structures without issuing a mandatory 15-day show-cause notice and providing a fair personal hearing (Audi Alteram Partem).",
-    dialogueScript: "“Under the Supreme Court's binding demolition directives and Article 300A, no punitive action can proceed without a 15-day statutory show-cause notice and a formal speaking order addressing our written reply.”",
+    statute: "Principles of Natural Justice & Constitutional Property Protections",
+    landmarkCase: "Universal Administrative Due Process & Property Directives",
+    summary: "No municipal corporation, development authority, or administrative body can demolish residential or commercial structures without issuing a mandatory show-cause notice and providing a fair personal hearing (Audi Alteram Partem).",
+    dialogueScript: "“Under binding administrative due process directives and property safeguards, no punitive action can proceed without a mandatory statutory show-cause notice and a formal speaking order addressing our written reply.”",
     proceduralSteps: [
-      "Upon receiving any notice, immediately prepare a dated written objection referencing your sanction plans, tax receipts, and electricity bills.",
-      "File your reply with the Municipal Commissioner via Registered Post A.D. and hand delivery with an acknowledged receiving stamp.",
-      "If demolition is threatened without due process, approach the District Civil Court or High Court under Article 226 for an ad-interim stay."
+      "Upon receiving any notice, immediately prepare a dated written objection referencing your sanction plans, tax receipts, and utility bills.",
+      "File your reply with the Municipal authority via Certified Mail and hand delivery with an acknowledged receiving stamp.",
+      "If demolition is threatened without due process, approach the Civil Court or High Court for an ad-interim stay."
     ],
-    keySafeguard: "Demolition cannot be executed within 15 days of the speaking order, allowing the citizen reasonable time to seek judicial remedy."
+    keySafeguard: "Demolition cannot be executed within the statutory notice period of the speaking order, allowing the citizen reasonable time to seek judicial remedy."
   },
   {
     id: "right-party-in-person",
     category: "court",
     categoryLabel: "Self-Advocacy in Courts",
     title: "Sovereign Right to Self-Representation (Party-in-Person)",
-    statute: "Section 32, Advocates Act, 1961 / Order IV, Supreme Court Rules 2013",
-    landmarkCase: "T.C. Mathai v. District & Sessions Judge (1999) 3 SCC 614",
-    summary: "Citizens are not legally required to hire costly private advocates. Under Section 32 of the Advocates Act, any court or tribunal has statutory discretion to allow a non-advocate to draft, file, and argue their own case with full legal standing.",
-    dialogueScript: "“Your Honor, I appear respectfully as a Party-in-Person under Section 32 of the Advocates Act, 1961. I have complied with court registry formats and pray for permission to state my case.”",
+    statute: "Universal Right to Self-Representation (Pro-Se / Party-in-Person)",
+    landmarkCase: "Common Law & Statutory Self-Representation Jurisprudence",
+    summary: "Citizens are not legally required to hire costly private advocates. The judiciary recognizes the sovereign right of any individual to draft, file, and argue their own case with full legal standing.",
+    dialogueScript: "“Your Honor, I appear respectfully as a self-represented litigant (Party-in-Person). I have complied with court registry formats and pray for permission to state my case.”",
     proceduralSteps: [
       "Format your petition with standard margins, index, synopsis, verified affidavit, and court fees.",
       "Submit your papers to the High Court / District Court Filing Counter with a Party-in-Person verification form.",
@@ -193,10 +193,19 @@ interface EvidenceSectionProps {
   evidence: EvidenceItem[];
   isAdmin: boolean;
   onDeleteEvidence: (id: string) => Promise<void>;
+  onApproveEvidence?: (id: string) => Promise<void>;
+  onRejectEvidence?: (id: string) => Promise<void>;
   accentColor: string;
 }
 
-export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, accentColor }: EvidenceSectionProps) {
+export default function EvidenceSection({ 
+  evidence, 
+  isAdmin, 
+  onDeleteEvidence, 
+  onApproveEvidence,
+  onRejectEvidence,
+  accentColor 
+}: EvidenceSectionProps) {
   // Vault Chambers: "matrix" (Instant Rights Matrix) vs "locker" (Evidence Files) vs "scenarios" (Emergency Tactical Action)
   const [activeChamber, setActiveChamber] = useState<'matrix' | 'locker' | 'scenarios'>('matrix');
   
@@ -204,7 +213,7 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
   const [rightsCategory, setRightsCategory] = useState<string>('all');
   const [rightsSearch, setRightsSearch] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [expandedRightId, setExpandedRightId] = useState<string | null>("right-police-stop");
+  const [expandedRightId, setExpandedRightId] = useState<string | null>(null);
 
   // Document Locker Filters
   const [activeDocFilter, setActiveDocFilter] = useState<'all' | 'pdf' | 'video' | 'spreadsheet'>('all');
@@ -243,6 +252,10 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
   // Filtered Documents
   const filteredDocs = useMemo(() => {
     return evidence.filter(item => {
+      // Non-admins only see approved resources
+      if (!isAdmin && item.status === 'pending') return false;
+      if (item.status === 'rejected') return false;
+
       const matchesFilter = activeDocFilter === 'all' || item.type === activeDocFilter;
       const q = docSearchQuery.toLowerCase().trim();
       const matchesSearch = !q || 
@@ -251,7 +264,7 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
         (item.fileName || "").toLowerCase().includes(q);
       return matchesFilter && matchesSearch;
     });
-  }, [evidence, activeDocFilter, docSearchQuery]);
+  }, [evidence, activeDocFilter, docSearchQuery, isAdmin]);
 
   const handleCopyScript = (scriptText: string, id: string) => {
     try {
@@ -293,11 +306,11 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
       icon: Smartphone,
       threat: "Illegal browsing of personal galleries, chats, banking apps, and private messages.",
       steps: [
-        "Step 1: Do not panic. State clearly: 'Officer, my phone contains private and personal data protected under Article 20(3) and the Puttaswamy Supreme Court ruling.'",
-        "Step 2: Ask: 'Do you have a judicial search warrant from a Magistrate authorized to search this device?'",
-        "Step 3: If forcefully seized under Sec 102 CrPC, demand a formal written Seizure Memo (Panchnama) signed by independent witnesses on the spot."
+        "Step 1: Do not panic. State clearly: 'Officer, my phone contains private and personal data protected under constitutional privacy and protections against self-incrimination.'",
+        "Step 2: Ask: 'Do you have a judicial search warrant signed by a neutral judge authorized to search this device?'",
+        "Step 3: If forcefully seized, demand a formal written Seizure Memo signed by independent witnesses on the spot."
       ],
-      legalWeapon: "Justice K.S. Puttaswamy (Retd.) v. Union of India / Article 20(3)"
+      legalWeapon: "Constitutional Privacy & Digital Sanctity Doctrine"
     },
     {
       title: "Demolition Notice or Municipal Inspection",
@@ -305,11 +318,11 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
       icon: Landmark,
       threat: "Unscheduled demolition warnings, property sealing, or municipal eviction threats.",
       steps: [
-        "Step 1: Demand the certified copy of the 15-day Show-Cause Notice in writing. Verbal orders or 24-hour warnings are illegal.",
-        "Step 2: Immediately compile your property title deed, tax receipts, sanctioned building plan, and electricity bills.",
-        "Step 3: File a formal written reply via Registered Post A.D. and approach the Civil Court or High Court for an immediate stay injunction."
+        "Step 1: Demand the certified copy of the written Show-Cause Notice. Verbal orders or summary warnings violate due process.",
+        "Step 2: Immediately compile your property title deed, tax receipts, sanctioned building plan, and utility bills.",
+        "Step 3: File a formal written reply via Certified Mail and approach the Civil Court or High Court for an immediate stay injunction."
       ],
-      legalWeapon: "Supreme Court Demolition Directives (2024) / Article 300A"
+      legalWeapon: "Principles of Natural Justice & Property Sanctity Directives"
     },
     {
       title: "Public Office Refuses RTI Application",
@@ -689,9 +702,16 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
                             <HolographicVerifiedBadge verifiedBy={item.verifiedBy} compact={true} />
                           )}
                         </div>
-                        <span className="text-[10px] uppercase font-mono tracking-widest text-[#ffd754] bg-[#d4af37]/15 px-2 py-0.5 rounded border border-[#d4af37]/30 font-bold">
-                          {item.fileSize}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {item.status === 'pending' && (
+                            <span className="text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-sm flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-amber-400" /> Awaiting Approval
+                            </span>
+                          )}
+                          <span className="text-[10px] uppercase font-mono tracking-widest text-[#ffd754] bg-[#d4af37]/15 px-2 py-0.5 rounded border border-[#d4af37]/30 font-bold">
+                            {item.fileSize}
+                          </span>
+                        </div>
                       </div>
 
                       <div>
@@ -701,6 +721,11 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
                         <p className="text-xs text-gray-300 leading-relaxed font-light mt-1.5">
                           {item.description}
                         </p>
+                        {item.submittedBy && (
+                          <p className="text-[10px] text-gray-400 font-mono mt-1">
+                            Contributor: <span className="text-gray-300">{item.submittedBy}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -715,6 +740,28 @@ export default function EvidenceSection({ evidence, isAdmin, onDeleteEvidence, a
                           <span className="truncate max-w-[110px]">{item.verifiedBy}</span>
                         </div>
                       </div>
+
+                      {isAdmin && item.status === 'pending' && onApproveEvidence && (
+                        <div className="p-2 bg-amber-950/40 border border-amber-500/30 rounded-sm flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-mono text-amber-300">Pending Legal Verification</span>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => onApproveEvidence(item.id)}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-sm text-[10px] font-mono font-bold uppercase transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              <Check className="w-3 h-3" /> Approve
+                            </button>
+                            {onRejectEvidence && (
+                              <button
+                                onClick={() => onRejectEvidence(item.id)}
+                                className="px-2 py-1 bg-red-600/60 hover:bg-red-600 text-white rounded-sm text-[10px] font-mono font-bold uppercase transition-colors cursor-pointer"
+                              >
+                                Reject
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="flex items-center gap-2">
                         <button

@@ -21,7 +21,10 @@ interface AnonymousChatProps {
     title: string;
     description: string;
     verifiedBy: string;
+    status?: 'pending' | 'approved' | 'rejected';
+    submittedBy?: string;
   }) => Promise<void>;
+  onQAAdded?: (qa: AnonymousQuestion) => void;
 }
 
 const SOVEREIGN_RESOURCES = [
@@ -118,7 +121,7 @@ function renderFormattedMessage(text: string) {
   );
 }
 
-export default function AnonymousChat({ questions, onNewQuestion, evidence, onAddEvidence }: AnonymousChatProps) {
+export default function AnonymousChat({ questions, onNewQuestion, evidence, onAddEvidence, onQAAdded }: AnonymousChatProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'directory' | 'resources'>('chat');
   const [messageText, setMessageText] = useState("");
@@ -180,10 +183,12 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
               fileType: resType,
               fileData,
               title: resTitle,
-              description: resDesc || "User-added digital citizen resource",
-              verifiedBy: "Citizen Defender"
+              description: resDesc || "Citizen-submitted legal resource",
+              verifiedBy: "Pending Verification",
+              status: "pending",
+              submittedBy: "Citizen Contributor"
             });
-            setResStatus("Resource uploaded and indexed successfully!");
+            setResStatus("✓ Legal resource submitted for verification! It will appear in the public vault and archives once approved by legal coordinators.");
             // Reset form
             setResTitle("");
             setResDesc("");
@@ -192,7 +197,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             setTimeout(() => {
               setShowAddForm(false);
               setResStatus(null);
-            }, 2000);
+            }, 3000);
           } catch (err: any) {
             setResStatus("Upload failed: " + err.message);
           } finally {
@@ -212,18 +217,20 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
           fileType: resType,
           fileData: resUrl,
           title: resTitle,
-          description: resDesc || "User-added digital citizen resource link",
-          verifiedBy: "Citizen Defender"
+          description: resDesc || "Citizen-submitted legal resource link",
+          verifiedBy: "Pending Verification",
+          status: "pending",
+          submittedBy: "Citizen Contributor"
         });
 
-        setResStatus("Resource link indexed successfully!");
+        setResStatus("✓ Legal resource link submitted for verification! It will appear in the public vault once approved by legal coordinators.");
         setResTitle("");
         setResDesc("");
         setResUrl("");
         setTimeout(() => {
           setShowAddForm(false);
           setResStatus(null);
-        }, 2000);
+        }, 3000);
         setIsSubmittingRes(false);
       }
     } catch (err: any) {
@@ -231,6 +238,16 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
       setIsSubmittingRes(false);
     }
   };
+  const INITIAL_GREETING = [
+    {
+      sender: 'bot' as const,
+      text: "Welcome to Civic Shield AI Legal Advocate. Powered by Gemini 3.8 Flash with live Google Search Grounding, I provide immediate, constitutionally verified guidance for police interactions, RTI petitions, tenant disputes, traffic stops, and pro-se court appearances. Ask any question to receive real-time answers with authoritative citations.",
+      time: "Just now",
+      isGrounded: true
+    }
+  ];
+
+  // Every time the website is opened or reopened, memory starts fresh (session-only memory)
   const [conversation, setConversation] = useState<Array<{ 
     sender: 'user' | 'bot' | 'admin'; 
     text: string; 
@@ -238,40 +255,25 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
     sources?: Array<{ title: string; url: string }>;
     isGrounded?: boolean;
     isQuickRead?: boolean;
-  }>>(() => {
-    try {
-      const saved = localStorage.getItem("civic_shield_chat_history_v4");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return [
-      {
-        sender: 'bot',
-        text: "Welcome to Civic Shield AI Legal Advocate. Powered by Gemini 3.8 Flash with live Google Search Grounding, I provide immediate, constitutionally verified guidance for police interactions, RTI petitions, tenant disputes, traffic stops, and pro-se court appearances. Ask any question to receive real-time answers with authoritative citations.",
-        time: "Just now",
-        isGrounded: true
-      }
-    ];
-  });
+  }>>(INITIAL_GREETING);
+
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom when conversations update
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [conversation, isOpen, activeTab]);
+  }, [conversation]);
 
-  // Sync conversation state to localStorage
+  // Erase any legacy chat history on component mount so each reload starts clean
   useEffect(() => {
     try {
-      localStorage.setItem("civic_shield_chat_history_v4", JSON.stringify(conversation));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [conversation]);
+      localStorage.removeItem("civic_shield_chat_history_v4");
+      localStorage.removeItem("civic_shield_chat_history_v3");
+      localStorage.removeItem("civic_shield_chat_history");
+    } catch (e) {}
+  }, []);
 
   // Global trigger listener
   useEffect(() => {
@@ -355,6 +357,9 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
             isGrounded: Boolean(data.sources && data.sources.length > 0),
             isQuickRead: Boolean(data.quickRead ?? quickRead)
           }]);
+          if (data.recordedQA && onQAAdded) {
+            onQAAdded(data.recordedQA);
+          }
         } else {
           throw new Error("No answer in response");
         }
@@ -630,7 +635,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                                     type="button"
                                     onClick={() => {
                                       const prevQ = conversation.slice(0, idx).reverse().find(m => m.sender === 'user')?.text || "";
-                                      handleSubmit(undefined, prevQ ? `Please provide the comprehensive in-depth legal analysis with full statutory provisions and Supreme Court case precedents for: ${prevQ}` : "Please provide the comprehensive in-depth legal analysis with full statutory provisions.");
+                                      handleSubmit(undefined, prevQ ? `Please provide the comprehensive in-depth legal analysis with full statutory provisions and constitutional case precedents for: ${prevQ}` : "Please provide the comprehensive in-depth legal analysis with full statutory provisions.");
                                     }}
                                     disabled={loading}
                                     className="text-[#ffd754] hover:text-white flex items-center gap-1 font-mono transition-colors cursor-pointer"
@@ -712,7 +717,7 @@ export default function AnonymousChat({ questions, onNewQuestion, evidence, onAd
                           <p className="text-[10px] text-gray-300 font-sans">
                             {quickRead 
                               ? "Compiling instant high-level verdict, essential constitutional rights, and immediate verbal script..." 
-                              : "Cross-referencing constitutional Articles, BNSS/CrPC procedural sections, and Supreme Court guidelines..."}
+                              : "Cross-referencing constitutional Articles, statutory procedural sections, and binding jurisprudence guidelines..."}
                           </p>
                         </motion.div>
                       )}

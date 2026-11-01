@@ -90,7 +90,7 @@ export default function IntroductionSection({
             </h3>
             <p className="text-sm text-gray-300 font-light leading-relaxed">
               Civic Shield is an open, non-partisan citizen legal education and procedural empowerment initiative. 
-              We translate dense criminal statutes, constitutional articles, and landmark Supreme Court rulings 
+              We translate dense criminal statutes, constitutional covenants, and landmark judicial precedents 
               into plain, actionable protocols that any citizen can cite with calm composure during real encounters.
             </p>
             <div className="pt-2 flex items-center gap-2 text-xs font-mono text-[#ffd754]">
@@ -227,7 +227,7 @@ export default function IntroductionSection({
               </h4>
               <p className="text-xs sm:text-sm text-gray-300 font-light leading-relaxed mt-1">
                 Civic Shield was established to resolve a fundamental contradiction in democratic life: while citizens possess 
-                robust constitutional protections under Article 21, these rights often fail during high-stress street interactions 
+                robust constitutional protections and procedural due process rights, these protections often fail during high-stress interactions 
                 because individuals lack concrete procedural knowledge. By converting statutes into concise, unambiguous scripts 
                 and standardized rules, Civic Shield ensures that every person can assert their lawful dignity without fear.
               </p>

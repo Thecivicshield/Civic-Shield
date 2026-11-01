@@ -91,38 +91,38 @@ export const STUDY_CURRICULUM: StudyItem[] = [
     category: "rights",
     categoryLabel: "Citizen Right",
     number: "R-05",
-    title: "Right to Statutory Free Legal Aid",
-    statuteRef: "Article 39A & Legal Services Authorities Act 1987",
-    explanation: "The State is mandated to ensure that justice is not denied to any citizen by reason of economic or social disability. Every arrested person unable to afford an advocate is entitled to a state-appointed defense lawyer through the District Legal Services Authority (DLSA).",
-    example: "A daily wage earner is presented before a magistrate without an advocate. The magistrate is legally obligated to inform them of their right to a free legal aid advocate before conducting the hearing.",
-    practicalAction: "Inform the magistrate: “Your Honor, I cannot afford private counsel and request an assigned advocate from the Legal Services Authority.”",
-    tags: ["legal aid", "dlsa", "nalsa", "poverty", "advocate", "article 39a"]
+    title: "Right to Statutory Appointed Defense & Equal Justice",
+    statuteRef: "Universal Due Process & Statutory Legal Aid Standards",
+    explanation: "Justice cannot be denied to any citizen due to economic or social barriers. Every individual facing charges or detention who cannot afford private counsel is entitled to court-appointed public legal defense without private fees.",
+    example: "An individual is brought before a judge or magistrate without private representation. The court holds an affirmative duty to inform them of their right to appointed legal counsel before proceeding.",
+    practicalAction: "Inform the bench: “Your Honor, I cannot afford private counsel and respectfully request the appointment of public defense counsel.”",
+    tags: ["legal aid", "public defender", "due process", "equal justice", "counsel"]
   },
 
   // --- 2. RULES ---
   {
-    id: "rule-dk-basu",
+    id: "rule-mandatory-arrest-safeguards",
     category: "rules",
     categoryLabel: "State Rule",
     number: "RU-01",
-    title: "D.K. Basu Mandatory Arrest Safeguards",
-    statuteRef: "Supreme Court Landmark Ruling (1997) 1 SCC 416",
-    explanation: "The Supreme Court mandated 11 non-negotiable rules for every arrest: police must wear legible nametags with designations; prepare an Arrest Memo witnessed by a family member or respectable local citizen; and formally record the time and place.",
-    example: "Officers in plain clothes without name badges arrive in an unmarked car and take someone away without issuing any receipt or notifying their spouse. This violates mandatory D.K. Basu guidelines.",
-    practicalAction: "Ask for identification: “Officer, please show your departmental ID and prepare a signed Arrest Memo witnessed by someone present.”",
-    tags: ["dk basu", "nametag", "arrest memo", "witness", "police rules"]
+    title: "Mandatory Custody & Identification Safeguards",
+    statuteRef: "Universal Custodial Safeguards & Identification Rules",
+    explanation: "Law enforcement officers must wear visible, legible nametags and rank designations; prepare an official Arrest Memo witnessed by a bystander, family member, or independent citizen; and formally record the precise timestamp, location, and reason.",
+    example: "Officers in unmarked civilian attire attempt to detain an individual without providing identification or preparing an inventory receipt. This violates mandatory custodial protocols.",
+    practicalAction: "Politely ask: “Officer, please state your name and badge identification, and prepare a written memo stating the official grounds for this action.”",
+    tags: ["identification", "badge", "arrest memo", "witness", "police rules"]
   },
   {
     id: "rule-sec41a",
     category: "rules",
     categoryLabel: "State Rule",
     number: "RU-02",
-    title: "Notice of Appearance Instead of Arrest",
-    statuteRef: "Section 41A CrPC / Section 35 BNSS",
-    explanation: "For offenses punishable with imprisonment up to 7 years, police CANNOT arrest directly as a routine measure. They must first issue a written Notice of Appearance specifying a date and time for you to join questioning.",
-    example: "Police summon you over a neighbor dispute or financial allegation punishable by 3 years. They cannot throw you into a cell on the spot; they must serve a formal 41A Notice.",
-    practicalAction: "Remind the officer: “Under Section 41A and the Supreme Court Arnesh Kumar guidelines, please issue a written Notice of Appearance for this inquiry.”",
-    tags: ["41a", "notice", "arrest", "7 years", "arnesh kumar"]
+    title: "Notice of Appearance Over Arbitrary Arrest",
+    statuteRef: "Statutory Summons Safeguards & Proportionality Rules",
+    explanation: "For non-violent offenses or routine administrative inquiries, officers are required to issue a formal written Notice of Appearance specifying a date and time to attend questioning rather than resorting to arbitrary arrest.",
+    example: "Police arrive at a home regarding a minor civil dispute or municipal inquiry. They cannot arbitrarily detain an individual on the spot when a formal written notice suffices.",
+    practicalAction: "Request paperwork: “If this inquiry concerns a non-violent or preliminary allegation, please provide a formal written Notice of Appearance specifying the interview time.”",
+    tags: ["notice", "summons", "due process", "investigation"]
   },
   {
     id: "rule-panchnama",
@@ -191,12 +191,12 @@ export const STUDY_CURRICULUM: StudyItem[] = [
     category: "regulations",
     categoryLabel: "Administrative Regulation",
     number: "RG-04",
-    title: "Mandatory Zero FIR Acceptance",
-    statuteRef: "Supreme Court Lalita Kumari Mandate & MHA Advisory",
-    explanation: "A police station CANNOT refuse to register an FIR on the grounds that the crime occurred in a different locality or outside their jurisdiction. They must register a 'Zero FIR' with a serial number '0' and promptly transfer the case file to the concerned station.",
-    example: "You are assaulted on a highway and walk into the nearest city precinct to report it. The station officer says: 'Go to the highway station 20 km away.' They are legally required to file a Zero FIR immediately.",
-    practicalAction: "Insist firmly: “Under Supreme Court guidelines, please register a Zero FIR right now and transfer the docket to the concerned station.”",
-    tags: ["zero fir", "fir", "jurisdiction", "police station", "complaint"]
+    title: "Mandatory Crime Incident Registration & Non-Refusal",
+    statuteRef: "Universal Mandatory Crime Reporting & Duty of Public Registration",
+    explanation: "A police precinct or law enforcement office CANNOT refuse to record a formal criminal complaint on the grounds that the alleged crime occurred in a different locality or outside their territorial jurisdiction. They must register the formal report immediately and promptly transfer the case file to the jurisdictional unit.",
+    example: "You are assaulted on a highway and walk into the nearest city precinct to report it. The station officer says: 'Go to the highway station 20 km away.' They are legally required to record the complaint on the spot.",
+    practicalAction: "Insist firmly: “Under statutory reporting regulations, this station is required to record this incident report immediately and transmit the docket to the jurisdictional unit.”",
+    tags: ["incident report", "mandatory reporting", "jurisdiction", "police station", "complaint"]
   },
 
   // --- 4. RESPONSIBILITIES ---
@@ -331,6 +331,42 @@ export default function StudySection() {
   const [activeScrollItem, setActiveScrollItem] = useState<string>("right-art21");
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // EXPANDABLE ITEMS: CLOSED BY DEFAULT!
+  const [expandedItemIds, setExpandedItemIds] = useState<Set<string>>(() => new Set());
+  const [copiedScriptId, setCopiedScriptId] = useState<string | null>(null);
+
+  const handleToggleExpandItem = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setExpandedItemIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleExpandAll = () => {
+    const next = new Set<string>();
+    filteredItems.forEach(i => next.add(i.id));
+    setExpandedItemIds(next);
+  };
+
+  const handleCollapseAll = () => {
+    setExpandedItemIds(new Set());
+  };
+
+  const handleCopyScript = (scriptText: string, id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      navigator.clipboard.writeText(scriptText);
+      setCopiedScriptId(id);
+      setTimeout(() => setCopiedScriptId(null), 2000);
+    } catch (err) {}
+  };
+
   // Filter items
   const filteredItems = STUDY_CURRICULUM.filter((item) => {
     const matchesCategory = activeCategory === "all" || item.category === activeCategory;
@@ -430,24 +466,43 @@ export default function StudySection() {
               </div>
             </div>
 
-            {/* Instant Search Bar */}
-            <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search rights, rules, bail..."
-                className="w-full bg-[#000a1a] border border-[#d4af37]/25 focus:border-[#d4af37] text-xs font-sans text-white pl-9 pr-3 py-2 rounded-lg outline-none placeholder:text-gray-500"
-              />
-              {searchQuery && (
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs"
+            {/* Search and Expand/Collapse Toggles */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search rights, rules, bail..."
+                  className="w-full bg-[#000a1a] border border-[#d4af37]/25 focus:border-[#d4af37] text-xs font-sans text-white pl-9 pr-3 py-2 rounded-lg outline-none placeholder:text-gray-500"
+                />
+                {searchQuery && (
+                  <button 
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleExpandAll}
+                  className="px-2.5 py-2 rounded-lg bg-[#000a1a] hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  ✕
+                  Expand All
                 </button>
-              )}
+                <button
+                  type="button"
+                  onClick={handleCollapseAll}
+                  className="px-2.5 py-2 rounded-lg bg-[#000a1a] hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Collapse All (Default)
+                </button>
+              </div>
             </div>
           </div>
 
@@ -485,8 +540,8 @@ export default function StudySection() {
           </div>
         </div>
 
-        {/* STUDY CURRICULUM ITEMS (Interactive Scroll & Learning Grid) */}
-        <div className="space-y-6">
+        {/* STUDY CURRICULUM ITEMS (Expandable Accordion Cards - Closed by Default!) */}
+        <div className="space-y-4">
           {filteredItems.length === 0 ? (
             <div className="p-12 text-center bg-[#001233]/40 border border-dashed border-[#d4af37]/20 rounded-xl">
               <AlertCircle className="w-8 h-8 text-[#d4af37] mx-auto mb-2 opacity-60" />
@@ -502,6 +557,8 @@ export default function StudySection() {
             filteredItems.map((item, idx) => {
               const isStudied = studiedIds.has(item.id);
               const isCurrent = activeScrollItem === item.id;
+              const isExpanded = expandedItemIds.has(item.id);
+              const isCopied = copiedScriptId === item.id;
 
               return (
                 <motion.div
@@ -511,97 +568,149 @@ export default function StudySection() {
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.35, delay: Math.min(idx * 0.05, 0.25) }}
-                  onClick={() => {
-                    setStudiedIds(prev => {
-                      const next = new Set(prev);
-                      next.add(item.id);
-                      return next;
-                    });
-                  }}
-                  className={`relative p-5 sm:p-7 rounded-xl border transition-all duration-300 bg-[#001433]/90 backdrop-blur-md ${
-                    isCurrent
-                      ? "border-[#d4af37] ring-1 ring-[#d4af37]/40 shadow-[0_0_30px_rgba(212,175,55,0.15)]"
-                      : "border-[#d4af37]/20 hover:border-[#d4af37]/50 shadow-lg"
+                  transition={{ duration: 0.35, delay: Math.min(idx * 0.03, 0.2) }}
+                  className={`relative rounded-xl border transition-all duration-300 bg-[#001433]/90 backdrop-blur-md overflow-hidden ${
+                    isExpanded
+                      ? "border-[#ffd754] ring-1 ring-[#ffd754]/40 shadow-[0_10px_30px_rgba(0,0,0,0.8),0_0_20px_rgba(212,175,55,0.15)]"
+                      : isCurrent
+                        ? "border-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.1)]"
+                        : "border-[#d4af37]/20 hover:border-[#d4af37]/50 shadow-md"
                   }`}
                 >
-                  {/* Card Header Bar */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-white/10">
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-1 rounded bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#ffd754] font-mono text-xs font-bold tracking-wider">
-                        {item.number}
-                      </span>
-                      <span className="text-xs font-mono uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
-                        {item.categoryLabel}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono text-[#d4af37] bg-black/40 px-2.5 py-0.5 rounded border border-[#d4af37]/20">
-                        {item.statuteRef}
-                      </span>
-                      {isStudied && (
-                        <span className="text-emerald-400 text-xs font-mono flex items-center gap-1" title="Marked as Studied">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Studied</span>
+                  {/* Card Header & Compact Overview (Clickable to Toggle) */}
+                  <div 
+                    onClick={(e) => handleToggleExpandItem(item.id, e)}
+                    className="p-5 sm:p-6 cursor-pointer hover:bg-white/[0.02] transition-colors select-none"
+                  >
+                    {/* Top Meta Line */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-white/10">
+                      <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-1 rounded bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#ffd754] font-mono text-xs font-bold tracking-wider">
+                          {item.number}
                         </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Title & Core Explanation */}
-                  <div className="pt-4 space-y-4">
-                    <div>
-                      <h3 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-wide">
-                        {item.title}
-                      </h3>
-                      <p className="mt-2 text-sm sm:text-base text-gray-200 leading-relaxed font-light">
-                        {item.explanation}
-                      </p>
-                    </div>
-
-                    {/* Simple Real-World Example */}
-                    <div className="p-4 rounded-lg bg-[#000a1a]/80 border-l-2 border-[#d4af37] space-y-1">
-                      <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#ffd754] font-bold">
-                        <Compass className="w-3.5 h-3.5 text-[#d4af37]" />
-                        Real-World Scenario / Example:
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-300 font-sans leading-relaxed">
-                        {item.example}
-                      </p>
-                    </div>
-
-                    {/* Actionable Script or Practical Citizen Action */}
-                    <div className="p-3.5 rounded-lg bg-black/40 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest block">
-                          Actionable Citizen Protocol:
+                        <span className="text-xs font-mono uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />
+                          {item.categoryLabel}
                         </span>
-                        <p className="text-xs sm:text-sm text-emerald-300 font-mono font-medium">
-                          {item.practicalAction}
-                        </p>
                       </div>
 
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono text-[#d4af37] bg-black/40 px-2.5 py-0.5 rounded border border-[#d4af37]/20">
+                          {item.statuteRef}
+                        </span>
+                        {isStudied && (
+                          <span className="text-emerald-400 text-xs font-mono flex items-center gap-1" title="Marked as Studied">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Studied</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Title & Teaser Preview */}
+                    <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="space-y-1 max-w-3xl">
+                        <h3 className="text-lg sm:text-xl font-serif font-bold text-white tracking-wide">
+                          {item.title}
+                        </h3>
+                        {!isExpanded && (
+                          <p className="text-xs sm:text-sm text-gray-400 font-light line-clamp-1">
+                            {item.explanation}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Expand Button indicator */}
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setStudiedIds(prev => {
-                            const next = new Set(prev);
-                            if (next.has(item.id)) {
-                              next.delete(item.id);
-                            } else {
-                              next.add(item.id);
-                            }
-                            return next;
-                          });
-                        }}
-                        className="w-full sm:w-auto self-stretch sm:self-center shrink-0 px-3.5 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-gray-300 hover:text-white transition-colors cursor-pointer min-h-[44px] flex items-center justify-center"
+                        type="button"
+                        onClick={(e) => handleToggleExpandItem(item.id, e)}
+                        className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-center ${
+                          isExpanded
+                            ? "bg-[#d4af37]/25 text-white border border-[#d4af37]"
+                            : "bg-[#d4af37]/10 hover:bg-[#d4af37]/25 text-[#ffd754] border border-[#d4af37]/30"
+                        }`}
                       >
-                        {isStudied ? "Mark Unstudied" : "✓ Mark as Studied"}
+                        <span>{isExpanded ? "Collapse Module" : "Unseal Breakdown & Scenario"}</span>
+                        <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} />
                       </button>
                     </div>
                   </div>
+
+                  {/* EXPANDABLE IN-DEPTH BREAKDOWN (CLOSED BY DEFAULT!) */}
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="px-5 sm:px-6 pb-6 pt-2 border-t border-white/10 space-y-4 overflow-hidden"
+                      >
+                        {/* Full In-Depth Explanation */}
+                        <div>
+                          <span className="text-[10px] font-mono text-[#d4af37] uppercase tracking-wider font-bold block mb-1">
+                            Legal Principle & Statutory Scope:
+                          </span>
+                          <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-light">
+                            {item.explanation}
+                          </p>
+                        </div>
+
+                        {/* Real-World Scenario / Practical Application */}
+                        <div className="p-4 rounded-lg bg-[#000a1a]/90 border-l-3 border-[#ffd754] space-y-1">
+                          <div className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[#ffd754] font-bold">
+                            <Compass className="w-3.5 h-3.5 text-[#d4af37]" />
+                            Real-World Encounter / Scenario:
+                          </div>
+                          <p className="text-xs sm:text-sm text-gray-300 font-sans leading-relaxed">
+                            {item.example}
+                          </p>
+                        </div>
+
+                        {/* Actionable Script or Practical Citizen Protocol */}
+                        <div className="p-4 rounded-lg bg-black/50 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest block">
+                              Actionable Citizen Protocol:
+                            </span>
+                            <p className="text-xs sm:text-sm text-emerald-300 font-mono font-medium">
+                              {item.practicalAction}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 self-stretch sm:self-auto">
+                            <button
+                              type="button"
+                              onClick={(e) => handleCopyScript(item.practicalAction, item.id, e)}
+                              className="flex-1 sm:flex-initial px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/15 text-xs font-mono text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              {isCopied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />}
+                              <span>{isCopied ? "Copied" : "Copy Protocol"}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStudiedIds(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(item.id)) {
+                                    next.delete(item.id);
+                                  } else {
+                                    next.add(item.id);
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-[#d4af37]/15 hover:bg-[#d4af37]/30 border border-[#d4af37]/40 text-xs font-mono text-[#ffd754] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              {isStudied ? "✓ Mastered" : "Mark as Studied"}
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               );
             })
@@ -611,7 +720,7 @@ export default function StudySection() {
         {/* BOTTOM LEARNING SUMMARY */}
         <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-gray-400">
           <p>
-            Curriculum grounded in the Constitution of India, CrPC, BNSS, and binding Supreme Court precedents.
+            Curriculum grounded in constitutional due process, fundamental liberties, and universal procedural safeguards.
           </p>
           <div className="flex items-center gap-3">
             <span className="text-[#d4af37] font-bold">Study Modules Mastered: {studiedIds.size} / {STUDY_CURRICULUM.length}</span>

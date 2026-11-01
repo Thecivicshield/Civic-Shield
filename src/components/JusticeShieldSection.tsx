@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Scale, HeartHandshake, FileText, Gavel, BookOpen, AlertCircle, CheckCircle, HelpCircle, Clock, Smartphone, Trash2, Plus, Search, Filter, Pin, PinOff, Bookmark, Star, X, Sparkles } from "lucide-react";
+import { Scale, HeartHandshake, FileText, Gavel, BookOpen, AlertCircle, CheckCircle, HelpCircle, Clock, Smartphone, Trash2, Plus, Search, Filter, Pin, PinOff, Bookmark, Star, X, Sparkles, ChevronDown, ChevronUp, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Statute } from "../types";
 
@@ -105,27 +105,27 @@ const DEFAULT_MYTHS: CivicMisconception[] = [
   {
     question: "Are citizens legally permitted to record video of public officials or police officers on duty in public spaces?",
     myth: "MYTH: Public officers can instantly forbid video recordation of their duties using verbal bans or privacy claims.",
-    answerOnTrue: "Yes. Under Article 19(1)(a) of the Constitution of India (Freedom of Speech and Expression), recording public officials performing statutory tasks in a public space is fully permitted. As long as you do not obstruct their physical duties or cross into notified high-security zones, documenting is fully legal."
+    answerOnTrue: "Yes. Under fundamental freedom of speech, expression, and public observation principles, recording public officials performing statutory tasks in a public space is fully permitted. As long as you do not physically obstruct their duties or breach designated secure perimeters, recording is fully lawful."
   },
   {
     question: "Can an administrative or municipal officer impose an immediate property lien or seal your house without a notice?",
     myth: "MYTH: Building or civil citations bypass municipal tribunals and instantly attach directly as final properties seizures.",
-    answerOnTrue: "No. Under the Principles of Natural Justice and Article 300A (Right to Property), no property can be deprived or sealed without proper fair warning (Show-Cause notice), an opportunity to challenge the order, and a formal neutral board determination."
+    answerOnTrue: "No. Under the Principles of Natural Justice (Audi Alteram Partem) and constitutional property protections, no property can be deprived or sealed without proper fair warning (Show-Cause notice), an opportunity to challenge the order, and a formal neutral determination."
   },
   {
-    question: "Does an advocate assigned through the District Legal Services Authority (DLSA) have the right to demand separate filing fees or research markups?",
+    question: "Can court-appointed public defenders or legal aid counsel charge private fees or demand cash payments?",
     myth: "MYTH: State-provided legal aid permits retroactive back-billing or supplementary fee demands from citizens.",
-    answerOnTrue: "No. Services provided through the SLSA, DLSA, or Supreme Court Legal Services Committee are provided without private fees to eligible persons. Any request by an assigned advocate for private payments constitutes a severe professional misconduct under BCI rules."
+    answerOnTrue: "No. Universal statutory legal aid and court-appointed defense counsel are provided without private fees to eligible citizens. Court-appointed attorneys are compensated exclusively by the legal aid authority or state judiciary; demanding private honorariums or cash payments constitutes severe professional misconduct and grounds for disbarment."
   },
   {
     question: "Can the police detain you indefinitely at a local station without showing you to a judge as long as they call it questioning?",
     myth: "MYTH: Informal or formal station house detentions do not trigger the 24-hour presentation deadline.",
-    answerOnTrue: "No. The 24-hour presenting deadline (Article 22(2) & CrPC Sec 57) is strict. The moment physical restraint or custody is imposed, the 24-hour clock starts. Prolonging detention beyond 24 hours without a Magistrate's order is illegal and constitutes unlawful confinement."
+    answerOnTrue: "No. The 24-hour presentation deadline is strict across constitutional democracies. The moment physical restraint or custody is imposed, the clock starts. Prolonging detention beyond 24 hours without a neutral magistrate or judge's order is illegal and constitutes unlawful confinement."
   },
   {
     question: "Can a patrolling officer legally seize your phone or force you to unlock it during a routine check?",
     myth: "MYTH: Police possess automatic statutory powers to inspect devices or read chats without warning or judicial case logs.",
-    answerOnTrue: "No. Patrolling officers cannot force you to unlock your phone, browse chats, or copy your digital files without a specific written warrant or a formal summons linked to an active, documented FIR connection. Forced device unlocked violates Article 21 and Article 20(3)."
+    answerOnTrue: "No. Patrolling officers cannot force you to unlock your phone, browse chats, or copy your digital files without a specific written judicial search warrant or formal summons linked to an active, documented investigation. Compelled device unlock violates constitutional privacy and protections against self-incrimination."
   }
 ];
 
@@ -298,11 +298,43 @@ export default function JusticeShieldSection({
   onUpdateLibrary
 }: JusticeShieldSectionProps) {
   const [activeLawIndex, setActiveLawIndex] = useState<number>(0);
-  const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: boolean }>({});
-  const [revealedQuiz, setRevealedQuiz] = useState<{ [key: number]: boolean }>({});
-  const [crackingIndices, setCrackingIndices] = useState<{ [key: number]: boolean }>({});
+  const [expandedMythIndices, setExpandedMythIndices] = useState<{ [key: number]: boolean }>({});
   const [isEditingActiveLaw, setIsEditingActiveLaw] = useState(false);
   const [editingMythIndex, setEditingMythIndex] = useState<number | null>(null);
+
+  // Subsections inside Justice Shield: All expandable & CLOSED BY DEFAULT!
+  const [openSubsections, setOpenSubsections] = useState<Record<string, boolean>>({
+    coreLaws: false,
+    pinned: false,
+    library: false,
+    myths: false
+  });
+
+  const toggleSubsection = (key: string) => {
+    try { playSynthSound("click"); } catch (e) {}
+    setOpenSubsections(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const handleExpandAllSubsections = () => {
+    setOpenSubsections({
+      coreLaws: true,
+      pinned: true,
+      library: true,
+      myths: true
+    });
+  };
+
+  const handleCollapseAllSubsections = () => {
+    setOpenSubsections({
+      coreLaws: false,
+      pinned: false,
+      library: false,
+      myths: false
+    });
+  };
 
   const laws = basicLaws && basicLaws.length > 0 ? basicLaws : DEFAULT_LAWS;
   const myths = legalMyths && legalMyths.length > 0 ? legalMyths : DEFAULT_MYTHS;
@@ -311,7 +343,7 @@ export default function JusticeShieldSection({
   const library = libraryStatutes && libraryStatutes.length > 0 ? libraryStatutes : DEFAULT_LIBRARY_STATUTES;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [viewingStatute, setViewingStatute] = useState<Statute | null>(null);
+  const [expandedStatuteId, setExpandedStatuteId] = useState<string | null>(null);
 
   // Admin Library Management States
   const [editingStatuteId, setEditingStatuteId] = useState<string | null>(null);
@@ -521,29 +553,89 @@ export default function JusticeShieldSection({
           </div>
         </motion.div>
 
-        {/* Pinned Statutes Dashboard (Citizen's Quick-Access Hub) */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-16 bg-[#001233]/85 border border-[#d4af37]/25 rounded-sm p-6 sm:p-8 relative overflow-hidden shadow-2xl"
-        >
-          {/* Decorative scanner background line */}
-          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent" />
-          
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 font-sans text-left">
-            <div>
-              <div className="flex items-center gap-2">
-                <Bookmark className="w-4 h-4 text-[#d4af37]" />
-                <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white">
-                  My Pinned Statutes Dashboard
-                </h3>
-              </div>
-              <p className="text-[10px] text-gray-400 font-mono tracking-wider mt-1 uppercase">
-                Synchronized Sovereign Quick-Reference Index
-              </p>
+        {/* SUBSECTION CONTROLS & DEDICATED MYTHBUSTER CALLOUT */}
+        <div className="mb-10 bg-[#001433]/90 border border-[#d4af37]/30 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#ffd754]">
+              <Shield className="w-5 h-5" />
             </div>
+            <div>
+              <h3 className="font-serif font-bold text-base text-white">Everyday Shield Compartment Subsections</h3>
+              <p className="text-xs text-gray-400 font-light">All subsections are expandable and closed by default for focused review</p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={handleExpandAllSubsections}
+              className="px-3 py-1.5 rounded-lg bg-[#000a1a] hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-colors cursor-pointer"
+            >
+              Expand All
+            </button>
+            <button
+              type="button"
+              onClick={handleCollapseAllSubsections}
+              className="px-3 py-1.5 rounded-lg bg-[#000a1a] hover:bg-white/5 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-colors cursor-pointer"
+            >
+              Collapse All (Default)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("trigger-cabinet-nav", { detail: { targetId: "mythbusters" } }));
+              }}
+              className="px-3.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/30 border border-red-500/40 text-red-300 hover:text-white text-xs font-mono font-bold uppercase transition-colors cursor-pointer flex items-center gap-1.5"
+            >
+              <AlertCircle className="w-3.5 h-3.5 text-red-400" />
+              <span>Unseal Mythbusters Dossier</span>
+            </button>
+          </div>
+        </div>
+
+        {/* SUBSECTION: PINNED STATUTES DASHBOARD */}
+        <div className="mb-10 bg-[#001233]/85 border border-[#d4af37]/25 rounded-xl overflow-hidden shadow-xl">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("pinned")}
+            className="w-full p-5 sm:p-6 bg-gradient-to-r from-[#00163b] to-[#000e26] hover:from-[#001f54] hover:to-[#001438] flex items-center justify-between transition-all cursor-pointer text-left border-b border-[#d4af37]/15"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#ffd754]">
+                <Bookmark className="w-5 h-5 text-[#d4af37]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded uppercase font-bold">SUBSECTION</span>
+                  <span className="text-[10px] font-mono text-gray-400">{pinnedStatutes.length} Statutes Secured</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white">My Pinned Statutes Dashboard</h3>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#ffd754] hidden sm:inline">{openSubsections.pinned ? "Collapse Dashboard" : "Unseal Dashboard"}</span>
+              {openSubsections.pinned ? <ChevronUp className="w-4 h-4 text-[#ffd754]" /> : <ChevronDown className="w-4 h-4 text-[#ffd754]" />}
+            </div>
+          </button>
+          
+          <AnimatePresence>
+            {openSubsections.pinned && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 sm:p-8 relative overflow-hidden"
+              >
+                {/* Decorative scanner background line */}
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/40 to-transparent" />
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 font-sans text-left">
+                  <div>
+                    <p className="text-[10px] text-gray-400 font-mono tracking-wider uppercase">
+                      Synchronized Sovereign Quick-Reference Index
+                    </p>
+                  </div>
             
             <div className="flex items-center gap-3">
               <span className="text-[10px] font-mono bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/35 py-1 px-3 rounded-sm uppercase tracking-wider font-semibold">
@@ -628,14 +720,44 @@ export default function JusticeShieldSection({
                       <p className="text-[11px] text-gray-400 leading-relaxed font-light line-clamp-2">
                         {statute.description}
                       </p>
+
+                      <AnimatePresence>
+                        {expandedStatuteId === `pinned-${statute.id}` && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="pt-2 mt-2 border-t border-gray-800 space-y-2 overflow-hidden"
+                          >
+                            {statute.keyPoints && statute.keyPoints.length > 0 && (
+                              <div className="bg-black/50 p-2.5 rounded-sm border border-gray-900 space-y-1">
+                                <span className="text-[8px] font-mono text-[#d4af37] uppercase font-bold block">Safeguards:</span>
+                                {statute.keyPoints.map((pt, pIdx) => (
+                                  <p key={pIdx} className="text-[10px] text-gray-300 flex items-start gap-1.5 leading-snug">
+                                    <CheckCircle className="w-3 h-3 text-[#d4af37] shrink-0 mt-0.5" />
+                                    <span>{pt}</span>
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                            {statute.relevance && (
+                              <p className="text-[10px] text-gray-400 italic bg-[#d4af37]/5 p-2 rounded-sm border border-[#d4af37]/20">
+                                "{statute.relevance}"
+                              </p>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                     <div className="flex items-center justify-between pt-3 border-t border-gray-900 text-[10px]">
                       <button
-                        onClick={() => setViewingStatute(statute)}
+                        onClick={() => setExpandedStatuteId(prev => prev === `pinned-${statute.id}` ? null : `pinned-${statute.id}`)}
                         className="text-[#d4af37] hover:text-white font-mono uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" /> Read Full Statute
+                        <FileText className="w-3.5 h-3.5" /> 
+                        {expandedStatuteId === `pinned-${statute.id}` ? "Hide Details" : "Read Full Statute"}
                       </button>
                       
                       <span className="text-[9px] text-gray-500 font-mono uppercase tracking-wider">
@@ -647,16 +769,53 @@ export default function JusticeShieldSection({
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* Tab-like basic laws panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* SUBSECTION: CORE CONSTITUTIONAL SAFEGUARDS */}
+        <div className="mb-10 bg-[#001233]/85 border border-[#d4af37]/25 rounded-xl overflow-hidden shadow-xl">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("coreLaws")}
+            className="w-full p-5 sm:p-6 bg-gradient-to-r from-[#00163b] to-[#000e26] hover:from-[#001f54] hover:to-[#001438] flex items-center justify-between transition-all cursor-pointer text-left border-b border-[#d4af37]/15"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#ffd754]">
+                <Scale className="w-5 h-5 text-[#ffd754]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded uppercase font-bold">SUBSECTION</span>
+                  <span className="text-[10px] font-mono text-gray-400">{laws.length} Universal Safeguards</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white">Core Constitutional Safeguards & Compliance Matrix</h3>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#ffd754] hidden sm:inline">{openSubsections.coreLaws ? "Collapse Safeguards" : "Unseal Safeguards"}</span>
+              {openSubsections.coreLaws ? <ChevronUp className="w-4 h-4 text-[#ffd754]" /> : <ChevronDown className="w-4 h-4 text-[#ffd754]" />}
+            </div>
+          </button>
           
-          {/* Law List Sidebar - 4 cols */}
-          <div className="lg:col-span-4 space-y-3">
-            <h4 className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest mb-4 block font-bold">
-              Core Legal Concepts
-            </h4>
+          <AnimatePresence>
+            {openSubsections.coreLaws && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 sm:p-8 overflow-hidden"
+              >
+                {/* Tab-like basic laws panel */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  
+                  {/* Law List Sidebar - 4 cols */}
+                  <div className="lg:col-span-4 space-y-3">
+                    <h4 className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest mb-4 block font-bold">
+                      Core Legal Concepts
+                    </h4>
             {laws.map((law, idx) => (
               <motion.button
                 key={idx}
@@ -876,27 +1035,57 @@ export default function JusticeShieldSection({
           </div>
 
         </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-        {/* SOVEREIGN LAW & ARTICLE REFERENCE LIBRARY */}
-        <div className="mt-16 bg-[#001233]/70 border border-[#d4af37]/15 p-6 sm:p-8 rounded-sm space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#d4af37]" />
-                <h3 className="text-base font-serif text-white uppercase tracking-wider font-semibold">
-                  Sovereign Law & Article Reference Library
-                </h3>
+        {/* SUBSECTION: SOVEREIGN LAW & ARTICLE REFERENCE LIBRARY */}
+        <div className="mb-10 bg-[#001233]/85 border border-[#d4af37]/25 rounded-xl overflow-hidden shadow-xl">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("library")}
+            className="w-full p-5 sm:p-6 bg-gradient-to-r from-[#00163b] to-[#000e26] hover:from-[#001f54] hover:to-[#001438] flex items-center justify-between transition-all cursor-pointer text-left border-b border-[#d4af37]/15"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#ffd754]">
+                <BookOpen className="w-5 h-5 text-[#ffd754]" />
               </div>
-              <p className="text-xs text-gray-400 font-sans font-light mt-1">
-                Enter queries or click categories below to retrieve legal statutes, due process guidelines, and self-representation acts.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded uppercase font-bold">SUBSECTION</span>
+                  <span className="text-[10px] font-mono text-gray-400">{filteredStatutes.length} Indexed Statutes</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white">Sovereign Law & Article Reference Library</h3>
+              </div>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#ffd754] hidden sm:inline">{openSubsections.library ? "Collapse Library" : "Unseal Library"}</span>
+              {openSubsections.library ? <ChevronUp className="w-4 h-4 text-[#ffd754]" /> : <ChevronDown className="w-4 h-4 text-[#ffd754]" />}
+            </div>
+          </button>
+          
+          <AnimatePresence>
+            {openSubsections.library && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 sm:p-8 space-y-6 overflow-hidden"
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs text-gray-400 font-sans font-light mt-1">
+                      Enter queries or click categories below to retrieve legal statutes, due process guidelines, and self-representation acts.
+                    </p>
+                  </div>
 
-            {isAdmin && onUpdateLibrary && (
-              <button
-                onClick={() => {
-                  setNewStatuteForm({
-                    title: "New Statute Reference Card",
+                  {isAdmin && onUpdateLibrary && (
+                    <button
+                      onClick={() => {
+                        setNewStatuteForm({
+                          title: "New Statute Reference Card",
                     citation: "Code/Act reference, e.g., Art. 19(1)(g)",
                     category: "Fundamental Rights",
                     description: "Describe the core constitutional protection or statutory mandate...",
@@ -1170,14 +1359,54 @@ export default function JusticeShieldSection({
                       <p className="text-xs text-gray-300 leading-relaxed font-light line-clamp-3">
                         {statute.description}
                       </p>
+
+                      <AnimatePresence>
+                        {expandedStatuteId === statute.id && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="pt-3 mt-3 border-t border-[#d4af37]/20 space-y-3 overflow-hidden text-left"
+                          >
+                            {statute.keyPoints && statute.keyPoints.length > 0 && (
+                              <div className="bg-black/50 p-3 rounded-sm border border-gray-800 space-y-2">
+                                <span className="text-[9px] font-mono text-[#d4af37] uppercase font-bold tracking-wider block">
+                                  Critical Procedural Safeguards:
+                                </span>
+                                <ul className="space-y-1.5">
+                                  {statute.keyPoints.map((pt, pIdx) => (
+                                    <li key={pIdx} className="text-xs text-gray-300 flex items-start gap-2 leading-relaxed">
+                                      <CheckCircle className="w-3.5 h-3.5 text-[#d4af37] shrink-0 mt-0.5" />
+                                      <span>{pt}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {statute.relevance && (
+                              <div className="bg-[#d4af37]/5 border border-[#d4af37]/20 p-3 rounded-sm space-y-1">
+                                <span className="text-[9px] font-mono text-[#d4af37] uppercase font-bold tracking-wider flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-[#d4af37]" /> Citizen Strategic Leverage:
+                                </span>
+                                <p className="text-xs text-gray-300 italic leading-relaxed">
+                                  "{statute.relevance}"
+                                </p>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                     <div className="pt-4 border-t border-gray-900 flex items-center justify-between font-sans">
                       <button
-                        onClick={() => setViewingStatute(statute)}
+                        onClick={() => setExpandedStatuteId(prev => prev === statute.id ? null : statute.id)}
                         className="text-xs text-[#d4af37] hover:text-white font-mono uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                       >
-                        <FileText className="w-3.5 h-3.5" /> View Safeguards & Relevance
+                        <FileText className="w-3.5 h-3.5" />
+                        {expandedStatuteId === statute.id ? "Hide Safeguards" : "View Safeguards & Relevance"}
                       </button>
 
                       <span className="text-[9px] text-gray-600 font-mono">
@@ -1199,129 +1428,49 @@ export default function JusticeShieldSection({
               </div>
             )}
           </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* DETAILED STATUTE MODAL OVERLAY */}
-        <AnimatePresence>
-          {viewingStatute && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4"
-              onClick={() => setViewingStatute(null)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.95, y: 15 }}
-                transition={{ type: "spring", duration: 0.4 }}
-                className="w-full max-w-2xl bg-[#001233] border-2 border-[#d4af37]/80 rounded-sm p-6 sm:p-8 shadow-[0_0_50px_rgba(212,175,55,0.25)] space-y-6 relative max-h-[90vh] overflow-y-auto text-left"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Close Button */}
-                <button
-                  onClick={() => setViewingStatute(null)}
-                  className="absolute top-4 right-4 p-1 rounded-sm text-gray-400 hover:text-white border border-transparent hover:border-gray-800 transition-all cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                {/* Header details */}
-                <div className="space-y-1.5 border-b border-[#d4af37]/25 pb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono bg-[#d4af37]/10 text-[#d4af37] px-2 py-0.5 rounded-sm uppercase border border-[#d4af37]/20 font-semibold">
-                      {viewingStatute.category}
-                    </span>
-                    <span className="text-[9px] text-gray-500 font-mono uppercase">
-                      Official Archive Log
-                    </span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-white pr-6">
-                    {viewingStatute.title}
-                  </h3>
-                  <p className="text-xs font-mono text-[#d4af37] uppercase tracking-wider font-semibold">
-                    {viewingStatute.citation}
-                  </p>
+        {/* SUBSECTION: CAMPAIGN CITIZEN MYTHBUSTER */}
+        <div className="mb-10 bg-[#001233]/85 border border-[#d4af37]/25 rounded-xl overflow-hidden shadow-xl">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("myths")}
+            className="w-full p-5 sm:p-6 bg-gradient-to-r from-[#00163b] to-[#000e26] hover:from-[#001f54] hover:to-[#001438] flex items-center justify-between transition-all cursor-pointer text-left border-b border-[#d4af37]/15"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500/15 border border-red-500/40 flex items-center justify-center text-red-400">
+                <AlertCircle className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono text-red-400 bg-red-500/10 px-2 py-0.5 rounded uppercase font-bold">SUBSECTION</span>
+                  <span className="text-[10px] font-mono text-gray-400">{myths.length} Misconceptions Debunked</span>
                 </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <h5 className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest font-bold">
-                    Statutory Codification / Text:
-                  </h5>
-                  <p className="text-xs sm:text-sm text-gray-300 font-sans font-light leading-relaxed">
-                    {viewingStatute.description}
-                  </p>
-                </div>
-
-                {/* Key Points Checkpoints */}
-                {viewingStatute.keyPoints && viewingStatute.keyPoints.length > 0 && (
-                  <div className="space-y-3 bg-black/40 border border-gray-900 p-4 rounded-sm">
-                    <h5 className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest font-bold">
-                      Critical Procedural Safeguards:
-                    </h5>
-                    <ul className="space-y-2.5">
-                      {viewingStatute.keyPoints.map((pt, pIdx) => (
-                        <li key={pIdx} className="flex items-start gap-2.5 text-xs text-gray-300 leading-relaxed font-sans">
-                          <CheckCircle className="w-4 h-4 text-[#d4af37] shrink-0 mt-0.5" />
-                          <span>{pt}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Strategic Relevance */}
-                {viewingStatute.relevance && (
-                  <div className="space-y-2 bg-[#d4af37]/5 border border-[#d4af37]/20 p-4 rounded-sm relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-3 opacity-10">
-                      <Scale className="w-16 h-16 text-[#d4af37]" />
-                    </div>
-                    <h5 className="text-[10px] font-mono text-[#d4af37] uppercase tracking-widest font-bold flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> Citizen Strategic Leverage:
-                    </h5>
-                    <p className="text-xs text-gray-300 font-sans leading-relaxed italic">
-                      "{viewingStatute.relevance}"
-                    </p>
-                  </div>
-                )}
-
-                {/* Footer Controls */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-gray-900">
-                  <button
-                    onClick={() => handleTogglePin(viewingStatute.id)}
-                    className={`px-4 py-2 text-xs font-mono uppercase tracking-widest rounded-sm border transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                      pinnedIds.includes(viewingStatute.id)
-                        ? "bg-[#d4af37]/20 text-[#d4af37] border-[#d4af37]"
-                        : "bg-transparent border-gray-700 text-gray-400 hover:border-[#d4af37] hover:text-[#d4af37]"
-                    }`}
-                  >
-                    <Pin className="w-3.5 h-3.5" />
-                    {pinnedIds.includes(viewingStatute.id) ? "Unpin from Dashboard" : "Pin to Dashboard"}
-                  </button>
-
-                  <button
-                    onClick={() => setViewingStatute(null)}
-                    className="px-5 py-2.5 bg-[#d4af37] hover:bg-[#b59526] text-[#001233] font-mono font-bold text-xs tracking-wider uppercase rounded-sm cursor-pointer shadow-md text-center"
-                  >
-                    Close Archives
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Dynamic Legal Mythbuster Panel */}
-        <div className="mt-16 bg-[#001233]/70 border border-[#d4af37]/15 p-6 sm:p-8 rounded-sm space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-[#d4af37]" />
-              <h4 className="text-sm font-mono uppercase tracking-wider text-white font-bold">
-                Campaign Citizen Mythbuster
-              </h4>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white">Campaign Citizen Mythbuster Panel</h3>
+              </div>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#ffd754] hidden sm:inline">{openSubsections.myths ? "Collapse Panel" : "Unseal Panel"}</span>
+              {openSubsections.myths ? <ChevronUp className="w-4 h-4 text-[#ffd754]" /> : <ChevronDown className="w-4 h-4 text-[#ffd754]" />}
+            </div>
+          </button>
+          
+          <AnimatePresence>
+            {openSubsections.myths && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 sm:p-8 space-y-6 overflow-hidden"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-300 font-sans font-light">
+                    Review common legal interactions and civil misconceptions below. Expand any card to read verified statutory explanations directly.
+                  </p>
 
             {isAdmin && onUpdateMyths && (
               <button
@@ -1342,156 +1491,80 @@ export default function JusticeShieldSection({
             )}
           </div>
           <p className="text-xs text-gray-300 font-sans font-light">
-            Test your legal literacy bounds below by reviewing common legal interactions. Click any myth cards below to reveal verified legal explanations.
+            Review common legal interactions and civil misconceptions below. Expand any card to read verified statutory explanations directly.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-            {myths.map((myth, idx) => (
-              <motion.div 
-                key={idx} 
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                animate={crackingIndices[idx] ? { x: [-5, 5, -5, 5, -2, 2, 0], y: [-2, 2, -2, 2, -1, 1, 0] } : {}}
-                transition={crackingIndices[idx] ? { duration: 0.4 } : { duration: 0.5, delay: idx * 0.08 }}
-                whileHover={{ y: -4, scale: 1.01, boxShadow: "0 15px 30px -10px rgba(212,175,55,0.08)" }}
-                className="relative min-h-[380px] h-full bg-[#001a4d]/90 border border-[#d4af37]/20 hover:border-[#d4af37]/60 rounded-sm overflow-hidden flex flex-col justify-between transition-colors shadow-lg"
-              >
-                {editingMythIndex === idx && isAdmin && onUpdateMyths ? (
-                  <div className="p-5 space-y-3 bg-[#001233] rounded-sm border border-[#d4af37]/25 h-full overflow-y-auto text-left flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Mythbuster Question</label>
-                        <textarea
-                          value={myth.question}
-                          onChange={(e) => {
-                            const next = [...myths];
-                            next[idx] = { ...next[idx], question: e.target.value };
-                            onUpdateMyths(next);
-                          }}
-                          rows={2}
-                          className="w-full bg-[#001a4d] text-xs text-white border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
-                        />
+            {myths.map((myth, idx) => {
+              const isExpanded = !!expandedMythIndices[idx];
+
+              return (
+                <div 
+                  key={idx} 
+                  className="relative min-h-[300px] bg-[#001a4d]/90 border border-[#d4af37]/20 hover:border-[#d4af37]/50 rounded-sm overflow-hidden flex flex-col justify-between transition-colors shadow-lg p-5"
+                >
+                  {editingMythIndex === idx && isAdmin && onUpdateMyths ? (
+                    <div className="space-y-3 bg-[#001233] rounded-sm border border-[#d4af37]/25 p-4 text-left flex flex-col justify-between h-full">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Mythbuster Question</label>
+                          <textarea
+                            value={myth.question}
+                            onChange={(e) => {
+                              const next = [...myths];
+                              next[idx] = { ...next[idx], question: e.target.value };
+                              onUpdateMyths(next);
+                            }}
+                            rows={2}
+                            className="w-full bg-[#001a4d] text-xs text-white border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Misconception Text</label>
+                          <textarea
+                            value={myth.myth}
+                            onChange={(e) => {
+                              const next = [...myths];
+                              next[idx] = { ...next[idx], myth: e.target.value };
+                              onUpdateMyths(next);
+                            }}
+                            rows={2}
+                            className="w-full bg-[#001a4d] text-[11px] text-gray-300 border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Legal Reality / Answer</label>
+                          <textarea
+                            value={myth.answerOnTrue}
+                            onChange={(e) => {
+                              const next = [...myths];
+                              next[idx] = { ...next[idx], answerOnTrue: e.target.value };
+                              onUpdateMyths(next);
+                            }}
+                            rows={3}
+                            className="w-full bg-[#001a4d] text-xs text-white border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Misconception Text</label>
-                        <textarea
-                          value={myth.myth}
-                          onChange={(e) => {
-                            const next = [...myths];
-                            next[idx] = { ...next[idx], myth: e.target.value };
-                            onUpdateMyths(next);
-                          }}
-                          rows={2}
-                          className="w-full bg-[#001a4d] text-[11px] text-gray-300 border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[9px] font-mono uppercase text-[#d4af37] block mb-0.5 font-bold">Legal Reality / Answer</label>
-                        <textarea
-                          value={myth.answerOnTrue}
-                          onChange={(e) => {
-                            const next = [...myths];
-                            next[idx] = { ...next[idx], answerOnTrue: e.target.value };
-                            onUpdateMyths(next);
-                          }}
-                          rows={3}
-                          className="w-full bg-[#001a4d] text-xs text-white border border-[#d4af37]/25 focus:border-[#d4af37] focus:outline-none rounded-sm px-2 py-1 font-sans"
-                        />
-                      </div>
+                      <button
+                        onClick={() => setEditingMythIndex(null)}
+                        className="w-full mt-4 py-2 bg-[#d4af37] hover:bg-[#b08f25] text-[#001a4d] text-[10px] font-mono font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-colors text-center shadow-md"
+                      >
+                        Save & Complete
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setEditingMythIndex(null)}
-                      className="w-full mt-4 py-2 bg-[#d4af37] hover:bg-[#b08f25] text-[#001a4d] text-[10px] font-mono font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-colors text-center shadow-md"
-                    >
-                      Save & Complete
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    {/* Golden Truth Panel (Revealed state) */}
-                    <AnimatePresence>
-                      {revealedQuiz[idx] && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.4, ease: "easeOut" }}
-                          className="absolute inset-0 p-5 flex flex-col justify-between bg-gradient-to-br from-[#001233] via-black to-[#d4af37]/10 border border-[#d4af37] shadow-[inset_0_0_20px_rgba(212,175,55,0.15)] rounded-sm text-left z-20 overflow-y-auto"
-                        >
-                          <div className="space-y-3 flex-1 overflow-y-auto pr-1">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[8px] font-mono bg-[#d4af37]/15 text-[#d4af37] border border-[#d4af37]/30 py-0.5 px-2 rounded-sm inline-block uppercase font-bold tracking-wider">
-                                Verified Legal Reality
-                              </span>
-                              <span className="text-[8px] font-mono text-emerald-400 uppercase tracking-widest font-semibold flex items-center gap-1">
-                                <CheckCircle className="w-3 h-3 text-emerald-400" /> DECRYPTED
-                              </span>
-                            </div>
-                            <h4 className="text-xs sm:text-sm font-serif text-[#d4af37] leading-relaxed font-semibold">
-                              {myth.question}
-                            </h4>
-                            <div className="p-3 bg-black/50 border-l-2 border-[#d4af37] rounded-sm">
-                              <p className="text-xs text-gray-200 leading-relaxed font-sans font-light">
-                                {myth.answerOnTrue}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between border-t border-[#d4af37]/20 pt-3 mt-3 shrink-0">
-                            <span className="text-[8px] font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Safeguard Active
-                            </span>
-                            <button
-                              onClick={() => setRevealedQuiz(p => ({ ...p, [idx]: false }))}
-                              className="text-[9px] font-mono text-[#d4af37] hover:text-white uppercase tracking-wider transition-all cursor-pointer font-bold px-2.5 py-1 bg-[#d4af37]/10 hover:bg-[#d4af37]/20 rounded-sm border border-[#d4af37]/30"
-                            >
-                              ← Review Misconception
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    {/* Unrevealed Misconception View with Guaranteed Non-Overlapping Reveal Button */}
-                    <div 
-                      onClick={() => {
-                        if (crackingIndices[idx]) return;
-                        playSynthSound("click");
-                        setCrackingIndices(p => ({ ...p, [idx]: true }));
-                        setTimeout(() => {
-                          setRevealedQuiz(p => ({ ...p, [idx]: true }));
-                          setCrackingIndices(p => ({ ...p, [idx]: false }));
-                          playSynthSound("success");
-                        }, 650);
-
-                        try {
-                          window.dispatchEvent(new CustomEvent("unlock-achievement", {
-                            detail: {
-                              id: "myth-busted",
-                              title: "Legal Myth Busted",
-                              description: "You exposed a common administrative misconception and unlocked the statutory truth.",
-                              category: "myth"
-                            }
-                          }));
-                        } catch (e) {}
-                      }}
-                      className="relative w-full flex-1 p-5 flex flex-col justify-between cursor-pointer select-none text-left z-10"
-                    >
-                      {/* Top content area with clear vertical rhythm and dedicated clearance */}
-                      <div className="space-y-3 flex-1 flex flex-col justify-start mb-4 overflow-y-auto pr-1">
+                  ) : (
+                    <div className="space-y-4 flex-1 flex flex-col justify-between text-left">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-bold text-red-400 bg-red-950/30 border border-red-500/20 py-0.5 px-2 rounded-sm inline-block uppercase tracking-wider">
+                          <span className="text-[9px] font-mono font-bold text-[#d4af37] bg-[#d4af37]/10 border border-[#d4af37]/25 py-0.5 px-2 rounded-sm inline-block uppercase tracking-wider">
                             Misconception {idx + 1}
                           </span>
                           
                           {isAdmin && onUpdateMyths && (
-                            <div className="flex items-center gap-1.5 text-[9px] z-30">
+                            <div className="flex items-center gap-1.5 text-[9px]">
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingMythIndex(idx);
-                                }}
+                                onClick={() => setEditingMythIndex(idx)}
                                 className="font-mono text-gray-400 hover:text-[#d4af37] transition-colors cursor-pointer px-1 py-0.5"
                                 title="Edit Mythbuster details"
                               >
@@ -1499,8 +1572,7 @@ export default function JusticeShieldSection({
                               </button>
                               <span className="text-gray-600">|</span>
                               <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
+                                onClick={() => {
                                   if (confirm(`Permanently remove Misconception #${idx+1}?`)) {
                                     onUpdateMyths(myths.filter((_, mIdx) => mIdx !== idx));
                                   }
@@ -1514,41 +1586,68 @@ export default function JusticeShieldSection({
                           )}
                         </div>
 
-                        <p className="text-sm font-serif font-semibold text-white leading-relaxed tracking-wide">
+                        <h4 className="text-sm font-serif font-semibold text-white leading-relaxed">
                           {myth.question}
-                        </p>
+                        </h4>
 
-                        <p className="text-xs font-mono text-gray-300 italic leading-relaxed border-l-2 border-red-500/40 pl-2.5 py-1 bg-black/20 rounded-r-sm">
-                          {myth.myth}
-                        </p>
+                        <div className="p-3 bg-red-950/20 border-l-2 border-red-500/50 rounded-r-sm space-y-1">
+                          <span className="text-[8px] font-mono text-red-400 font-bold uppercase tracking-wider block">
+                            Common Myth / Misbelief:
+                          </span>
+                          <p className="text-xs text-gray-300 font-sans leading-relaxed">
+                            {myth.myth}
+                          </p>
+                        </div>
+
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="p-3 bg-black/60 border-l-2 border-[#d4af37] rounded-r-sm space-y-1.5 mt-2">
+                                <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
+                                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Verified Statutory Reality:</span>
+                                </div>
+                                <p className="text-xs text-gray-200 font-sans leading-relaxed font-light">
+                                  {myth.answerOnTrue}
+                                </p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
 
-                      {/* Laser scanner animation bar on click */}
-                      {crackingIndices[idx] && (
-                        <motion.div
-                          initial={{ top: "0%" }}
-                          animate={{ top: "100%" }}
-                          transition={{ duration: 0.65, ease: "easeInOut" }}
-                          className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-[#ffd754] to-transparent shadow-[0_0_12px_#ffd754] z-40 pointer-events-none"
-                        />
-                      )}
-
-                      {/* Clean Non-Overlapping CTA Reveal Button anchored firmly at bottom */}
-                      <div className="mt-auto pt-3 border-t border-[#d4af37]/15 shrink-0">
+                      <div className="pt-3 border-t border-[#d4af37]/15 mt-3">
                         <button
                           type="button"
-                          className="w-full text-center py-2.5 bg-gradient-to-r from-[#d4af37]/15 to-[#d4af37]/30 hover:from-[#d4af37] hover:to-[#ffd754] text-[#d4af37] hover:text-[#001233] text-[10px] sm:text-xs uppercase font-mono font-bold rounded-sm border border-[#d4af37]/40 hover:border-[#d4af37] transition-all cursor-pointer shadow-md flex items-center justify-center gap-2 group"
+                          onClick={() => {
+                            try { playSynthSound("click"); } catch (e) {}
+                            setExpandedMythIndices(prev => ({ ...prev, [idx]: !prev[idx] }));
+                          }}
+                          className={`w-full py-2 px-3 text-[10px] font-mono font-bold uppercase tracking-wider rounded-sm border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                            isExpanded
+                              ? "bg-[#d4af37]/20 border-[#d4af37] text-white"
+                              : "bg-[#d4af37]/10 hover:bg-[#d4af37]/25 text-[#d4af37] hover:text-white border-[#d4af37]/30"
+                          }`}
                         >
-                          <Sparkles className="w-3.5 h-3.5 group-hover:rotate-12 transition-transform" />
-                          <span>REVEAL LEGAL REALITY</span>
+                          <Sparkles className="w-3 h-3 text-[#d4af37]" />
+                          <span>{isExpanded ? "Hide Legal Reality" : "View Verified Legal Reality"}</span>
                         </button>
                       </div>
                     </div>
-                  </>
-                )}
-              </motion.div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>

@@ -65,6 +65,8 @@ export interface EvidenceItem {
   uploadedAt: string;
   fileSize: string;
   verifiedBy: string;
+  status?: 'pending' | 'approved' | 'rejected';
+  submittedBy?: string;
 }
 
 export interface AnonymousQuestion {
@@ -76,6 +78,8 @@ export interface AnonymousQuestion {
   isPublic: boolean;
   repliedBy?: string;
   sources?: Array<{ title: string; url: string }>;
+  isFAQ?: boolean;
+  category?: string;
 }
 
 export interface ChatMessage {

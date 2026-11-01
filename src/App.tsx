@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { 
   ShieldCheck, AlertCircle, Edit3, Save, Plus, ArrowUpRight, Scale, Trees, Coins, 
-  Sparkles, ShieldAlert, Landmark, Info, FileDown, ExternalLink, HelpCircle, BookOpen
+  Sparkles, ShieldAlert, Landmark, Info, FileDown, ExternalLink, HelpCircle, BookOpen,
+  Compass, Shield, FolderLock, Newspaper, FileText
 } from "lucide-react";
 import { CivicShieldData, LayoutBlock, BlogPost, EvidenceItem, AnonymousQuestion, NewsletterSub, Statute, VisitorMetrics } from "./types";
 import { AnimatePresence, motion } from "motion/react";
 
 import Header from "./components/Header";
+import GlobalSearchModal from "./components/GlobalSearchModal";
 import AnonymousChat from "./components/AnonymousChat";
 import EvidenceSection from "./components/EvidenceSection";
 import TimelineSection from "./components/TimelineSection";
@@ -37,6 +39,8 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import MobileSectionSwitcher from "./components/MobileSectionSwitcher";
 import MobileQuickDeck from "./components/MobileQuickDeck";
 import MobileScrollToTop from "./components/MobileScrollToTop";
+import CabinetSectionAccordion, { SectionItem } from "./components/CabinetSectionAccordion";
+import MythbustersSection from "./components/MythbustersSection";
 import { playSynthSound } from "./components/JusticeShieldSection";
 
 export default function App() {
@@ -45,8 +49,10 @@ export default function App() {
   const [readerVolume, setReaderVolume] = useState<"rights" | "goals" | "mission">("rights");
   const [readerChapterIndex, setReaderChapterIndex] = useState(0);
   const [bookInitialGoalIndex, setBookInitialGoalIndex] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeFolderTab, setActiveFolderTab] = useState<"study" | "vault" | "dispatch">("study");
-  const [mobileSectionFilter, setMobileSectionFilter] = useState<string>("pillars");
+  const [activeCabinetSection, setActiveCabinetSection] = useState<string | null>(null);
+  const [mobileSectionFilter, setMobileSectionFilter] = useState<string>("");
   const [mobileViewMode, setMobileViewMode] = useState<"focused" | "all">("focused");
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
   const [isAdminMode, setIsAdminMode] = useState(() => {
@@ -87,88 +93,125 @@ export default function App() {
     }
   });
 
-  // Automatically switch tabs if an anchor link or cabinet navigation is triggered
-  useEffect(() => {
-    const handleTargetSwitch = (target: string) => {
-      if (!target) return;
-      const lower = target.toLowerCase();
-      if (lower === "introduction" || lower.includes("intro")) {
-        const el = document.getElementById("introduction");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      } else if (
-        lower === "evidence" || 
-        lower === "justice-shield" || 
-        lower === "impact-metrics" || 
-        lower.includes("evidence") || 
-        lower.includes("metric") || 
-        lower.includes("vault") || 
-        lower.includes("shield") || 
-        lower.includes("ev_")
-      ) {
-        setActiveFolderTab("vault");
-        if (lower === "justice-shield" || lower.includes("shield")) {
-          setMobileSectionFilter("justice-shield");
-        } else if (lower === "impact-metrics" || lower.includes("metric")) {
-          setMobileSectionFilter("impact-metrics");
-        } else {
-          setMobileSectionFilter("evidence");
-        }
-      } else if (
-        lower === "study" || 
-        lower === "study-curriculum" || 
-        lower === "constitutional-network" || 
-        lower.includes("study") || 
-        lower.includes("right") || 
-        lower.includes("rule") || 
-        lower.includes("regulat") || 
-        lower.includes("responsib") || 
-        lower.includes("definit") || 
-        lower.includes("law") || 
-        lower.includes("case") || 
-        lower.includes("network")
-      ) {
-        setActiveFolderTab("study");
-        if (lower === "constitutional-network" || lower.includes("network")) {
-          setMobileSectionFilter("constitutional-network");
-        } else {
-          setMobileSectionFilter("study-curriculum");
-        }
-      } else if (
-        lower === "reading-library" || 
-        lower.includes("library") || 
-        lower.includes("book") || 
-        lower.includes("handbook") || 
-        lower.includes("goal")
-      ) {
-        // Books reside strictly in the Introduction section
-        const el = document.getElementById("introduction") || document.getElementById("reading-library");
-        if (el) el.scrollIntoView({ behavior: "smooth" });
-      } else if (
-        lower === "blog" || 
-        lower === "timeline" || 
-        lower === "social-feed" || 
-        lower === "newsletter" || 
-        lower.includes("blog") || 
-        lower.includes("timeline") || 
-        lower.includes("news") || 
-        lower.includes("social") || 
-        lower.includes("dispatch") || 
-        lower.includes("road") || 
-        lower.includes("gazette")
-      ) {
-        setActiveFolderTab("dispatch");
-        if (lower === "timeline" || lower.includes("timeline") || lower.includes("road")) {
-          setMobileSectionFilter("timeline");
-        } else if (lower === "social-feed" || lower.includes("social")) {
-          setMobileSectionFilter("social-feed");
-        } else if (lower === "newsletter" || lower.includes("news")) {
-          setMobileSectionFilter("newsletter");
-        } else {
-          setMobileSectionFilter("blog");
-        }
-      }
-    };
+  const handleSelectDrawerTab = (tab: "study" | "vault" | "dispatch") => {
+    setActiveFolderTab(tab);
+    // Keep all sections closed by default when drawer is unsealed/opened
+    setActiveCabinetSection(null);
+    setMobileSectionFilter("");
+  };
 
+  // Automatically switch tabs if an anchor link or cabinet navigation is triggered
+  const handleTargetSwitch = (target: string) => {
+    if (!target) return;
+    const lower = target.toLowerCase();
+    if (lower === "introduction" || lower === "home" || lower.includes("intro")) {
+      const el = document.getElementById("introduction");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else if (lower === "project-outcomes" || lower === "impact-metrics" || lower.includes("outcome") || lower.includes("metric") || lower.includes("impact")) {
+      const el = document.getElementById("project-outcomes") || document.getElementById("impact-metrics");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else if (
+      lower === "evidence" || 
+      lower === "justice-shield" || 
+      lower === "mythbusters" ||
+      lower.includes("evidence") || 
+      lower.includes("vault") || 
+      lower.includes("shield") || 
+      lower.includes("situation") || 
+      lower.includes("scenario") || 
+      lower.includes("myth") || 
+      lower.includes("misconception") ||
+      lower.includes("ev_")
+    ) {
+      setActiveFolderTab("vault");
+      let targetSec = "justice-shield";
+      if (lower === "mythbusters" || lower.includes("myth") || lower.includes("misconception")) {
+        targetSec = "mythbusters";
+      } else if (lower === "evidence" || lower.includes("evidence") || lower.includes("ev_") || lower.includes("locker")) {
+        targetSec = "evidence";
+      }
+      setActiveCabinetSection(targetSec);
+      setMobileSectionFilter(targetSec);
+      setTimeout(() => {
+        const el = document.getElementById(`dossier-card-${targetSec}`) || document.getElementById(targetSec) || document.getElementById("cabinet-stage");
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        }
+      }, 70);
+    } else if (
+      lower === "study" || 
+      lower === "study-curriculum" || 
+      lower === "constitutional-network" || 
+      lower.includes("study") || 
+      lower.includes("right") || 
+      lower.includes("rule") || 
+      lower.includes("regulat") || 
+      lower.includes("responsib") || 
+      lower.includes("definit") || 
+      lower.includes("law") || 
+      lower.includes("case") || 
+      lower.includes("network")
+    ) {
+      setActiveFolderTab("study");
+      const targetSec = (lower === "constitutional-network" || lower.includes("network") || lower.includes("map"))
+        ? "constitutional-network"
+        : "pillars";
+      setActiveCabinetSection(targetSec);
+      setMobileSectionFilter(targetSec === "pillars" ? "study-curriculum" : targetSec);
+      setTimeout(() => {
+        const el = document.getElementById(`dossier-card-${targetSec}`) || document.getElementById(targetSec) || document.getElementById("cabinet-stage");
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        }
+      }, 70);
+    } else if (
+      lower === "reading-library" || 
+      lower.includes("library") || 
+      lower.includes("book") || 
+      lower.includes("handbook") || 
+      lower.includes("goal")
+    ) {
+      // Books reside strictly in the Introduction section
+      const el = document.getElementById("introduction") || document.getElementById("reading-library");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else if (
+      lower === "blog" || 
+      lower === "timeline" || 
+      lower === "social-feed" || 
+      lower === "newsletter" || 
+      lower.includes("blog") || 
+      lower.includes("timeline") || 
+      lower.includes("news") || 
+      lower.includes("social") || 
+      lower.includes("dispatch") || 
+      lower.includes("knowledge") || 
+      lower.includes("road") || 
+      lower.includes("gazette")
+    ) {
+      setActiveFolderTab("dispatch");
+      let targetSec = "blog";
+      if (lower === "timeline" || lower.includes("timeline") || lower.includes("road")) {
+        targetSec = "timeline";
+      } else if (lower === "social-feed" || lower.includes("social")) {
+        targetSec = "social-feed";
+      } else if (lower === "newsletter" || lower.includes("news")) {
+        targetSec = "newsletter";
+      }
+      setActiveCabinetSection(targetSec);
+      setMobileSectionFilter(targetSec);
+      setTimeout(() => {
+        const el = document.getElementById(`dossier-card-${targetSec}`) || document.getElementById(targetSec) || document.getElementById("cabinet-stage");
+        if (el) {
+          const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        }
+      }, 70);
+    }
+  };
+
+  useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace("#", "");
       if (hash) {
@@ -234,10 +277,15 @@ export default function App() {
       }
     };
 
+    const handleOpenGlobalSearchEvent = () => {
+      setIsSearchOpen(true);
+    };
+
     window.addEventListener("open-book-of-goals", handleOpenBookGoalsEvent as EventListener);
     window.addEventListener("open-handbook-of-rights", handleOpenHandbookRightsEvent as EventListener);
     window.addEventListener("open-book-of-mission", handleOpenBookMissionEvent as EventListener);
     window.addEventListener("open-civic-book", handleOpenCivicBookCustomEvent as EventListener);
+    window.addEventListener("open-global-search", handleOpenGlobalSearchEvent as EventListener);
 
     return () => {
       window.removeEventListener("hashchange", handleHashChange);
@@ -247,6 +295,7 @@ export default function App() {
       window.removeEventListener("open-handbook-of-rights", handleOpenHandbookRightsEvent as EventListener);
       window.removeEventListener("open-book-of-mission", handleOpenBookMissionEvent as EventListener);
       window.removeEventListener("open-civic-book", handleOpenCivicBookCustomEvent as EventListener);
+      window.removeEventListener("open-global-search", handleOpenGlobalSearchEvent as EventListener);
     };
   }, [data]);
 
@@ -279,7 +328,7 @@ export default function App() {
   // Sync mobileSectionFilter when activeFolderTab changes
   useEffect(() => {
     const sectionsForStudy = ["study-curriculum", "constitutional-network"];
-    const sectionsForVault = ["evidence", "justice-shield", "impact-metrics"];
+    const sectionsForVault = ["evidence", "justice-shield"];
     const sectionsForDispatch = ["blog", "timeline", "social-feed", "newsletter"];
 
     if (activeFolderTab === "study" && !sectionsForStudy.includes(mobileSectionFilter) && mobileSectionFilter !== "all") {
@@ -633,6 +682,41 @@ export default function App() {
     }
   };
 
+  // Approve a pending evidence submission
+  const handleApproveEvidence = async (id: string) => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/evidence/${id}/approve`, { method: "POST" });
+      if (!res.ok) throw new Error("Could not approve evidence submission");
+      const result = await res.json();
+      if (result.evidence) {
+        setData({
+          ...data,
+          evidence: data.evidence.map(ev => ev.id === id ? result.evidence : ev)
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorNotice(err.message);
+    }
+  };
+
+  // Reject / delete a pending evidence submission
+  const handleRejectEvidence = async (id: string) => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/evidence/${id}/reject`, { method: "POST" });
+      if (!res.ok) throw new Error("Could not reject evidence submission");
+      setData({
+        ...data,
+        evidence: data.evidence.filter(ev => ev.id !== id)
+      });
+    } catch (err: any) {
+      console.error(err);
+      setErrorNotice(err.message);
+    }
+  };
+
   // Subscribe subscriber email
   const handleSubscribe = async (email: string) => {
     const res = await fetch("/api/subscribe", {
@@ -728,6 +812,55 @@ export default function App() {
         ...data,
         questions: data.questions.filter(q => q.id !== id)
       });
+    } catch (err: any) {
+      console.error(err);
+      setErrorNotice(err.message);
+    }
+  };
+
+  // Update existing Q&A
+  const handleUpdateQuestion = async (id: string, payload: {
+    text: string;
+    answer: string;
+    repliedBy: string;
+    isPublic: boolean;
+    isFAQ?: boolean;
+    category?: string;
+  }) => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/questions/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("Failed to update Q&A");
+      const result = await res.json();
+      if (result.question) {
+        setData({
+          ...data,
+          questions: data.questions.map(q => q.id === id ? result.question : q)
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorNotice(err.message);
+    }
+  };
+
+  // Toggle FAQ on a question
+  const handleToggleFaq = async (id: string) => {
+    if (!data) return;
+    try {
+      const res = await fetch(`/api/questions/${id}/toggle-faq`, { method: "POST" });
+      if (!res.ok) throw new Error("Failed to toggle FAQ status");
+      const result = await res.json();
+      if (result.question) {
+        setData({
+          ...data,
+          questions: data.questions.map(q => q.id === id ? result.question : q)
+        });
+      }
     } catch (err: any) {
       console.error(err);
       setErrorNotice(err.message);
@@ -832,7 +965,7 @@ export default function App() {
       return blockId === "pillars" || blockId === "constitutional-network";
     }
     if (activeFolderTab === "vault") {
-      return blockId === "evidence" || blockId === "justice-shield" || blockId === "impact-metrics";
+      return blockId === "evidence" || blockId === "justice-shield";
     }
     if (activeFolderTab === "dispatch") {
       return blockId === "blog" || blockId === "timeline" || blockId === "social-feed" || blockId === "newsletter";
@@ -898,6 +1031,8 @@ export default function App() {
         onOpenHandbookOfRights={() => {
           window.dispatchEvent(new CustomEvent("open-handbook-of-rights"));
         }}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onNavigate={(targetId) => handleTargetSwitch(targetId)}
       />
 
       {/* Connection / Error banners */}
@@ -912,7 +1047,7 @@ export default function App() {
       {/* ADVISORY WATERMARK / CAMPAIGN BRIEF */}
       <div className="bg-gradient-to-r from-[#001233] via-[#d4af37]/5 to-[#001233] border-b border-[#d4af37]/15 px-4 py-2.5 text-center text-[9px] font-mono text-[#d4af37] uppercase tracking-[0.2em] flex items-center justify-center gap-2">
         <Sparkles className="w-3.5 h-3.5 text-[#d4af37] shrink-0" />
-        <span>Legal Lit Alliance: Erasing fear, empowering citizens, and defending fundamental liberties</span>
+        <span>Legal Lit Alliance: Erasing fear, empowering citizens, and defending fundamental liberties & due process</span>
       </div>
 
       <main className="flex-grow pb-24 md:pb-0">
@@ -947,6 +1082,10 @@ export default function App() {
               onDeleteSubscriber={handleDeleteSubscriber}
               onDeleteEvidence={handleDeleteEvidence}
               onUpdateEvidence={handleUpdateEvidence}
+              onApproveEvidence={handleApproveEvidence}
+              onRejectEvidence={handleRejectEvidence}
+              onUpdateQuestion={handleUpdateQuestion}
+              onToggleFaq={handleToggleFaq}
               onUpdateStatutes={(nextStatutes) => handleUpdateBlockData("justice-shield", { libraryStatutes: nextStatutes })}
               onUpdateMyths={(nextMyths) => handleUpdateBlockData("justice-shield", { legalMyths: nextMyths })}
               onUpdateCaseFiles={(nextCases) => setData((prev) => (prev ? { ...prev, caseFiles: nextCases } : null))}
@@ -966,19 +1105,21 @@ export default function App() {
           onOpenBookModal={(vol, chap) => handleOpenCivicBook(vol, chap || 0)}
           onNavigateToStudy={() => {
             setActiveFolderTab("study");
+            setActiveCabinetSection("pillars");
             setMobileSectionFilter("study-curriculum");
             setTimeout(() => {
-              const el = document.getElementById("study") || document.getElementById("cabinet-stage");
+              const el = document.getElementById("dossier-card-pillars") || document.getElementById("study") || document.getElementById("cabinet-stage");
               if (el) el.scrollIntoView({ behavior: "smooth" });
-            }, 60);
+            }, 70);
           }}
           onNavigateToVault={() => {
             setActiveFolderTab("vault");
-            setMobileSectionFilter("evidence");
+            setActiveCabinetSection("justice-shield");
+            setMobileSectionFilter("justice-shield");
             setTimeout(() => {
-              const el = document.getElementById("evidence") || document.getElementById("cabinet-stage");
+              const el = document.getElementById("dossier-card-justice-shield") || document.getElementById("evidence") || document.getElementById("cabinet-stage");
               if (el) el.scrollIntoView({ behavior: "smooth" });
-            }, 60);
+            }, 70);
           }}
         />
 
@@ -987,15 +1128,17 @@ export default function App() {
           onOpenBook={(volume) => handleOpenCivicBook(volume, 0)}
           onNavigateToSection={(tab, section) => {
             setActiveFolderTab(tab);
-            setMobileSectionFilter(section);
+            const secId = section === "study-curriculum" ? "pillars" : section;
+            setActiveCabinetSection(secId);
+            setMobileSectionFilter(secId);
             setMobileViewMode("focused");
             setTimeout(() => {
-              const el = document.getElementById("cabinet-content-anchor") || document.getElementById("cabinet-stage");
+              const el = document.getElementById(`dossier-card-${secId}`) || document.getElementById("cabinet-content-anchor") || document.getElementById("cabinet-stage");
               if (el) {
                 const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
                 window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
               }
-            }, 60);
+            }, 70);
           }}
           onOpenChat={() => window.dispatchEvent(new CustomEvent("open-anonymous-chat"))}
         />
@@ -1009,191 +1152,206 @@ export default function App() {
         {/* 2. AUTHENTIC FILING CABINET WITH FILE POP-UP ANIMATION & UNSEALED RECORDS */}
         <FilingCabinetSection 
           activeTab={activeFolderTab} 
-          onSelectTab={setActiveFolderTab}
+          onSelectTab={handleSelectDrawerTab}
         >
-          {/* Mobile Sub-Tab Section Switcher (compact single-section focused view) */}
-          <MobileSectionSwitcher
-            activeTab={activeFolderTab}
-            activeSection={mobileSectionFilter}
-            onSelectSection={(sec) => {
-              setMobileSectionFilter(sec);
-              setMobileViewMode("focused");
-            }}
-            viewMode={mobileViewMode}
-            onToggleViewMode={setMobileViewMode}
-          />
-
-          {/* Render blocks assigned to the currently unsealed drawer */}
-          {sortedBlocks
-            .filter((block) => {
-              if (block.id === "hero" || !block.visible) return false;
-              if (!isBlockInActiveTab(block.id)) return false;
-              if (isMobile && mobileViewMode === "focused") {
-                return block.id === mobileSectionFilter;
+          {(() => {
+            const studySections: SectionItem[] = [
+              {
+                id: "pillars",
+                code: "DOSSIER ST-001",
+                title: "Study Curriculum: Rights, Rules, Responsibilities & Definitions",
+                subtitle: "5 Core Universal Legal Axioms, Citizen Rights, Police Rules & Penal/Civil Definitions",
+                badge: "5 Universal Axioms • Police Restraints",
+                icon: <Scale className="w-5 h-5 text-[#ffd754]" />,
+                content: <StudySection />
+              },
+              {
+                id: "constitutional-network",
+                code: "DOSSIER ST-002",
+                title: "Constitutional Jurisprudence Map: Interactive Case & Rights Network",
+                subtitle: "Interactive Topological Visual Graph of Articles, Safeguards & Landmark Precedents",
+                badge: "8 Fundamental Rights • Interactive Graph",
+                icon: <Compass className="w-5 h-5 text-sky-400" />,
+                content: <ConstitutionalNetwork />
               }
-              return true;
-            })
-            .map((block, index) => {
-              const blockContent = (() => {
-                switch (block.id) {
-                  case "pillars":
-                    return (
-                      <React.Fragment key={block.id}>
-                        {(!isMobile || mobileViewMode === "all" || mobileSectionFilter === "study-curriculum") && (
-                          <StudySection />
-                        )}
-                      </React.Fragment>
-                    );
+            ];
 
-                  case "impact-metrics":
-                    return (
-                      <MeasurableSuccessHub
-                        key={block.id}
-                        data={data}
-                        isAdmin={isAdminMode}
-                        onUpdateStats={handleUpdateVisitorStats}
-                        accentColor={accentColor}
-                      />
-                    );
+            const vaultSections: SectionItem[] = [
+              {
+                id: "justice-shield",
+                code: "DOSSIER VT-001",
+                title: "The Justice Shield: Everyday Scenario Simulator & Core Statutes",
+                subtitle: "Step-by-Step Interactive Encounters, Legal Compliance Checkpoints & Core Statute References",
+                badge: "6 Interactive Situations • FAQ • Core Statutes",
+                icon: <Shield className="w-5 h-5 text-amber-400" />,
+                content: (
+                  <JusticeShieldSection
+                    isAdmin={isAdminMode}
+                    basicLaws={justiceShieldBlock?.customData?.basicLaws}
+                    legalMyths={justiceShieldBlock?.customData?.legalMyths}
+                    libraryStatutes={justiceShieldBlock?.customData?.libraryStatutes}
+                    onUpdateLaws={(nextLaws) => handleUpdateBlockData("justice-shield", { basicLaws: nextLaws })}
+                    onUpdateMyths={(nextMyths) => handleUpdateBlockData("justice-shield", { legalMyths: nextMyths })}
+                    onUpdateLibrary={(nextLibrary) => handleUpdateBlockData("justice-shield", { libraryStatutes: nextLibrary })}
+                  />
+                )
+              },
+              {
+                id: "mythbusters",
+                code: "DOSSIER VT-002",
+                title: "Legal Mythbusters: Common Misconceptions vs Statutory Reality",
+                subtitle: "12 Common Police Stops, Arrest, Search & Administrative Myths Debunked with Verified Statutory Codes",
+                badge: "12 Debunked Misconceptions • Fact vs Law",
+                icon: <AlertCircle className="w-5 h-5 text-red-400" />,
+                content: (
+                  <MythbustersSection
+                    myths={justiceShieldBlock?.customData?.legalMyths}
+                    isAdmin={isAdminMode}
+                    onUpdateMyths={(nextMyths) => handleUpdateBlockData("justice-shield", { legalMyths: nextMyths })}
+                  />
+                )
+              },
+              {
+                id: "evidence",
+                code: "DOSSIER VT-003",
+                title: "Certified Evidence Vault: Official Handouts & Court Boilerplates",
+                subtitle: "Downloadable Pocket Handouts, Pro-Se Filings, Roadside Guides & Precedents",
+                badge: "Verified Handouts • PDF Downloads • Precedents",
+                icon: <FolderLock className="w-5 h-5 text-emerald-400" />,
+                content: (
+                  <EvidenceSection
+                    evidence={data?.evidence || []}
+                    isAdmin={isAdminMode}
+                    onDeleteEvidence={handleDeleteEvidence}
+                    onApproveEvidence={handleApproveEvidence}
+                    onRejectEvidence={handleRejectEvidence}
+                    accentColor={accentColor}
+                  />
+                )
+              }
+            ];
 
-                  case "justice-shield":
-                    return (
-                      <JusticeShieldSection
-                        key={block.id}
-                        isAdmin={isAdminMode}
-                        basicLaws={block.customData.basicLaws}
-                        legalMyths={block.customData.legalMyths}
-                        libraryStatutes={block.customData.libraryStatutes}
-                        onUpdateLaws={(nextLaws) => handleUpdateBlockData("justice-shield", { basicLaws: nextLaws })}
-                        onUpdateMyths={(nextMyths) => handleUpdateBlockData("justice-shield", { legalMyths: nextMyths })}
-                        onUpdateLibrary={(nextLibrary) => handleUpdateBlockData("justice-shield", { libraryStatutes: nextLibrary })}
-                      />
-                    );
+            const dispatchSections: SectionItem[] = [
+              {
+                id: "blog",
+                code: "DOSSIER DS-001",
+                title: "Sovereign Gazette: Legal Analysis Dispatches & Articles",
+                subtitle: "Deep-Dive Legal Breakdowns, Citizen Commentaries, and Practical Self-Defense Field Notes",
+                badge: "Community Articles • Comments Enabled",
+                icon: <Newspaper className="w-5 h-5 text-sky-400" />,
+                content: (
+                  <BlogSection
+                    posts={data?.posts || []}
+                    onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
+                    isAdmin={isAdminMode}
+                    onDeletePost={handleDeletePost}
+                  />
+                )
+              },
+              {
+                id: "timeline",
+                code: "DOSSIER DS-002",
+                title: "Campaign Roadmap: Strategic Initiatives & Milestones",
+                subtitle: "Chronological Progression of Civic Literacy Clinics, Legal Tools & National Outreach",
+                badge: "Campaign Progress • Milestones",
+                icon: <Compass className="w-5 h-5 text-purple-400" />,
+                content: (
+                  <TimelineSection
+                    events={timelineBlock?.customData?.timeline || []}
+                    isAdmin={isAdminMode}
+                    onUpdateEvent={(idx, updated) => {
+                      const originalTimeline = timelineBlock?.customData?.timeline || [];
+                      const nextTimeline = [...originalTimeline];
+                      nextTimeline[idx] = updated;
+                      handleUpdateBlockData("timeline", { timeline: nextTimeline });
+                    }}
+                    onAddEvent={() => {
+                      const originalTimeline = timelineBlock?.customData?.timeline || [];
+                      const nextTimeline = [...originalTimeline, {
+                        date: "New Road target",
+                        title: "Click to edit target heading",
+                        description: "Click to write explanation for this campaign milestone",
+                        completed: false
+                      }];
+                      handleUpdateBlockData("timeline", { timeline: nextTimeline });
+                    }}
+                    onDeleteEvent={(idx) => {
+                      const originalTimeline = timelineBlock?.customData?.timeline || [];
+                      const nextTimeline = originalTimeline.filter((_, i) => i !== idx);
+                      handleUpdateBlockData("timeline", { timeline: nextTimeline });
+                    }}
+                    accentColor={accentColor}
+                  />
+                )
+              },
+              {
+                id: "social-feed",
+                code: "DOSSIER DS-003",
+                title: "Community Live Wire: Citizen Queries & Field Broadcasts",
+                subtitle: "Real-Time Queries, Verification Badges, and Community Legal Experiences",
+                badge: "Live Queries • Social Posts",
+                icon: <FileText className="w-5 h-5 text-amber-400" />,
+                content: (
+                  <SocialFeedSection
+                    posts={data?.socialFeed || []}
+                    isAdmin={isAdminMode}
+                    onAddPost={handleAddSocialPost}
+                    onDeletePost={handleDeleteSocialPost}
+                  />
+                )
+              },
+              {
+                id: "newsletter",
+                code: "DOSSIER DS-004",
+                title: "Public Dispatch Bulletin: Official Citizen Notification Service",
+                subtitle: "Zero Spam, Instant Updates for Unsealed Court Templates and Rights Updates",
+                badge: "Legal Updates • Verified Alerts",
+                icon: <Sparkles className="w-5 h-5 text-emerald-400" />,
+                content: (
+                  <NewsletterSection
+                    onSubscribe={handleSubscribe}
+                  />
+                )
+              }
+            ];
 
-                  case "evidence":
-                    return (
-                      <EvidenceSection
-                        key={block.id}
-                        evidence={data?.evidence || []}
-                        isAdmin={isAdminMode}
-                        onDeleteEvidence={handleDeleteEvidence}
-                        accentColor={accentColor}
-                      />
-                    );
+            const currentDrawerSections = (() => {
+              switch (activeFolderTab) {
+                case "study":
+                  return studySections;
+                case "vault":
+                  return vaultSections;
+                case "dispatch":
+                  return dispatchSections;
+                default:
+                  return studySections;
+              }
+            })();
 
-                  case "timeline":
-                    return (
-                      <TimelineSection
-                        key={block.id}
-                        events={block.customData.timeline || []}
-                        isAdmin={isAdminMode}
-                        onUpdateEvent={(idx, updated) => {
-                          const originalTimeline = block.customData.timeline || [];
-                          const nextTimeline = [...originalTimeline];
-                          nextTimeline[idx] = updated;
-                          handleUpdateBlockData("timeline", { timeline: nextTimeline });
-                        }}
-                        onAddEvent={() => {
-                          const originalTimeline = block.customData.timeline || [];
-                          const nextTimeline = [...originalTimeline, {
-                            date: "New Road target",
-                            title: "Click to edit target heading",
-                            description: "Click to write explanation for this campaign milestone milestone",
-                            completed: false
-                          }];
-                          handleUpdateBlockData("timeline", { timeline: nextTimeline });
-                        }}
-                        onDeleteEvent={(idx) => {
-                          const originalTimeline = block.customData.timeline || [];
-                          const nextTimeline = originalTimeline.filter((_, i) => i !== idx);
-                          handleUpdateBlockData("timeline", { timeline: nextTimeline });
-                        }}
-                        accentColor={accentColor}
-                      />
-                    );
-
-                  case "constitutional-network":
-                    return (
-                      <ConstitutionalNetwork
-                        key={block.id}
-                      />
-                    );
-
-                  case "social-feed":
-                    return (
-                      <SocialFeedSection
-                        key={block.id}
-                        posts={data?.socialFeed || []}
-                        isAdmin={isAdminMode}
-                        onAddPost={handleAddSocialPost}
-                        onDeletePost={handleDeleteSocialPost}
-                      />
-                    );
-
-                  case "blog":
-                    return (
-                      <BlogSection
-                        key={block.id}
-                        posts={data?.posts || []}
-                        onAddComment={handleAddComment}
-                        onDeleteComment={handleDeleteComment}
-                        isAdmin={isAdminMode}
-                        onDeletePost={handleDeletePost}
-                      />
-                    );
-
-                  case "newsletter":
-                    return (
-                      <NewsletterSection
-                        key={block.id}
-                        onSubscribe={handleSubscribe}
-                      />
-                    );
-
-                  default:
-                    return null;
-                }
-              })();
-
-              if (!blockContent) return null;
-
-              const getSectionMeta = (id: string) => {
-                switch (id) {
-                  case "constitutional-network":
-                    return { label: "CONSTITUTIONAL NETWORK", ref: "ARTICLE 14, 19, 21 // JURISPRUDENCE" };
-                  case "justice-shield":
-                    return { label: "JUSTICE SHIELD SIMULATOR", ref: "SECTION 41A CRPC // CITIZEN SAFEGUARDS" };
-                  case "evidence":
-                    return { label: "CERTIFIED CASE EVIDENCE", ref: "INDIAN EVIDENCE ACT // UNSEALED RECORDS" };
-                  case "blog":
-                    return { label: "SOVEREIGN DISPATCH GAZETTE", ref: "PUBLIC ADVOCACY & LEGAL BRIEFS" };
-                  case "newsletter":
-                    return { label: "CIVIC ALLIANCE BROADCAST", ref: "COMMUNITY ENGAGEMENT & RELEASES" };
-                  default:
-                    return { label: "SOVEREIGN BLUEPRINT", ref: "ARTICLE 21 // CIVIC SHIELD" };
-                }
-              };
-
-              const sectionMeta = getSectionMeta(block.id);
-
-              return (
-                <div id={block.id} key={block.id} className="scroll-mt-24 w-full">
-                  {index > 0 && (
-                    <BlueprintSectionTransition
-                      label={sectionMeta.label}
-                      articleReference={sectionMeta.ref}
-                      className="py-6 sm:py-8"
-                    />
-                  )}
-                  <ScrollReveal index={index}>
-                    {blockContent}
-                  </ScrollReveal>
-                </div>
-              );
-            })}
+            return (
+              <CabinetSectionAccordion
+                drawerTab={activeFolderTab}
+                activeSectionId={activeCabinetSection}
+                onSelectSection={(id) => {
+                  setActiveCabinetSection(id);
+                  if (id) setMobileSectionFilter(id);
+                }}
+                sections={currentDrawerSections}
+              />
+            );
+          })()}
         </FilingCabinetSection>
 
       </main>
+
+      {/* Permanent Dedicated Public Footer Section: Project Outcomes */}
+      <MeasurableSuccessHub
+        data={data}
+        isAdmin={isAdminMode}
+        onUpdateStats={handleUpdateVisitorStats}
+        accentColor={accentColor}
+      />
 
       {/* Footer Block */}
       <footer className="bg-[#001233] border-t border-[#d4af37]/25 py-12">
@@ -1240,6 +1398,16 @@ export default function App() {
           {/* ACHIEVEMENT TOAST SYSTEM */}
           <AchievementToast />
 
+          {/* GLOBAL SEARCH MODAL */}
+          <GlobalSearchModal
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+            onNavigate={(targetId) => {
+              setIsSearchOpen(false);
+              handleTargetSwitch(targetId);
+            }}
+          />
+
           {/* THE 3-VOLUME CIVIC ARCHIVE INTERACTIVE BOOK READER MODAL */}
           <CivicBookReaderModal
             isOpen={isBookModalOpen}
@@ -1254,6 +1422,12 @@ export default function App() {
             onNewQuestion={handleNewQuestion} 
             evidence={data?.evidence || []}
             onAddEvidence={handleUploadFile}
+            onQAAdded={(newQA) => {
+              setData(prev => prev ? {
+                ...prev,
+                questions: [newQA, ...prev.questions.filter(q => q.id !== newQA.id)]
+              } : null);
+            }}
           />
 
           {/* MOBILE BOTTOM NAVIGATION DOCK (Persistent touch-optimized bottom bar) */}

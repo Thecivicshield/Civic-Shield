@@ -89,7 +89,7 @@ export default function MeasurableSuccessHub({
   };
 
   const handleCopyImpactSummary = () => {
-    const summary = `CIVIC SHIELD • LIVE ENGAGEMENT & IMPACT LEDGER
+    const summary = `CIVIC SHIELD • VERIFIED PROJECT OUTCOMES LEDGER
 -----------------------------------------
 • Total Website Link Visitors: ${stats.totalVisitors.toLocaleString()}
 • Gateway Portal Entries: ${totalGateEntries.toLocaleString()}
@@ -112,7 +112,7 @@ Official Civic Defense Matrix: https://thecivicshield.org`;
   const progressPercent = Math.min(100, Math.round((currentTotalEmpowered / nextGoal) * 100));
 
   return (
-    <section id="impact-metrics" className="py-16 px-4 sm:px-6 relative overflow-hidden bg-gradient-to-b from-[#000d26] via-[#001233] to-[#000a1a]">
+    <section id="project-outcomes" data-section="impact-metrics" className="py-16 px-4 sm:px-6 relative overflow-hidden bg-gradient-to-b from-[#000d26] via-[#001233] to-[#000a1a] border-t border-[#d4af37]/20">
       {/* Background Subtle Grid & Lighting Accent */}
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[700px] h-[350px] bg-[#d4af37]/5 rounded-full blur-[140px] pointer-events-none" />
@@ -124,13 +124,13 @@ Official Civic Defense Matrix: https://thecivicshield.org`;
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/10 border border-[#d4af37]/30 text-[#d4af37] text-xs font-mono tracking-widest uppercase mb-3">
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              <span>Verified Public Engagement Ledger</span>
+              <span>Verified Public Engagement & Project Outcomes</span>
             </div>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-white tracking-tight">
-              Live Engagement & <span className="text-[#ffd754] font-semibold italic">Measurable Impact</span>
+              Live Engagement & <span className="text-[#ffd754] font-semibold italic">Project Outcomes</span>
             </h2>
             <p className="text-gray-300 text-sm sm:text-base max-w-2xl mt-2 font-sans leading-relaxed">
-              Auditable metrics updating dynamically on website link visits, portal entries, AI chat interactions, new subscriber pledges, and pro-se downloads.
+              Auditable project outcomes updating dynamically on link visits, portal entries, AI chat interactions, new subscriber pledges, and pro-se downloads.
             </p>
           </div>
 
@@ -147,7 +147,7 @@ Official Civic Defense Matrix: https://thecivicshield.org`;
               title="Copy Summary to Clipboard"
             >
               <Share2 className="w-3.5 h-3.5" />
-              <span>{copiedReport ? "Copied Ledger!" : "Export Summary"}</span>
+              <span>{copiedReport ? "Copied Outcomes!" : "Export Outcomes"}</span>
             </button>
 
             {isAdmin && (
@@ -156,7 +156,7 @@ Official Civic Defense Matrix: https://thecivicshield.org`;
                 className="flex items-center gap-2 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-sm text-xs font-mono uppercase transition-all cursor-pointer"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>{isEditing ? "Close Editor" : "Edit Impact Numbers"}</span>
+                <span>{isEditing ? "Close Editor" : "Edit Outcome Numbers"}</span>
               </button>
             )}
           </div>

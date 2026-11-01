@@ -1,5 +1,5 @@
 import React from "react";
-import { Scale, FolderLock, Shield, Compass, MessageSquare, BookOpen, Layers } from "lucide-react";
+import { Scale, FolderLock, Shield, Compass, MessageSquare, BookOpen, Layers, AlertCircle } from "lucide-react";
 import { playSynthSound } from "./JusticeShieldSection";
 
 interface MobileQuickDeckProps {
@@ -88,6 +88,19 @@ export default function MobileQuickDeck({
         >
           <Shield className="w-4 h-4 text-[#d4af37]" />
           <span>Scenario Simulator</span>
+        </button>
+
+        {/* Legal Mythbusters */}
+        <button
+          type="button"
+          onClick={() => {
+            triggerSound();
+            onNavigateToSection("vault", "mythbusters");
+          }}
+          className="shrink-0 flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg bg-[#001f54] border border-red-500/40 text-red-300 text-xs font-bold tracking-wide active:scale-95 transition-transform min-h-[44px] cursor-pointer shadow-sm"
+        >
+          <AlertCircle className="w-4 h-4 text-red-400" />
+          <span>Legal Mythbusters</span>
         </button>
 
         {/* Action Roadmap */}

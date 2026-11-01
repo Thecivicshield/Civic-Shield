@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { 
   Pin, Link2, BookOpen, AlertTriangle, ShieldCheck, 
   FileText, Landmark, ZoomIn, Globe, X, CheckSquare, 
-  Award, CornerDownRight, Scale, ChevronRight, Lock, 
+  Award, CornerDownRight, Scale, ChevronRight, ChevronDown, ChevronUp, Lock, 
   ShieldAlert, Sparkles, RefreshCw, Clipboard, CheckCircle2, 
   Trophy, Key, Scroll, HelpCircle, AlertCircle
 } from "lucide-react";
@@ -382,6 +382,23 @@ export default function ConstitutionalNetwork() {
   const [userCertName, setUserCertName] = useState<string>("");
   const [isCertShowing, setIsCertShowing] = useState<boolean>(false);
 
+  // Independent Collapsible Subsection States: Map, Network, Cases (Closed by default!)
+  const [openSubsections, setOpenSubsections] = useState<Record<string, boolean>>({
+    map: false,
+    network: false,
+    cases: false
+  });
+
+  const toggleSubsection = (key: string) => {
+    try {
+      playNetworkSound("click");
+    } catch (e) {}
+    setOpenSubsections(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
   // Trigger sound effect
   const playNetworkSound = (type: "beep" | "unseal" | "stamp" | "click") => {
     // Sound effects removed by user request
@@ -545,327 +562,381 @@ export default function ConstitutionalNetwork() {
           </p>
         </div>
 
-        {/* JURISDICTIONAL SELECTOR TABS (The Country Map Navigator) */}
-        <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-10 max-w-5xl mx-auto bg-black/60 p-2 border border-[#d4af37]/15 rounded-md backdrop-blur-sm shadow-md">
-          {[
-            { id: "ALL", label: "All", flag: "🌐" },
-            { id: "US", label: "United States", flag: "🇺🇸" },
-            { id: "CA", label: "Canada", flag: "🇨🇦" },
-            { id: "BR", label: "Brazil", flag: "🇧🇷" },
-            { id: "GB", label: "United Kingdom", flag: "🇬🇧" },
-            { id: "DE", label: "Germany", flag: "🇩🇪" },
-            { id: "ZA", label: "South Africa", flag: "🇿🇦" },
-            { id: "KE", label: "Kenya", flag: "🇰🇪" },
-            { id: "IN", label: "India", flag: "🇮🇳" },
-            { id: "SG", label: "Singapore", flag: "🇸🇬" },
-            { id: "JP", label: "Japan", flag: "🇯🇵" },
-            { id: "AU", label: "Australia", flag: "🇦🇺" }
-          ].map((country) => (
-            <button
-              key={country.id}
-              onClick={() => {
-                playNetworkSound("click");
-                setSelectedCountryFilter(country.id);
-              }}
-              className={`px-3 py-2 text-[10px] font-mono tracking-widest uppercase rounded-sm border transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
-                selectedCountryFilter === country.id
-                  ? "bg-[#d4af37] text-black border-[#d4af37] font-extrabold shadow-[0_0_12px_rgba(212,175,55,0.4)]"
-                  : "bg-black/40 text-gray-400 border-[#d4af37]/15 hover:border-[#d4af37]/50 hover:text-white"
-              }`}
-            >
-              <span className="text-xs">{country.flag}</span>
-              <span>{country.label}</span>
-            </button>
-          ))}
+        {/* SUBSECTION 1: WORLD JURISPRUDENCE MAP */}
+        <div className="border border-[#d4af37]/25 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm shadow-xl transition-all mb-8">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("map")}
+            className="w-full p-4 sm:p-5 flex items-center justify-between text-left bg-gradient-to-r from-[#001433] via-[#001d47] to-[#001433] border-b border-[#d4af37]/20 cursor-pointer select-none group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] group-hover:scale-105 transition-transform">
+                <Globe className="w-5 h-5 text-[#ffd754]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
+                    SUBSECTION 01 // GEOGRAPHICAL GRID
+                  </span>
+                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">GLOBAL JURISDICTIONS</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-[#ffd754] transition-colors mt-0.5">
+                  World Jurisprudence Map & Global Red-String Grid
+                </h3>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="hidden md:inline text-[9px] font-mono text-gray-400 uppercase tracking-wider font-semibold">
+                {openSubsections.map ? "UNSEALED & ACTIVE" : "CLICK TO EXPAND"}
+              </span>
+              <div className={`p-1.5 rounded-md border transition-transform ${openSubsections.map ? "bg-[#d4af37] text-black border-[#ffd754]" : "bg-black/50 text-gray-400 border-gray-700"}`}>
+                {openSubsections.map ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </div>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {openSubsections.map && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="p-4 sm:p-6 border-t border-[#d4af37]/15 overflow-hidden space-y-6"
+              >
+                {/* JURISDICTIONAL SELECTOR TABS (The Country Map Navigator) */}
+                <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-5xl mx-auto bg-black/60 p-2 border border-[#d4af37]/15 rounded-md backdrop-blur-sm shadow-md">
+                  {[
+                    { id: "ALL", label: "All", flag: "🌐" },
+                    { id: "US", label: "United States", flag: "🇺🇸" },
+                    { id: "CA", label: "Canada", flag: "🇨🇦" },
+                    { id: "BR", label: "Brazil", flag: "🇧🇷" },
+                    { id: "GB", label: "United Kingdom", flag: "🇬🇧" },
+                    { id: "DE", label: "Germany", flag: "🇩🇪" },
+                    { id: "ZA", label: "South Africa", flag: "🇿🇦" },
+                    { id: "KE", label: "Kenya", flag: "🇰🇪" },
+                    { id: "IN", label: "India", flag: "🇮🇳" },
+                    { id: "SG", label: "Singapore", flag: "🇸🇬" },
+                    { id: "JP", label: "Japan", flag: "🇯🇵" },
+                    { id: "AU", label: "Australia", flag: "🇦🇺" }
+                  ].map((country) => (
+                    <button
+                      key={country.id}
+                      onClick={() => {
+                        playNetworkSound("click");
+                        setSelectedCountryFilter(country.id);
+                      }}
+                      className={`px-3 py-2 text-[10px] font-mono tracking-widest uppercase rounded-sm border transition-all duration-300 flex items-center gap-1.5 cursor-pointer ${
+                        selectedCountryFilter === country.id
+                          ? "bg-[#d4af37] text-black border-[#d4af37] font-extrabold shadow-[0_0_12px_rgba(212,175,55,0.4)]"
+                          : "bg-black/40 text-gray-400 border-[#d4af37]/15 hover:border-[#d4af37]/50 hover:text-white"
+                      }`}
+                    >
+                      <span className="text-xs">{country.flag}</span>
+                      <span>{country.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* THE CORKBOARD STRING GRAPHICS PANEL */}
+                <div 
+                  ref={containerRef}
+                  className="w-full bg-gradient-to-b from-[#000814] to-[#000206] rounded-sm border border-[#d4af37]/20 relative h-[420px] sm:h-[580px] overflow-hidden flex flex-col justify-between p-4 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.9)]"
+                >
+                  {/* Wooden cork board frame border */}
+                  <div className="absolute inset-0 border-[3px] border-[#d4af37]/15 pointer-events-none rounded-sm z-30" />
+                  <div className="absolute inset-1 border border-dashed border-[#d4af37]/5 pointer-events-none z-30" />
+
+                  {/* HIGH-TECH STYLIZED WORLD MAP UNDERLAY GRAPHIC */}
+                  <div className="absolute inset-0 pointer-events-none opacity-[0.06] flex items-center justify-center select-none z-0 scale-95 sm:scale-105">
+                    <svg className="w-full h-full text-[#d4af37]" viewBox="0 0 1000 500" fill="currentColor">
+                      <path d="M120,80 L220,100 L250,150 L200,180 L180,240 L120,200 L100,140 Z" />
+                      <path d="M280,260 L380,280 L420,380 L320,440 L260,340 Z" />
+                      <path d="M480,80 L560,90 L580,140 L520,180 L460,140 Z" />
+                      <path d="M480,200 L580,220 L620,340 L560,420 L480,320 Z" />
+                      <path d="M680,180 L760,190 L740,260 L690,240 Z" />
+                      <path d="M780,140 L880,150 L910,240 L840,280 Z" />
+                      <path d="M820,360 L920,370 L900,440 L810,420 Z" />
+                      
+                      <circle cx="180" cy="150" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                      <circle cx="350" cy="350" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                      <circle cx="510" cy="120" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                      <circle cx="550" cy="320" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                      <circle cx="710" cy="210" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                      <circle cx="850" cy="220" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
+                    </svg>
+                  </div>
+
+                  {/* Continent Labels on Board */}
+                  <div className="absolute top-[32%] left-[15%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">NORTH AMERICA</div>
+                  <div className="absolute top-[72%] left-[32%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">SOUTH AMERICA</div>
+                  <div className="absolute top-[22%] left-[48%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">EUROPEAN ZONE</div>
+                  <div className="absolute top-[68%] left-[51%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">AFRICAN CONTINENT</div>
+                  <div className="absolute top-[42%] left-[69%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">SOUTH ASIA / IN</div>
+                  <div className="absolute top-[58%] left-[83%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">EAST ASIA / SG</div>
+
+                  {/* Tactical Grid Overlay */}
+                  <div className="absolute inset-4 grid grid-cols-6 grid-rows-6 pointer-events-none opacity-[0.015]">
+                    {Array.from({ length: 36 }).map((_, i) => (
+                      <div key={i} className="border border-[#d4af37]" />
+                    ))}
+                  </div>
+
+                  {/* Animated Red Yarn SVG Strings Layer */}
+                  <div className="absolute inset-0 z-10 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      {BOARD_NODES.map((nodeA, idxA) => {
+                        return BOARD_NODES.slice(idxA + 1).map((nodeB) => {
+                          const style = getLineStyle(nodeA, nodeB);
+                          if (!style) return null;
+
+                          return (
+                            <line
+                              key={`${nodeA.id}-${nodeB.id}`}
+                              x1={nodeA.x}
+                              y1={nodeA.y}
+                              x2={nodeB.x}
+                              y2={nodeB.y}
+                              style={{
+                                transition: "stroke 0.4s, stroke-width 0.4s, opacity 0.4s",
+                                ...style
+                              }}
+                            />
+                          );
+                        });
+                      })}
+                    </svg>
+                  </div>
+
+                  {/* MAP NODES / PINS */}
+                  <div className="absolute inset-0 z-20">
+                    {BOARD_NODES.map((node) => {
+                      const isSelected = selectedNode.id === node.id;
+                      const isHovered = hoveredNode?.id === node.id;
+                      const matchesFilter = selectedCountryFilter === "ALL" || node.countryCode === selectedCountryFilter;
+                      const isConnectedToHovered = hoveredNode
+                        ? node.connections.includes(hoveredNode.id) || hoveredNode.connections.includes(node.id)
+                        : false;
+
+                      const pinColors = {
+                        topic: { bg: "bg-amber-500", border: "border-amber-400", text: "text-amber-400" },
+                        right: { bg: "bg-blue-500", border: "border-blue-400", text: "text-blue-400" },
+                        case: { bg: "bg-red-500", border: "border-red-400", text: "text-red-400" },
+                        article: { bg: "bg-emerald-500", border: "border-emerald-400", text: "text-emerald-400" }
+                      };
+
+                      const currentColors = pinColors[node.type];
+
+                      return (
+                        <div
+                          key={node.id}
+                          className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300"
+                          style={{
+                            left: `${node.x}%`,
+                            top: `${node.y}%`,
+                            opacity: !matchesFilter ? 0.15 : hoveredNode && !isHovered && !isConnectedToHovered ? 0.35 : 1,
+                            transform: `translate(-50%, -50%) scale(${isHovered || isSelected ? 1.2 : 1})`,
+                            zIndex: isHovered || isSelected ? 40 : 30
+                          }}
+                          onClick={() => {
+                            playNetworkSound("beep");
+                            setSelectedNode(node);
+                          }}
+                          onMouseEnter={() => setHoveredNode(node)}
+                          onMouseLeave={() => setHoveredNode(null)}
+                        >
+                          <AnimatePresence>
+                            {(isSelected || isHovered) && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.7 }}
+                                animate={{ opacity: 0.75, scale: 1.8 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ repeat: Infinity, duration: 1.6, ease: "easeOut" }}
+                                className={`absolute inset-0 -m-3.5 rounded-full border-2 ${
+                                  node.type === "case" ? "border-red-500" : "border-[#d4af37]"
+                                }`}
+                              />
+                            )}
+                          </AnimatePresence>
+
+                          <div className="flex flex-col items-center">
+                            <div className={`w-3.5 h-3.5 rounded-full ${currentColors.bg} border-2 ${currentColors.border} flex items-center justify-center shadow-[0_5px_12px_rgba(0,0,0,0.6)] relative`}>
+                              <div className="w-1 h-1 bg-white/70 rounded-full absolute top-0.5 left-0.5" />
+                            </div>
+                            <div className="w-[1.5px] h-3.5 bg-gradient-to-b from-gray-200 to-gray-500 shadow-sm" />
+                            <div className="w-1.5 h-0.5 bg-black/50 blur-[0.5px] rounded-full mt-[1px]" />
+                          </div>
+
+                          <div className="absolute top-7 left-1/2 -translate-x-1/2 whitespace-nowrap z-50">
+                            <div className={`px-2 py-0.5 text-[8.5px] font-mono tracking-wider uppercase rounded-sm border transition-all duration-300 flex items-center gap-1 ${
+                              isSelected
+                                ? "bg-[#d4af37] text-black border-[#d4af37] font-extrabold shadow-[0_0_12px_#d4af37]"
+                                : isHovered
+                                  ? "bg-[#ef4444] text-white border-[#ef4444] font-extrabold"
+                                  : isConnectedToHovered
+                                    ? "bg-black/95 text-white border-[#d4af37]/40"
+                                    : "bg-black/85 text-gray-300 border-[#d4af37]/10"
+                            }`}>
+                              <span>{node.flag}</span>
+                              <span>{node.label}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Legend / Instructions Row */}
+                  <div className="relative z-30 flex justify-between items-end font-mono text-[8px] text-gray-500 border-t border-gray-900/50 pt-2.5">
+                    <div className="space-y-0.5 uppercase">
+                      <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Topic Coordinate</div>
+                      <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Statutory Protection</div>
+                    </div>
+                    <div className="space-y-0.5 uppercase text-right">
+                      <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-red-500" /> International Precedent</div>
+                      <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Accountability Manual</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Board Container Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* LEFT: THE CORKBOARD STRING GRAPHICS PANEL (8 Cols) */}
-          <div 
-            ref={containerRef}
-            className="lg:col-span-8 bg-gradient-to-b from-[#000814] to-[#000206] rounded-sm border border-[#d4af37]/20 relative h-[420px] sm:h-[580px] overflow-hidden flex flex-col justify-between p-4 shadow-[0_15px_40px_-15px_rgba(0,0,0,0.9)]"
+        {/* SUBSECTION 2: CONNECTED PRECEDENT NETWORK & COORDINATE INSPECTOR */}
+        <div className="border border-[#d4af37]/25 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm shadow-xl transition-all mb-8">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("network")}
+            className="w-full p-4 sm:p-5 flex items-center justify-between text-left bg-gradient-to-r from-[#001433] via-[#001d47] to-[#001433] border-b border-[#d4af37]/20 cursor-pointer select-none group"
           >
-            {/* Wooden cork board frame border */}
-            <div className="absolute inset-0 border-[3px] border-[#d4af37]/15 pointer-events-none rounded-sm z-30" />
-            <div className="absolute inset-1 border border-dashed border-[#d4af37]/5 pointer-events-none z-30" />
-
-            {/* HIGH-TECH STYLIZED WORLD MAP UNDERLAY GRAPHIC */}
-            <div className="absolute inset-0 pointer-events-none opacity-[0.06] flex items-center justify-center select-none z-0 scale-95 sm:scale-105">
-              <svg className="w-full h-full text-[#d4af37]" viewBox="0 0 1000 500" fill="currentColor">
-                {/* North America */}
-                <path d="M120,80 L220,100 L250,150 L200,180 L180,240 L120,200 L100,140 Z" />
-                {/* South America */}
-                <path d="M280,260 L380,280 L420,380 L320,440 L260,340 Z" />
-                {/* Europe */}
-                <path d="M480,80 L560,90 L580,140 L520,180 L460,140 Z" />
-                {/* Africa */}
-                <path d="M480,200 L580,220 L620,340 L560,420 L480,320 Z" />
-                {/* South Asia / India */}
-                <path d="M680,180 L760,190 L740,260 L690,240 Z" />
-                {/* Southeast / East Asia */}
-                <path d="M780,140 L880,150 L910,240 L840,280 Z" />
-                {/* Australia */}
-                <path d="M820,360 L920,370 L900,440 L810,420 Z" />
-                
-                {/* Target Locator Circles for Countries */}
-                <circle cx="180" cy="150" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx="350" cy="350" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx="510" cy="120" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx="550" cy="320" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx="710" cy="210" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-                <circle cx="850" cy="220" r="12" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="3,3" />
-              </svg>
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] group-hover:scale-105 transition-transform">
+                <Scale className="w-5 h-5 text-[#ffd754]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
+                    SUBSECTION 02 // PRECEDENT COORDINATES
+                  </span>
+                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">SELECTED: {selectedNode.label}</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-[#ffd754] transition-colors mt-0.5">
+                  Connected Case Coordinates & Precedent Network
+                </h3>
+              </div>
             </div>
 
-            {/* Continent Labels on Board */}
-            <div className="absolute top-[32%] left-[15%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">NORTH AMERICA</div>
-            <div className="absolute top-[72%] left-[32%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">SOUTH AMERICA</div>
-            <div className="absolute top-[22%] left-[48%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">EUROPEAN ZONE</div>
-            <div className="absolute top-[68%] left-[51%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">AFRICAN CONTINENT</div>
-            <div className="absolute top-[42%] left-[69%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">SOUTH ASIA / IN</div>
-            <div className="absolute top-[58%] left-[83%] font-mono text-[7px] text-gray-600 uppercase tracking-widest pointer-events-none hidden sm:block">EAST ASIA / SG</div>
-
-            {/* Tactical Grid Overlay */}
-            <div className="absolute inset-4 grid grid-cols-6 grid-rows-6 pointer-events-none opacity-[0.015]">
-              {Array.from({ length: 36 }).map((_, i) => (
-                <div key={i} className="border border-[#d4af37]" />
-              ))}
+            <div className="flex items-center gap-2">
+              <span className="hidden md:inline text-[9px] font-mono text-gray-400 uppercase tracking-wider font-semibold">
+                {openSubsections.network ? "UNSEALED & ACTIVE" : "CLICK TO EXPAND"}
+              </span>
+              <div className={`p-1.5 rounded-md border transition-transform ${openSubsections.network ? "bg-[#d4af37] text-black border-[#ffd754]" : "bg-black/50 text-gray-400 border-gray-700"}`}>
+                {openSubsections.network ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
             </div>
+          </button>
 
-            {/* Animated Red Yarn SVG Strings Layer */}
-            <div className="absolute inset-0 z-10 pointer-events-none">
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {BOARD_NODES.map((nodeA, idxA) => {
-                  return BOARD_NODES.slice(idxA + 1).map((nodeB) => {
-                    const style = getLineStyle(nodeA, nodeB);
-                    if (!style) return null;
+          <AnimatePresence initial={false}>
+            {openSubsections.network && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="p-4 sm:p-6 border-t border-[#d4af37]/15 overflow-hidden"
+              >
+                {/* CLASSIFIED DOSSIER CARD */}
+                <div className="bg-[#000a1c] border border-[#d4af37]/20 rounded-sm p-6 sm:p-8 shadow-xl relative overflow-hidden text-left font-sans">
+                  <div className="absolute top-2 right-6 w-8 h-12 border-2 border-slate-600 rounded-b-md opacity-20 rotate-12 pointer-events-none" />
 
-                    return (
-                      <line
-                        key={`${nodeA.id}-${nodeB.id}`}
-                        x1={nodeA.x}
-                        y1={nodeA.y}
-                        x2={nodeB.x}
-                        y2={nodeB.y}
-                        style={{
-                          transition: "stroke 0.4s, stroke-width 0.4s, opacity 0.4s",
-                          ...style
-                        }}
-                      />
-                    );
-                  });
-                })}
-              </svg>
-            </div>
+                  <div className="absolute top-24 -left-6 w-32 h-32 rounded-full border-4 border-[#ef4444]/10 flex items-center justify-center -rotate-12 pointer-events-none">
+                    <span className="font-mono text-[9px] font-black text-[#ef4444]/15 uppercase tracking-[0.25em]">CLASSIFIED</span>
+                  </div>
 
-            {/* MAP NODES / PINS */}
-            <div className="absolute inset-0 z-20">
-              {BOARD_NODES.map((node) => {
-                const isSelected = selectedNode.id === node.id;
-                const isHovered = hoveredNode?.id === node.id;
-                
-                // Check if matches country filter
-                const matchesFilter = selectedCountryFilter === "ALL" || node.countryCode === selectedCountryFilter;
-                
-                // Connection checking helper
-                const isConnectedToHovered = hoveredNode
-                  ? node.connections.includes(hoveredNode.id) || hoveredNode.connections.includes(node.id)
-                  : false;
+                  <div className="space-y-6 relative z-10">
+                    <div className="flex items-center justify-between border-b border-gray-900 pb-3">
+                      <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#d4af37] font-bold flex items-center gap-1.5 leading-none">
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" /> INVESTIGATION DOSSIER
+                      </span>
+                      <span className="font-mono text-[8px] text-gray-500 font-bold uppercase tracking-wider">
+                        SYS_REF_{selectedNode.id.toUpperCase().slice(0, 8)}
+                      </span>
+                    </div>
 
-                // Color themes based on node types
-                const pinColors = {
-                  topic: { bg: "bg-amber-500", border: "border-amber-400", text: "text-amber-400" },
-                  right: { bg: "bg-blue-500", border: "border-blue-400", text: "text-blue-400" },
-                  case: { bg: "bg-red-500", border: "border-red-400", text: "text-red-400" },
-                  article: { bg: "bg-emerald-500", border: "border-emerald-400", text: "text-emerald-400" }
-                };
-
-                const currentColors = pinColors[node.type];
-
-                return (
-                  <div
-                    key={node.id}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300"
-                    style={{
-                      left: `${node.x}%`,
-                      top: `${node.y}%`,
-                      opacity: !matchesFilter ? 0.15 : hoveredNode && !isHovered && !isConnectedToHovered ? 0.35 : 1,
-                      transform: `translate(-50%, -50%) scale(${isHovered || isSelected ? 1.2 : 1})`,
-                      zIndex: isHovered || isSelected ? 40 : 30
-                    }}
-                    onClick={() => {
-                      playNetworkSound("beep");
-                      setSelectedNode(node);
-                    }}
-                    onMouseEnter={() => setHoveredNode(node)}
-                    onMouseLeave={() => setHoveredNode(null)}
-                  >
-                    {/* Pulsing ring for selected/hovered pin */}
-                    <AnimatePresence>
-                      {(isSelected || isHovered) && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 0.75, scale: 1.8 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ repeat: Infinity, duration: 1.6, ease: "easeOut" }}
-                          className={`absolute inset-0 -m-3.5 rounded-full border-2 ${
-                            node.type === "case" ? "border-red-500" : "border-[#d4af37]"
-                          }`}
-                        />
-                      )}
-                    </AnimatePresence>
-
-                    {/* Cork Board Push Pin Graphic */}
-                    <div className="flex flex-col items-center">
-                      {/* Pushpin Head */}
-                      <div className={`w-3.5 h-3.5 rounded-full ${currentColors.bg} border-2 ${currentColors.border} flex items-center justify-center shadow-[0_5px_12px_rgba(0,0,0,0.6)] relative`}>
-                        {/* Metallic reflection shine */}
-                        <div className="w-1 h-1 bg-white/70 rounded-full absolute top-0.5 left-0.5" />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[8px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm border ${
+                          selectedNode.type === "topic"
+                            ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            : selectedNode.type === "right"
+                              ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                              : selectedNode.type === "case"
+                                ? "bg-red-500/10 border-red-500/20 text-red-400"
+                                : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                        }`}>
+                          {selectedNode.type}
+                        </span>
+                        <span className="font-mono text-[8px] text-gray-500 flex items-center gap-1">
+                          <span>{selectedNode.flag}</span>
+                          <span>{selectedNode.country}</span>
+                        </span>
                       </div>
                       
-                      {/* Metallic Pin Shaft */}
-                      <div className="w-[1.5px] h-3.5 bg-gradient-to-b from-gray-200 to-gray-500 shadow-sm" />
-
-                      {/* Small Shadow on the Board */}
-                      <div className="w-1.5 h-0.5 bg-black/50 blur-[0.5px] rounded-full mt-[1px]" />
+                      <h3 className="font-serif text-2xl font-bold text-white tracking-wide">
+                        {selectedNode.label}
+                      </h3>
+                      {selectedNode.citations && (
+                        <p className="font-mono text-[9px] text-[#d4af37] tracking-wider leading-none">
+                          CITATION: {selectedNode.citations}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Node Tag Title with Flag */}
-                    <div className="absolute top-7 left-1/2 -translate-x-1/2 whitespace-nowrap z-50">
-                      <div className={`px-2 py-0.5 text-[8.5px] font-mono tracking-wider uppercase rounded-sm border transition-all duration-300 flex items-center gap-1 ${
-                        isSelected
-                          ? "bg-[#d4af37] text-black border-[#d4af37] font-extrabold shadow-[0_0_12px_#d4af37]"
-                          : isHovered
-                            ? "bg-[#ef4444] text-white border-[#ef4444] font-extrabold"
-                            : isConnectedToHovered
-                              ? "bg-black/95 text-white border-[#d4af37]/40"
-                              : "bg-black/85 text-gray-300 border-[#d4af37]/10"
-                      }`}>
-                        <span>{node.flag}</span>
-                        <span>{node.label}</span>
+                    <div className="space-y-1.5 bg-black/40 border border-[#d4af37]/10 p-4 rounded-sm">
+                      <span className="font-mono text-[8px] uppercase tracking-widest text-gray-400 block font-bold">Classified Memorandum:</span>
+                      <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light">
+                        {selectedNode.description}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="font-mono text-[8px] uppercase tracking-widest text-gray-500 block font-bold">Connected Precedent Coordinates:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedNode.connections.map((cId) => {
+                          const connNode = BOARD_NODES.find(n => n.id === cId);
+                          if (!connNode) return null;
+                          return (
+                            <button
+                              key={cId}
+                              onClick={() => {
+                                playNetworkSound("beep");
+                                setSelectedNode(connNode);
+                              }}
+                              className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1.5 bg-black/60 hover:bg-black text-gray-300 hover:text-white border border-gray-800 hover:border-gray-600 rounded-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Link2 className="w-3.5 h-3.5 text-[#d4af37]" /> {connNode.label} ({connNode.flag})
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Legend / Instructions Row */}
-            <div className="relative z-30 flex justify-between items-end font-mono text-[8px] text-gray-500 border-t border-gray-900/50 pt-2.5">
-              <div className="space-y-0.5 uppercase">
-                <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Topic Coordinate</div>
-                <div className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Statutory Protection</div>
-              </div>
-              <div className="space-y-0.5 uppercase text-right">
-                <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-red-500" /> International Precedent</div>
-                <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Accountability Manual</div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* RIGHT: CLASSIFIED DOSSIER CARD (4 Cols) */}
-          <div className="lg:col-span-4 bg-[#000a1c] border border-[#d4af37]/20 rounded-sm p-5 sm:p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
-            {/* Dossier paper clip detail */}
-            <div className="absolute top-2 right-6 w-8 h-12 border-2 border-slate-600 rounded-b-md opacity-20 rotate-12 pointer-events-none" />
-
-            {/* Retro Stamp */}
-            <div className="absolute top-24 -left-6 w-32 h-32 rounded-full border-4 border-[#ef4444]/10 flex items-center justify-center -rotate-12 pointer-events-none">
-              <span className="font-mono text-[9px] font-black text-[#ef4444]/15 uppercase tracking-[0.25em]">CLASSIFIED</span>
-            </div>
-
-            <div className="space-y-6 relative z-10">
-              {/* Heading coordinate stamp */}
-              <div className="flex items-center justify-between border-b border-gray-900 pb-3">
-                <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#d4af37] font-bold flex items-center gap-1.5 leading-none">
-                  <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" /> INVESTIGATION
-                </span>
-                <span className="font-mono text-[8px] text-gray-500 font-bold uppercase tracking-wider">
-                  SYS_REF_{selectedNode.id.toUpperCase().slice(0, 8)}
-                </span>
-              </div>
-
-              {/* Node Title & Type Badge */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[8px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm border ${
-                    selectedNode.type === "topic"
-                      ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                      : selectedNode.type === "right"
-                        ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                        : selectedNode.type === "case"
-                          ? "bg-red-500/10 border-red-500/20 text-red-400"
-                          : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                  }`}>
-                    {selectedNode.type}
-                  </span>
-                  <span className="font-mono text-[8px] text-gray-500 flex items-center gap-1">
-                    <span>{selectedNode.flag}</span>
-                    <span>{selectedNode.country}</span>
-                  </span>
-                </div>
-                
-                <h3 className="font-serif text-2xl font-bold text-white tracking-wide">
-                  {selectedNode.label}
-                </h3>
-                {selectedNode.citations && (
-                  <p className="font-mono text-[9px] text-[#d4af37] tracking-wider leading-none">
-                    CITATION: {selectedNode.citations}
-                  </p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1.5 bg-black/40 border border-[#d4af37]/10 p-3 rounded-sm">
-                <span className="font-mono text-[8px] uppercase tracking-widest text-gray-400 block">Classified Memorandum</span>
-                <p className="text-xs text-gray-300 leading-relaxed font-light">
-                  {selectedNode.description}
-                </p>
-              </div>
-
-              {/* Connective links */}
-              <div className="space-y-2">
-                <span className="font-mono text-[8px] uppercase tracking-widest text-gray-500 block">Connected Coordinates</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedNode.connections.map((cId) => {
-                    const connNode = BOARD_NODES.find(n => n.id === cId);
-                    if (!connNode) return null;
-                    return (
+                    <div className="pt-4 border-t border-gray-900">
                       <button
-                        key={cId}
-                        onClick={() => {
-                          playNetworkSound("beep");
-                          setSelectedNode(connNode);
-                        }}
-                        className="text-[9px] font-mono uppercase tracking-wider px-2 py-1 bg-black/60 hover:bg-black text-gray-400 hover:text-white border border-gray-800 hover:border-gray-600 rounded-sm transition-all flex items-center gap-1 cursor-pointer"
+                        onClick={() => handleUnsealCaseFile(selectedNode)}
+                        className="w-full py-3 bg-gradient-to-r from-red-600/10 via-[#d4af37]/10 to-red-600/10 hover:via-[#d4af37]/20 border border-[#d4af37]/30 hover:border-[#d4af37] text-white hover:text-[#d4af37] rounded-sm font-mono text-[10px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                        id="unseal-case-button"
                       >
-                        <Link2 className="w-3 h-3 text-[#d4af37]" /> {connNode.label}
+                        <BookOpen className="w-4 h-4 text-[#d4af37]" /> Unseal Associated Declassified Dossier
                       </button>
-                    );
-                  })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Document Unseal click navigate action */}
-            <div className="mt-8 pt-4 border-t border-gray-900">
-              <button
-                onClick={() => handleUnsealCaseFile(selectedNode)}
-                className="w-full py-2.5 bg-gradient-to-r from-red-600/10 via-[#d4af37]/10 to-red-600/10 hover:via-[#d4af37]/20 border border-[#d4af37]/30 hover:border-[#d4af37] text-white hover:text-[#d4af37] rounded-sm font-mono text-[10px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                id="unseal-case-button"
-              >
-                <BookOpen className="w-4 h-4 text-[#d4af37]" /> Unseal Associated case file
-              </button>
-              <p className="text-center font-mono text-[7px] text-gray-500 uppercase tracking-widest mt-2">
-                CRITICAL WARNING: SUBMIT DIRECTORY ACCESS SEQUENCE
-              </p>
-            </div>
-
-          </div>
-
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>
@@ -1104,29 +1175,63 @@ export default function ConstitutionalNetwork() {
       </AnimatePresence>
 
       {/* ========================================== */}
-      {/* INVESTIGATOR CASE FILE CLIPBOARD SECTION */}
+      {/* SUBSECTION 3: INVESTIGATOR CASE CLIPBOARD SECTION */}
       {/* ========================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 relative z-10" id="case-clinics">
-        
-        {/* Section Divider with Badge */}
-        <div className="my-16 h-[1px] bg-gradient-to-r from-transparent via-[#d4af37]/30 to-transparent relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#020d20] px-4 py-1.5 border border-[#d4af37]/30 text-[10px] font-mono uppercase tracking-[0.25em] text-[#d4af37] flex items-center gap-1.5 rounded-full shadow-md">
-            <Clipboard className="w-3.5 h-3.5 text-[#d4af37] animate-pulse" /> SOVEREIGN ADVOCATE CASE STUDY ARCHIVES
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10" id="case-clinics">
+        <div className="border border-[#d4af37]/25 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm shadow-xl transition-all">
+          <button
+            type="button"
+            onClick={() => toggleSubsection("cases")}
+            className="w-full p-4 sm:p-5 flex items-center justify-between text-left bg-gradient-to-r from-[#001433] via-[#001d47] to-[#001433] border-b border-[#d4af37]/20 cursor-pointer select-none group"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] group-hover:scale-105 transition-transform">
+                <Clipboard className="w-5 h-5 text-[#ffd754]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
+                    SUBSECTION 03 // CITIZEN CASE CLINICS
+                  </span>
+                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">INTERACTIVE CHALLENGES</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-[#ffd754] transition-colors mt-0.5">
+                  Investigator's Case Clipboard & Legal Challenges
+                </h3>
+              </div>
+            </div>
 
-        {/* Title & Introduction */}
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <h3 className="text-2xl sm:text-3xl font-serif text-white font-normal italic">
-            Investigator's <span className="text-[#d4af37] font-serif not-italic font-bold">Case Clipboard</span>
-          </h3>
-          <p className="text-gray-400 text-xs mt-2 leading-relaxed font-light">
-            Analyze real-world scenarios, dissect statutory boundaries, and apply core legal principles. Complete cases to progress your clearance status and earn the Certificate of Constitutional Mastery!
-          </p>
-        </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden md:inline text-[9px] font-mono text-gray-400 uppercase tracking-wider font-semibold">
+                {openSubsections.cases ? "UNSEALED & ACTIVE" : "CLICK TO EXPAND"}
+              </span>
+              <div className={`p-1.5 rounded-md border transition-transform ${openSubsections.cases ? "bg-[#d4af37] text-black border-[#ffd754]" : "bg-black/50 text-gray-400 border-gray-700"}`}>
+                {openSubsections.cases ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </div>
+          </button>
 
-        {/* Grid Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          <AnimatePresence initial={false}>
+            {openSubsections.cases && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="p-4 sm:p-6 lg:p-8 border-t border-[#d4af37]/15 overflow-hidden"
+              >
+                {/* Title & Introduction */}
+                <div className="text-center max-w-2xl mx-auto mb-10">
+                  <h3 className="text-2xl sm:text-3xl font-serif text-white font-normal italic">
+                    Investigator's <span className="text-[#d4af37] font-serif not-italic font-bold">Case Clipboard</span>
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-2 leading-relaxed font-light">
+                    Analyze real-world scenarios, dissect statutory boundaries, and apply core legal principles. Complete cases to progress your clearance status and earn the Certificate of Constitutional Mastery!
+                  </p>
+                </div>
+
+                {/* Grid Workspace */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
           {/* LEFT: THE WOODEN CLIPBOARD WITH PAPER (8 Cols) */}
           <div className="lg:col-span-8 flex flex-col justify-between">
@@ -1470,6 +1575,10 @@ export default function ConstitutionalNetwork() {
             </div>
           </div>
 
+        </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
       </div>

@@ -1,108 +1,89 @@
 import React, { useEffect, useState } from "react";
-import { Shield, ShieldAlert, Lock, Unlock, Eye, Sparkles, Menu, X, Target, ShieldCheck } from "lucide-react";
+import { Shield, Lock, Unlock, Search, Menu, X, Check, AlertCircle, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
   isAdminMode: boolean;
   setIsAdminMode: (mode: boolean) => void;
-  primaryColor: string;
-  accentColor: string;
+  primaryColor?: string;
+  accentColor?: string;
   onOpenBookOfGoals?: () => void;
   onOpenHandbookOfRights?: () => void;
+  onOpenSearch?: () => void;
+  onNavigate?: (targetId: string) => void;
 }
 
-export default function Header({ isAdminMode, setIsAdminMode, primaryColor, accentColor, onOpenBookOfGoals, onOpenHandbookOfRights }: HeaderProps) {
+export default function Header({
+  isAdminMode,
+  setIsAdminMode,
+  primaryColor = "#001233",
+  accentColor = "#d4af37",
+  onOpenBookOfGoals,
+  onOpenHandbookOfRights,
+  onOpenSearch,
+  onNavigate
+}: HeaderProps) {
   const [isLockOpen, setIsLockOpen] = useState(false);
   const [typedKey, setTypedKey] = useState("");
   const [wrongKey, setWrongKey] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
+  const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Load administrative passkey from localStorage, defaulting to lol12ymn
+  // Administrative passkey management
   const [adminPasskey, setAdminPasskey] = useState(() => {
     try {
-      const stored = localStorage.getItem("civic_shield_admin_passkey");
-      return stored || "lol12ymn";
+      return localStorage.getItem("civic_shield_admin_passkey") || "lol12ymn";
     } catch {
       return "lol12ymn";
     }
   });
 
-  // State to manage changing administrative passcode
   const [isChangePassOpen, setIsChangePassOpen] = useState(false);
   const [newPasskey, setNewPasskey] = useState("");
   const [confirmPasskey, setConfirmPasskey] = useState("");
   const [changeError, setChangeError] = useState<string | null>(null);
   const [changeSuccess, setChangeSuccess] = useState(false);
 
-  // Track scroll position to trigger shrinkage & frosted enhancement
+  // Scroll detection for slim header
   useEffect(() => {
     const handleScroll = () => {
-      try {
-        const currentY = window.scrollY || window.pageYOffset || 0;
-        if (currentY > 25) {
-          setIsScrolled(true);
-        } else {
-          setIsScrolled(false);
-        }
-      } catch (err) {
-        console.warn("Header scroll listener error:", err);
-      }
+      setIsScrolled((window.scrollY || window.pageYOffset || 0) > 20);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Track which section is currently active via scroll Intersection Observer
+  // Section observer to update active nav state
   useEffect(() => {
-    const sections = ["introduction", "study", "impact-metrics", "justice-shield", "evidence", "blog", "timeline"];
-    const observerOptions = {
-      root: null,
-      rootMargin: "-30% 0px -40% 0px", // triggers when section dominates screen
-      threshold: 0.1,
-    };
-
-    let observer: IntersectionObserver | null = null;
-    try {
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      }, observerOptions);
-
-      sections.forEach((id) => {
-        const el = document.getElementById(id);
-        if (el && observer) observer.observe(el);
+    const sectionIds = ["introduction", "cabinet-stage", "constitutional-network", "justice-shield", "evidence", "blog", "project-outcomes"];
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
+        }
       });
-    } catch (err) {
-      console.warn("Header observer init error:", err);
-    }
-
-    const interval = setInterval(() => {
-      if (observer) {
-        sections.forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) {
-            try {
-              observer?.observe(el);
-            } catch (e) {}
-          }
-        });
-      }
-    }, 2500);
-
-    return () => {
-      clearInterval(interval);
-      if (observer) observer.disconnect();
     };
+
+    const observer = new IntersectionObserver(handleIntersection, {
+      rootMargin: "-20% 0px -50% 0px",
+      threshold: 0.1
+    });
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   const handleToggleClick = () => {
     if (isAdminMode) {
       setIsAdminMode(false);
+      try {
+        localStorage.setItem("civic_shield_admin_mode", "false");
+      } catch {}
     } else {
       setIsLockOpen(true);
     }
@@ -118,6 +99,9 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
       });
       if (res.ok) {
         setIsAdminMode(true);
+        try {
+          localStorage.setItem("civic_shield_admin_mode", "true");
+        } catch {}
         setIsLockOpen(false);
         setTypedKey("");
         setWrongKey(false);
@@ -127,9 +111,11 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
       console.warn("Backend auth verification fallback:", err);
     }
 
-    // Fallback if backend route offline or direct check
     if (typedKey === adminPasskey || typedKey === "lol12ymn") {
       setIsAdminMode(true);
+      try {
+        localStorage.setItem("civic_shield_admin_mode", "true");
+      } catch {}
       setIsLockOpen(false);
       setTypedKey("");
       setWrongKey(false);
@@ -151,7 +137,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
     }
 
     try {
-      // Sync to backend persistent store
       const res = await fetch("/api/update-passcode", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -163,7 +148,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        // If current passcode was different on server, retry with lol12ymn
         if (adminPasskey !== "lol12ymn") {
           const retryRes = await fetch("/api/update-passcode", {
             method: "POST",
@@ -177,8 +161,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
             const retryData = await retryRes.json().catch(() => ({}));
             throw new Error(retryData.error || data.error || "Server rejected passcode update");
           }
-        } else {
-          throw new Error(data.error || "Server rejected passcode update");
         }
       }
 
@@ -193,7 +175,6 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
         setConfirmPasskey("");
       }, 1500);
     } catch (err: any) {
-      // Still update local store
       localStorage.setItem("civic_shield_admin_passkey", newPasskey.trim());
       setAdminPasskey(newPasskey.trim());
       setChangeSuccess(true);
@@ -208,429 +189,341 @@ export default function Header({ isAdminMode, setIsAdminMode, primaryColor, acce
   };
 
   const navLinks = [
-    { name: "Introduction", href: "#introduction", targetId: "introduction" },
-    { name: "Study Rights & Law", href: "#study", targetId: "study" },
-    { name: "Evidence Vault", href: "#evidence", targetId: "evidence" },
-    { name: "Scenario Shield", href: "#justice-shield", targetId: "justice-shield" },
-    { name: "Impact Ledger", href: "#impact-metrics", targetId: "impact-metrics" },
-    { name: "Dispatches", href: "#blog", targetId: "blog" },
-    { name: "Roadmap", href: "#timeline", targetId: "timeline" }
+    { label: "Home", targetId: "introduction" },
+    { label: "Learn Rights", targetId: "study" },
+    { label: "Constitutional Map", targetId: "constitutional-network" },
+    { label: "Everyday Situations", targetId: "justice-shield" },
+    { label: "Mythbusters", targetId: "mythbusters" },
+    { label: "Evidence Vault", targetId: "evidence" },
+    { label: "Knowledge Hub", targetId: "blog" },
+    { label: "Our Impact", targetId: "project-outcomes" }
   ];
 
-  const scrollToTargetElement = (targetId: string) => {
-    let attempts = 0;
-    const maxAttempts = 35; // check for up to ~1.4 seconds through tab switch and layout transitions
-    const checkInterval = setInterval(() => {
-      attempts++;
-      const el = document.getElementById(targetId);
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        if (rect.height > 0 || attempts > 8) {
-          clearInterval(checkInterval);
-          const headerOffset = isScrolled ? 72 : 92;
-          const elementTop = rect.top + window.pageYOffset;
-          const targetScroll = Math.max(0, elementTop - headerOffset);
-          window.scrollTo({
-            top: targetScroll,
-            behavior: "smooth"
-          });
-
-          // Post-layout secondary adjustment to ensure pinpoint exact section positioning
-          setTimeout(() => {
-            const recheck = document.getElementById(targetId);
-            if (recheck) {
-              const currentOffset = isScrolled ? 72 : 92;
-              const newTop = recheck.getBoundingClientRect().top + window.pageYOffset - currentOffset;
-              if (Math.abs(window.pageYOffset - newTop) > 20) {
-                window.scrollTo({ top: Math.max(0, newTop), behavior: "smooth" });
-              }
-            }
-          }, 300);
-        }
-      } else if (attempts >= maxAttempts) {
-        clearInterval(checkInterval);
-        const fallback = document.getElementById("cabinet-stage");
-        if (fallback) {
-          const fallbackTop = fallback.getBoundingClientRect().top + window.pageYOffset - 80;
-          window.scrollTo({ top: Math.max(0, fallbackTop), behavior: "smooth" });
-        }
-      }
-    }, 40);
-  };
-
-  const handleNavClick = (e: React.MouseEvent, targetId: string, label: string) => {
-    e.preventDefault();
-    window.dispatchEvent(new CustomEvent("trigger-cabinet-nav", {
-      detail: { targetId, label }
-    }));
-    try {
-      window.history.pushState(null, "", `#${targetId}`);
-    } catch (err) {}
-    scrollToTargetElement(targetId);
-  };
-
-  const handleOpenHandbook = () => {
-    if (onOpenHandbookOfRights) {
-      onOpenHandbookOfRights();
-    } else {
-      window.dispatchEvent(new CustomEvent("open-handbook-of-rights"));
+  const handleNavClick = (targetId: string) => {
+    setActiveSection(targetId);
+    setMobileMenuOpen(false);
+    if (onNavigate) {
+      onNavigate(targetId);
+      return;
     }
-  };
-
-  const handleOpenGoals = () => {
-    if (onOpenBookOfGoals) {
-      onOpenBookOfGoals();
-    } else {
-      window.dispatchEvent(new CustomEvent("open-book-of-goals"));
+    const el = document.getElementById(targetId);
+    if (el) {
+      const offset = 70;
+      const top = el.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }
   };
 
   return (
-    <motion.header 
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`sticky top-0 z-50 border-b transition-all duration-500 ease-out backdrop-blur-md ${
-        isScrolled 
-          ? "h-16 bg-[#001233]/85 border-[#d4af37]/25 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.6)]" 
-          : "h-22 bg-[#001233]/95 border-[#d4af37]/15 shadow-xl"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
-        
-        {/* Logo Shield */}
-        <div className="flex items-center gap-3">
-          <motion.div 
-            initial={{ rotate: 0, scale: 0.8 }}
-            animate={{ rotate: 45, scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            whileHover={{ scale: 1.05 }}
-            className="w-10 h-10 bg-[#d4af37] rounded-sm flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.25)] cursor-pointer shrink-0"
+    <>
+      <header
+        className={`sticky top-0 z-50 transition-all duration-200 border-b ${
+          isScrolled
+            ? "bg-[#001026]/95 border-[#d4af37]/25 shadow-lg backdrop-blur-md py-2.5"
+            : "bg-[#001026] border-[#d4af37]/20 py-3.5"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+          
+          {/* ZONE 1: BRAND LOGO & NAME */}
+          <button
+            onClick={() => handleNavClick("home")}
+            className="flex items-center gap-2.5 text-left group shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] rounded"
           >
-            <div className="-rotate-45 font-serif font-bold text-[#001a4d] text-lg select-none">CS</div>
-          </motion.div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-serif font-bold tracking-tight text-[#d4af37] flex items-center gap-1 leading-none">
-              CIVIC <span className="text-white">SHIELD</span>
-            </h1>
-            <p className="text-[8.5px] font-mono uppercase tracking-[0.25em] text-gray-400 mt-1">Citizen Legal Literacy</p>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#d4af37] to-[#b89423] p-[1.5px] shadow-sm shrink-0">
+              <div className="w-full h-full bg-[#001233] rounded-[6px] flex items-center justify-center">
+                <Shield className="w-4 h-4 text-[#ffd754]" />
+              </div>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif font-bold text-base sm:text-lg text-white tracking-wide leading-none group-hover:text-[#ffd754] transition-colors whitespace-nowrap">
+                CIVIC SHIELD
+              </span>
+              <span className="text-[10px] font-mono text-gray-400 tracking-wider uppercase leading-tight">
+                Citizen Legal Literacy
+              </span>
+            </div>
+          </button>
+
+          {/* ZONE 2: 4-5 CONCISE NAV LINKS (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
+            {navLinks.map((item) => {
+              const isActive = activeSection === item.targetId;
+              return (
+                <button
+                  key={item.targetId}
+                  onClick={() => handleNavClick(item.targetId)}
+                  className={`relative py-1 text-xs uppercase tracking-wider font-mono transition-colors whitespace-nowrap shrink-0 ${
+                    isActive
+                      ? "text-[#ffd754] font-semibold"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeNavIndicator"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#d4af37] rounded-full"
+                      transition={{ duration: 0.2 }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* ZONE 3: ACTIONS (Search, Admin, Mobile Toggle) */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            {/* Instant Search Button */}
+            <button
+              onClick={onOpenSearch}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#00183b] border border-[#d4af37]/30 text-gray-300 hover:text-white hover:border-[#d4af37] text-xs font-mono transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]"
+              title="Search topics (⌘K)"
+              aria-label="Search topics"
+            >
+              <Search className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[9px] bg-[#000d20] border border-[#d4af37]/30 rounded text-gray-400">
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Admin Mode Toggle Lock */}
+            <button
+              onClick={handleToggleClick}
+              className={`p-2 rounded-lg border text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
+                isAdminMode
+                  ? "bg-amber-500/20 border-amber-400 text-amber-300"
+                  : "bg-[#00183b] border-[#d4af37]/25 text-gray-400 hover:text-[#ffd754] hover:border-[#d4af37]"
+              }`}
+              title={isAdminMode ? "Admin Active (Tap to Exit)" : "Moderator Access"}
+              aria-label="Moderator Access"
+            >
+              {isAdminMode ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+            </button>
+
+            {/* Compact Mobile Menu Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg bg-[#00183b] border border-[#d4af37]/30 text-gray-300 hover:text-white transition-colors"
+              aria-label="Toggle mobile navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#ffd754]" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-5 lg:gap-6 h-full">
-          {navLinks.map((link) => {
-            const isActive = activeSection === link.targetId;
-            return (
-              <a 
-                key={link.name}
-                href={link.href} 
-                onClick={(e) => handleNavClick(e, link.targetId, link.name)}
-                className={`relative text-[11px] font-bold tracking-wider uppercase h-full flex items-center transition-colors duration-300 ${
-                  isActive ? "text-[#d4af37]" : "text-gray-300 hover:text-white"
-                }`}
-              >
-                {link.name}
-                
-                {/* Underline Slide and Active indicator using Framer Motion */}
-                {isActive && (
-                  <motion.span 
-                    layoutId="activeUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#d4af37] shadow-[0_0_8px_#d4af37]"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </a>
-            );
-          })}
-        </nav>
-
-        {/* Campaign Admin Switch & Hamburger Icon */}
-        <div className="flex items-center gap-3">
-          {isAdminMode && (
-            <motion.button
-              onClick={() => setIsChangePassOpen(true)}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-sm text-[10px] font-bold tracking-wider uppercase bg-transparent text-gray-300 hover:text-white border border-gray-600 hover:border-gray-400 transition-colors cursor-pointer"
+        {/* MOBILE MENU DROPDOWN */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden border-t border-[#d4af37]/20 bg-[#000e24] px-4 py-4 space-y-2"
             >
-              <Eye className="w-3 h-3 text-[#d4af37]" />
-              <span>Change Passkey</span>
-            </motion.button>
-          )}
+              <div className="flex flex-col space-y-1">
+                {navLinks.map((item) => {
+                  const isActive = activeSection === item.targetId;
+                  return (
+                    <button
+                      key={item.targetId}
+                      onClick={() => handleNavClick(item.targetId)}
+                      className={`text-left px-3 py-2.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-between ${
+                        isActive
+                          ? "bg-[#001d4a] text-[#ffd754] font-semibold border border-[#d4af37]/30"
+                          : "text-gray-300 hover:bg-[#00183b] hover:text-white"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37]" />}
+                    </button>
+                  );
+                })}
+              </div>
 
-          <motion.button
-            id="admin-mode-toggle"
-            onClick={handleToggleClick}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-            className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-sm text-[10.5px] font-bold tracking-wider uppercase transition-all duration-300 cursor-pointer border min-h-[44px] shrink-0 ${
-              isAdminMode 
-                ? "bg-[#d4af37] text-[#001a4d] border-[#d4af37] shadow-[0_0_12px_rgba(212,175,55,0.35)]" 
-                : "bg-transparent text-[#d4af37] hover:bg-[#d4af37] hover:text-[#001a4d] border-[#d4af37]/45"
-            }`}
-          >
-            {isAdminMode ? (
-              <>
-                <Unlock className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Manager Active</span>
-                <span className="inline sm:hidden">Active</span>
-              </>
-            ) : (
-              <>
-                <Lock className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Manager Login</span>
-                <span className="inline sm:hidden">Login</span>
-              </>
-            )}
-          </motion.button>
-
-          {/* Hamburger Mobile Menu Toggle */}
-          <motion.button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-            className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-sm md:hidden cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
-            whileTap={{ scale: 0.92 }}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6 text-[#d4af37]" /> : <Menu className="w-6 h-6" />}
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer menu animation */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="absolute top-full left-0 right-0 bg-[#001233]/98 border-b border-[#d4af37]/25 overflow-hidden md:hidden shadow-2xl z-40 backdrop-blur-lg"
-          >
-            <div className="px-4 py-6 space-y-3 flex flex-col">
-              {navLinks.map((link, idx) => {
-                const isActive = activeSection === link.targetId;
-                return (
-                  <motion.a
-                    key={link.name}
-                    href={link.href}
-                    onClick={(e) => {
-                      setMobileMenuOpen(false);
-                      handleNavClick(e, link.targetId, link.name);
-                    }}
-                    initial={{ opacity: 0, x: -15 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className={`text-xs font-bold uppercase tracking-wider py-2.5 border-l-2 pl-3 min-h-[44px] flex items-center ${
-                      isActive 
-                        ? "text-[#d4af37] border-[#d4af37]" 
-                        : "text-gray-300 border-transparent hover:text-white"
-                    }`}
-                  >
-                    {link.name}
-                  </motion.a>
-                );
-              })}
-              
-              {isAdminMode && (
-                <motion.button
+              <div className="pt-2 border-t border-[#d4af37]/15 flex items-center justify-between gap-2">
+                <button
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    setIsChangePassOpen(true);
+                    if (onOpenSearch) onOpenSearch();
                   }}
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: navLinks.length * 0.05 }}
-                  className="flex items-center gap-1.5 text-[10px] font-bold text-left text-gray-400 uppercase tracking-widest pt-2 border-t border-gray-800"
+                  className="flex-1 py-2 px-3 rounded-lg bg-[#00183b] border border-[#d4af37]/30 text-xs font-mono text-gray-200 flex items-center justify-center gap-2"
                 >
-                  <Eye className="w-3.5 h-3.5 text-[#d4af37]" /> Change Passkey
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <Search className="w-3.5 h-3.5 text-[#d4af37]" />
+                  <span>Search Legal Topics</span>
+                </button>
 
-      {/* PASSPHRASE AUTHENTICATION modal overlay */}
+                {onOpenHandbookOfRights && (
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenHandbookOfRights();
+                    }}
+                    className="py-2 px-3 rounded-lg bg-[#00183b] border border-[#d4af37]/30 text-xs font-mono text-[#ffd754] flex items-center justify-center gap-1.5"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Handbook</span>
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* ADMIN AUTHENTICATION PASSKEY MODAL */}
       <AnimatePresence>
         {isLockOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md"
-          >
-            <motion.div 
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ 
-                scale: 1, 
-                y: 0,
-                x: wrongKey ? [0, -10, 10, -10, 10, 0] : 0
-              }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ 
-                type: "spring", 
-                duration: wrongKey ? 0.4 : 0.4,
-                bounce: wrongKey ? 0.5 : 0.15
-              }}
-              className="w-full max-w-sm bg-[#001233] border-2 border-[#d4af37]/80 rounded-sm p-6 sm:p-8 shadow-[0_0_50px_rgba(212,175,55,0.2)] space-y-6 text-center mx-4"
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-sm bg-[#001233] border border-[#d4af37]/40 rounded-xl p-6 shadow-2xl space-y-4"
             >
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-[#d4af37]/10 border border-[#d4af37] rounded-sm flex items-center justify-center mx-auto text-[#d4af37]">
-                  <ShieldAlert className="w-6 h-6 animate-pulse" />
+              <div className="flex items-center justify-between border-b border-[#d4af37]/20 pb-3">
+                <div className="flex items-center gap-2 text-[#ffd754]">
+                  <Lock className="w-5 h-5" />
+                  <h3 className="font-serif font-bold text-base text-white">Administrator Access</h3>
                 </div>
-                <h3 className="text-base font-serif text-white tracking-wider uppercase">Manager Console Restricted</h3>
-                <p className="text-[10px] text-gray-400 font-mono leading-relaxed">
-                  Enter authorized credential passkey below to manage evidence locker records and customize campaign metrics.
-                </p>
+                <button
+                  onClick={() => {
+                    setIsLockOpen(false);
+                    setTypedKey("");
+                    setWrongKey(false);
+                  }}
+                  className="text-gray-400 hover:text-white p-1 rounded"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <form onSubmit={handleAuthSubmit} className="space-y-4">
-                <div className="space-y-1">
+              <p className="text-xs text-gray-300 font-light leading-relaxed">
+                Enter your administrative key to curate FAQs, approve citizen submissions, edit laws, and manage the platform.
+              </p>
+
+              <form onSubmit={handleAuthSubmit} className="space-y-3">
+                <div>
                   <input
                     type="password"
-                    required
-                    placeholder="Insert authorization key..."
                     value={typedKey}
                     onChange={(e) => setTypedKey(e.target.value)}
-                    className={`w-full bg-[#001a4d] text-center border text-xs tracking-widest text-[#d4af37] placeholder-gray-600 rounded-sm py-2.5 px-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37] ${
-                      wrongKey ? "border-red-500 text-red-400" : "border-[#d4af37]/35"
-                    }`}
+                    placeholder="Enter passkey..."
                     autoFocus
+                    className={`w-full px-3 py-2 bg-[#000a1c] border rounded-lg text-sm text-white font-mono placeholder-gray-500 outline-none transition-colors ${
+                      wrongKey
+                        ? "border-red-500 ring-1 ring-red-500"
+                        : "border-[#d4af37]/40 focus:border-[#d4af37]"
+                    }`}
                   />
+                  {wrongKey && (
+                    <p className="text-[11px] text-red-400 font-mono mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>Invalid passkey. Please try again.</span>
+                    </p>
+                  )}
                 </div>
 
-                {wrongKey && (
-                  <p id="auth-error-msg" className="text-center text-[10px] text-red-400 font-mono animate-pulse">
-                    ✖ ACCESS DENIED: Invalid administrative passkey.
-                  </p>
-                )}
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <motion.button
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <button
                     type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setIsLockOpen(false);
-                      setTypedKey("");
-                      setWrongKey(false);
+                      setIsChangePassOpen(true);
                     }}
-                    className="py-2 border border-gray-600 hover:border-gray-400 text-gray-400 hover:text-white rounded-sm text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
+                    className="text-[11px] font-mono text-[#d4af37] hover:underline"
                   >
-                    Abstain
-                  </motion.button>
-                  <motion.button
+                    Change key?
+                  </button>
+
+                  <button
                     type="submit"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="py-2 bg-[#d4af37] hover:bg-[#c39e2e] text-[#001a4d] font-bold rounded-sm text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer shadow-md"
+                    className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#d4af37] to-[#b89423] text-[#001233] font-mono font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-md cursor-pointer"
                   >
-                    Authenticate
-                  </motion.button>
+                    Unlock Desk
+                  </button>
                 </div>
               </form>
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* CHANGE PASSPHRASE modal overlay */}
+      {/* CHANGE PASSKEY MODAL */}
       <AnimatePresence>
         {isChangePassOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-md"
-          >
-            <motion.div 
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              className="w-full max-w-sm bg-[#001233] border-2 border-[#d4af37]/80 rounded-sm p-6 sm:p-8 shadow-[0_0_50px_rgba(212,175,55,0.2)] space-y-6 text-center mx-4"
+          <div className="fixed inset-0 z-[10000] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-sm bg-[#001233] border border-[#d4af37]/40 rounded-xl p-6 shadow-2xl space-y-4"
             >
-              <div className="space-y-2">
-                <div className="w-12 h-12 bg-[#d4af37]/10 border border-[#d4af37] rounded-sm flex items-center justify-center mx-auto text-[#d4af37]">
-                  <Sparkles className="w-6 h-6 text-[#d4af37]" />
-                </div>
-                <h3 className="text-base font-serif text-white tracking-wider uppercase">Set New Access Passkey</h3>
-                <p className="text-[10px] text-gray-400 font-mono leading-relaxed">
-                  Provide a secure, private administrative key for managing layout, uploads and postings. This will persist on system refreshes.
-                </p>
+              <div className="flex items-center justify-between border-b border-[#d4af37]/20 pb-3">
+                <h3 className="font-serif font-bold text-base text-white">Update Admin Passkey</h3>
+                <button
+                  onClick={() => setIsChangePassOpen(false)}
+                  className="text-gray-400 hover:text-white p-1 rounded"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
 
-              <form onSubmit={handleChangePasskeySubmit} className="space-y-4">
-                <div className="space-y-3 text-left">
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400 block pb-0.5">New Administrative Passkey</label>
+              {changeSuccess ? (
+                <div className="py-4 text-center space-y-2">
+                  <Check className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="text-xs font-mono text-emerald-300">Passkey updated successfully!</p>
+                </div>
+              ) : (
+                <form onSubmit={handleChangePasskeySubmit} className="space-y-3">
+                  {changeError && (
+                    <p className="text-xs text-red-400 font-mono bg-red-500/10 p-2 rounded border border-red-500/20">
+                      {changeError}
+                    </p>
+                  )}
+                  <div>
+                    <label className="text-[11px] font-mono text-gray-400 block mb-1">New Passkey</label>
                     <input
                       type="password"
-                      required
-                      placeholder="E.g., lol12ymn"
                       value={newPasskey}
                       onChange={(e) => setNewPasskey(e.target.value)}
-                      className="w-full bg-[#001a4d] border border-[#d4af37]/35 text-xs text-white rounded-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-gray-600"
-                      autoFocus
+                      placeholder="Minimum 6 characters"
+                      className="w-full px-3 py-2 bg-[#000a1c] border border-[#d4af37]/40 rounded-lg text-sm text-white font-mono outline-none"
                     />
                   </div>
-                  
-                  <div className="space-y-1">
-                    <label className="text-[9px] uppercase font-mono tracking-wider text-gray-400 block pb-0.5">Verify Passkey</label>
+                  <div>
+                    <label className="text-[11px] font-mono text-gray-400 block mb-1">Confirm New Passkey</label>
                     <input
                       type="password"
-                      required
-                      placeholder="Verify passkey..."
                       value={confirmPasskey}
                       onChange={(e) => setConfirmPasskey(e.target.value)}
-                      className="w-full bg-[#001a4d] border border-[#d4af37]/35 text-xs text-white rounded-sm py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#d4af37] placeholder-gray-600"
+                      placeholder="Re-type new passkey"
+                      className="w-full px-3 py-2 bg-[#000a1c] border border-[#d4af37]/40 rounded-lg text-sm text-white font-mono outline-none"
                     />
                   </div>
-                </div>
-
-                {changeError && (
-                  <p className="text-center text-[10px] text-red-400 font-mono bg-red-950/20 py-1.5 px-2.5 rounded-sm border border-red-500/20">
-                    {changeError}
-                  </p>
-                )}
-
-                {changeSuccess && (
-                  <p className="text-center text-[10px] text-emerald-400 font-mono bg-emerald-950/20 py-1.5 px-2.5 rounded-sm border border-emerald-500/20 animate-pulse">
-                    ✓ Successful: Passkey updated and indexed!
-                  </p>
-                )}
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setIsChangePassOpen(false);
-                      setNewPasskey("");
-                      setConfirmPasskey("");
-                      setChangeError(null);
-                    }}
-                    className="py-2 border border-gray-600 hover:border-gray-400 text-gray-400 hover:text-white rounded-sm text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    type="submit"
-                    disabled={changeSuccess}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="py-2 bg-[#d4af37] hover:bg-[#c39e2e] disabled:bg-[#002366] text-[#001a4d] font-bold rounded-sm text-[10px] font-mono uppercase tracking-widest transition-colors cursor-pointer shadow-md"
-                  >
-                    Apply Key
-                  </motion.button>
-                </div>
-              </form>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsChangePassOpen(false)}
+                      className="px-3 py-1.5 rounded text-xs font-mono text-gray-400 hover:text-white"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 rounded-lg bg-[#d4af37] text-[#001233] font-mono font-bold text-xs uppercase"
+                    >
+                      Save Key
+                    </button>
+                  </div>
+                </form>
+              )}
             </motion.div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </>
   );
 }
