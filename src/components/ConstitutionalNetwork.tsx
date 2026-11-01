@@ -797,110 +797,160 @@ export default function ConstitutionalNetwork() {
                       <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Accountability Manual</div>
                     </div>
                   </div>
-                  {/* INTEGRATED PRECEDENT NETWORK & COORDINATE INSPECTOR (COMBINED IN SUBSECTION 1) */}
-                  <div className="pt-4 border-t border-[#d4af37]/20">
-                    <div className="flex items-center justify-between mb-3 bg-[#001433]/80 border border-[#d4af37]/25 rounded-md px-3 sm:px-4 py-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <Scale className="w-4 h-4 text-[#ffd754]" />
-                        <div>
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffd754] block">
-                            Active Coordinate Inspector:
-                          </span>
-                          <span className="text-sm font-serif font-bold text-white">
-                            {selectedNode.flag} {selectedNode.label} ({selectedNode.country})
-                          </span>
-                        </div>
+                </div>
+
+                {/* READ ABOUT SELECTED COUNTRY & PRECEDENT COORDINATE (BELOW MAP, NO OVERLAPPING) */}
+                <div id="selected-country-dossier" className="mt-8 pt-6 border-t border-[#d4af37]/25 space-y-4">
+                  {/* Header Bar */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-[#001433] via-[#001d4a] to-[#001433] border border-[#d4af37]/35 rounded-lg p-4 sm:p-5 shadow-xl">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-3xl shadow-inner shrink-0">
+                        {selectedNode.flag}
                       </div>
-                      <span className="text-[9px] font-mono text-gray-400 bg-black/50 px-2 py-1 rounded border border-[#d4af37]/15">
-                        CLICK ANY MAP PIN TO INSPECT
-                      </span>
-                    </div>
-
-                    {/* CLASSIFIED DOSSIER CARD */}
-                    <div className="bg-[#000a1c] border border-[#d4af37]/20 rounded-sm p-6 sm:p-8 shadow-xl relative overflow-hidden text-left font-sans">
-                      <div className="absolute top-2 right-6 w-8 h-12 border-2 border-slate-600 rounded-b-md opacity-20 rotate-12 pointer-events-none" />
-
-                      <div className="absolute top-24 -left-6 w-32 h-32 rounded-full border-4 border-[#ef4444]/10 flex items-center justify-center -rotate-12 pointer-events-none">
-                        <span className="font-mono text-[9px] font-black text-[#ef4444]/15 uppercase tracking-[0.25em]">CLASSIFIED</span>
-                      </div>
-
-                      <div className="space-y-6 relative z-10">
-                        <div className="flex items-center justify-between border-b border-gray-900 pb-3">
-                          <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#d4af37] font-bold flex items-center gap-1.5 leading-none">
-                            <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" /> INVESTIGATION DOSSIER
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-mono uppercase tracking-widest font-extrabold text-[#ffd754] bg-[#ffd754]/15 px-2.5 py-0.5 rounded border border-[#ffd754]/30">
+                            {selectedNode.country} ({selectedNode.countryCode})
                           </span>
-                          <span className="font-mono text-[8px] text-gray-500 font-bold uppercase tracking-wider">
-                            SYS_REF_{selectedNode.id.toUpperCase().slice(0, 8)}
+                          <span className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border font-bold ${
+                            selectedNode.type === "topic"
+                              ? "bg-amber-500/15 border-amber-500/30 text-amber-300"
+                              : selectedNode.type === "right"
+                                ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
+                                : selectedNode.type === "case"
+                                  ? "bg-red-500/15 border-red-500/30 text-red-300"
+                                  : "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                          }`}>
+                            {selectedNode.type.toUpperCase()} PROTECTION
                           </span>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[8px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm border ${
-                              selectedNode.type === "topic"
-                                ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                                : selectedNode.type === "right"
-                                  ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                                  : selectedNode.type === "case"
-                                    ? "bg-red-500/10 border-red-500/20 text-red-400"
-                                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                            }`}>
-                              {selectedNode.type}
-                            </span>
-                            <span className="font-mono text-[8px] text-gray-500 flex items-center gap-1">
-                              <span>{selectedNode.flag}</span>
-                              <span>{selectedNode.country}</span>
-                            </span>
-                          </div>
-                          
-                          <h3 className="font-serif text-2xl font-bold text-white tracking-wide">
-                            {selectedNode.label}
-                          </h3>
                           {selectedNode.citations && (
-                            <p className="font-mono text-[9px] text-[#d4af37] tracking-wider leading-none">
-                              CITATION: {selectedNode.citations}
-                            </p>
+                            <span className="text-[10px] font-mono text-[#d4af37] font-semibold">
+                              // {selectedNode.citations}
+                            </span>
                           )}
                         </div>
+                        <h3 className="text-xl sm:text-2xl font-serif font-bold text-white mt-1">
+                          {selectedNode.label}
+                        </h3>
+                      </div>
+                    </div>
 
-                        <div className="space-y-1.5 bg-black/40 border border-[#d4af37]/10 p-4 rounded-sm">
-                          <span className="font-mono text-[8px] uppercase tracking-widest text-gray-400 block font-bold">Classified Memorandum:</span>
-                          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light">
-                            {selectedNode.description}
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                      <button
+                        type="button"
+                        onClick={() => handleUnsealCaseFile(selectedNode)}
+                        className="px-4 py-2 bg-gradient-to-r from-[#d4af37] to-[#ffd754] hover:brightness-110 text-black font-mono text-xs font-bold uppercase tracking-wider rounded-md transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                        id="unseal-case-button"
+                      >
+                        <BookOpen className="w-4 h-4 text-black" />
+                        <span>Unseal Case File</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Main Reading Dossier Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    {/* Left Column: Memorandum & Legal Protections */}
+                    <div className="lg:col-span-2 bg-[#000e24] border border-[#d4af37]/25 rounded-lg p-5 sm:p-6 shadow-xl space-y-4">
+                      <div>
+                        <h4 className="text-xs font-mono uppercase tracking-widest text-[#ffd754] font-bold flex items-center gap-2 mb-2">
+                          <Scale className="w-4 h-4 text-[#ffd754]" />
+                          Constitutional Protection & Statutory Scope
+                        </h4>
+                        <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-light">
+                          {selectedNode.description}
+                        </p>
+                      </div>
+
+                      {selectedNode.caseSummary && (
+                        <div className="bg-black/60 border border-[#d4af37]/15 rounded-md p-4 space-y-2">
+                          <h5 className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
+                            <ShieldCheck className="w-4 h-4 text-amber-400" />
+                            Landmark Judicial Precedent & Case Facts
+                          </h5>
+                          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-serif">
+                            {selectedNode.caseSummary}
                           </p>
                         </div>
+                      )}
 
-                        <div className="space-y-2">
-                          <span className="font-mono text-[8px] uppercase tracking-widest text-gray-500 block font-bold">Connected Precedent Coordinates:</span>
-                          <div className="flex flex-wrap gap-2">
-                            {selectedNode.connections.map((cId) => {
-                              const connNode = BOARD_NODES.find(n => n.id === cId);
-                              if (!connNode) return null;
-                              return (
-                                <button
-                                  key={cId}
-                                  onClick={() => {
-                                    playNetworkSound("beep");
-                                    setSelectedNode(connNode);
-                                  }}
-                                  className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1.5 bg-black/60 hover:bg-black text-gray-300 hover:text-white border border-gray-800 hover:border-gray-600 rounded-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <Link2 className="w-3.5 h-3.5 text-[#d4af37]" /> {connNode.label} ({connNode.flag})
-                                </button>
-                              );
-                            })}
-                          </div>
+                      {selectedNode.ruling && (
+                        <div className="bg-[#001a40] border-l-4 border-[#d4af37] p-3.5 sm:p-4 rounded-r-md">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#ffd754] font-bold block mb-1">
+                            Constitutional Holding (Ratio Decidendi)
+                          </span>
+                          <p className="text-xs sm:text-sm text-gray-200 italic font-serif leading-relaxed">
+                            "{selectedNode.ruling}"
+                          </p>
                         </div>
+                      )}
 
-                        <div className="pt-4 border-t border-gray-900">
-                          <button
-                            onClick={() => handleUnsealCaseFile(selectedNode)}
-                            className="w-full py-3 bg-gradient-to-r from-red-600/10 via-[#d4af37]/10 to-red-600/10 hover:via-[#d4af37]/20 border border-[#d4af37]/30 hover:border-[#d4af37] text-white hover:text-[#d4af37] rounded-sm font-mono text-[10px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                            id="unseal-case-button"
-                          >
-                            <BookOpen className="w-4 h-4 text-[#d4af37]" /> Unseal Associated Declassified Dossier
-                          </button>
+                      {selectedNode.legalImpact && (
+                        <div className="bg-emerald-950/40 border border-emerald-500/25 rounded-md p-3.5 sm:p-4 text-emerald-200 text-xs sm:text-sm leading-relaxed">
+                          <strong className="font-mono text-[10px] uppercase tracking-wider block text-emerald-400 mb-1">
+                            Practical Shield For Citizens:
+                          </strong>
+                          {selectedNode.legalImpact}
                         </div>
+                      )}
+                    </div>
+
+                    {/* Right Column: Precedent Network & Connected Jurisdictions */}
+                    <div className="bg-[#000b1a] border border-[#d4af37]/25 rounded-lg p-5 shadow-xl flex flex-col justify-between space-y-4">
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-mono uppercase tracking-widest text-[#ffd754] font-bold flex items-center gap-2">
+                          <Link2 className="w-4 h-4 text-[#d4af37]" />
+                          Connected Precedent Network
+                        </h4>
+                        <p className="text-xs text-gray-400 font-light leading-relaxed">
+                          Red thread paths linking {selectedNode.country}'s legal doctrine with other global jurisdictions:
+                        </p>
+
+                        <div className="space-y-2 pt-1">
+                          {selectedNode.connections.map((cId) => {
+                            const connNode = BOARD_NODES.find(n => n.id === cId);
+                            if (!connNode) return null;
+                            return (
+                              <button
+                                key={cId}
+                                type="button"
+                                onClick={() => {
+                                  playNetworkSound("beep");
+                                  setSelectedNode(connNode);
+                                  setSelectedCountryFilter(connNode.countryCode);
+                                }}
+                                className="w-full text-left p-3 rounded-md bg-black/60 hover:bg-[#001838] border border-[#d4af37]/20 hover:border-[#ffd754] transition-all flex items-center justify-between group cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <span className="text-lg">{connNode.flag}</span>
+                                  <div>
+                                    <div className="text-xs font-mono font-bold text-white group-hover:text-[#ffd754] transition-colors">
+                                      {connNode.label}
+                                    </div>
+                                    <div className="text-[10px] font-mono text-gray-400">
+                                      {connNode.country} • {connNode.citations || connNode.type}
+                                    </div>
+                                  </div>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-[#ffd754] transition-transform group-hover:translate-x-0.5" />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-gray-800">
+                        <div className="text-[10px] font-mono text-gray-400 mb-2 flex items-center justify-between">
+                          <span>CLASSIFICATION</span>
+                          <span className="text-[#ffd754] font-bold">VERIFIED LEGAL SEAL</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleUnsealCaseFile(selectedNode)}
+                          className="w-full py-2.5 bg-black/80 hover:bg-black text-[#ffd754] hover:text-white border border-[#d4af37]/40 hover:border-[#ffd754] rounded font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <BookOpen className="w-3.5 h-3.5 text-[#ffd754]" /> Open Case File Dossier
+                        </button>
                       </div>
                     </div>
                   </div>
