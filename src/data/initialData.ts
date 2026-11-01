@@ -372,5 +372,5 @@ export const initialData: CivicShieldData = {
     }
   ],
   "notificationLogs": [],
-  "lastUpdated": 1793517435049
+  "lastUpdated": 1793517769278
 };

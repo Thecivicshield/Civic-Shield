@@ -848,110 +848,62 @@ export default function ConstitutionalNetwork() {
                     </div>
                   </div>
 
-                  {/* Main Reading Dossier Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    {/* Left Column: Memorandum & Legal Protections */}
-                    <div className="lg:col-span-2 bg-[#000e24] border border-[#d4af37]/25 rounded-lg p-5 sm:p-6 shadow-xl space-y-4">
-                      <div>
-                        <h4 className="text-xs font-mono uppercase tracking-widest text-[#ffd754] font-bold flex items-center gap-2 mb-2">
-                          <Scale className="w-4 h-4 text-[#ffd754]" />
-                          Constitutional Protection & Statutory Scope
-                        </h4>
-                        <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-light">
-                          {selectedNode.description}
-                        </p>
-                      </div>
+                  {/* Connected Precedent Network */}
+                  <div className="bg-[#000b1a] border border-[#d4af37]/25 rounded-lg p-5 shadow-xl space-y-4">
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-mono uppercase tracking-widest text-[#ffd754] font-bold flex items-center gap-2">
+                        <Link2 className="w-4 h-4 text-[#d4af37]" />
+                        Connected Precedent Network
+                      </h4>
+                      <p className="text-xs text-gray-400 font-light leading-relaxed">
+                        Red thread paths linking {selectedNode.country}'s legal doctrine with other global jurisdictions:
+                      </p>
 
-                      {selectedNode.caseSummary && (
-                        <div className="bg-black/60 border border-[#d4af37]/15 rounded-md p-4 space-y-2">
-                          <h5 className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-bold flex items-center gap-1.5">
-                            <ShieldCheck className="w-4 h-4 text-amber-400" />
-                            Landmark Judicial Precedent & Case Facts
-                          </h5>
-                          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-serif">
-                            {selectedNode.caseSummary}
-                          </p>
-                        </div>
-                      )}
-
-                      {selectedNode.ruling && (
-                        <div className="bg-[#001a40] border-l-4 border-[#d4af37] p-3.5 sm:p-4 rounded-r-md">
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-[#ffd754] font-bold block mb-1">
-                            Constitutional Holding (Ratio Decidendi)
-                          </span>
-                          <p className="text-xs sm:text-sm text-gray-200 italic font-serif leading-relaxed">
-                            "{selectedNode.ruling}"
-                          </p>
-                        </div>
-                      )}
-
-                      {selectedNode.legalImpact && (
-                        <div className="bg-emerald-950/40 border border-emerald-500/25 rounded-md p-3.5 sm:p-4 text-emerald-200 text-xs sm:text-sm leading-relaxed">
-                          <strong className="font-mono text-[10px] uppercase tracking-wider block text-emerald-400 mb-1">
-                            Practical Shield For Citizens:
-                          </strong>
-                          {selectedNode.legalImpact}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Right Column: Precedent Network & Connected Jurisdictions */}
-                    <div className="bg-[#000b1a] border border-[#d4af37]/25 rounded-lg p-5 shadow-xl flex flex-col justify-between space-y-4">
-                      <div className="space-y-3">
-                        <h4 className="text-xs font-mono uppercase tracking-widest text-[#ffd754] font-bold flex items-center gap-2">
-                          <Link2 className="w-4 h-4 text-[#d4af37]" />
-                          Connected Precedent Network
-                        </h4>
-                        <p className="text-xs text-gray-400 font-light leading-relaxed">
-                          Red thread paths linking {selectedNode.country}'s legal doctrine with other global jurisdictions:
-                        </p>
-
-                        <div className="space-y-2 pt-1">
-                          {selectedNode.connections.map((cId) => {
-                            const connNode = BOARD_NODES.find(n => n.id === cId);
-                            if (!connNode) return null;
-                            return (
-                              <button
-                                key={cId}
-                                type="button"
-                                onClick={() => {
-                                  playNetworkSound("beep");
-                                  setSelectedNode(connNode);
-                                  setSelectedCountryFilter(connNode.countryCode);
-                                }}
-                                className="w-full text-left p-3 rounded-md bg-black/60 hover:bg-[#001838] border border-[#d4af37]/20 hover:border-[#ffd754] transition-all flex items-center justify-between group cursor-pointer"
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <span className="text-lg">{connNode.flag}</span>
-                                  <div>
-                                    <div className="text-xs font-mono font-bold text-white group-hover:text-[#ffd754] transition-colors">
-                                      {connNode.label}
-                                    </div>
-                                    <div className="text-[10px] font-mono text-gray-400">
-                                      {connNode.country} • {connNode.citations || connNode.type}
-                                    </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 pt-1">
+                        {selectedNode.connections.map((cId) => {
+                          const connNode = BOARD_NODES.find(n => n.id === cId);
+                          if (!connNode) return null;
+                          return (
+                            <button
+                              key={cId}
+                              type="button"
+                              onClick={() => {
+                                playNetworkSound("beep");
+                                setSelectedNode(connNode);
+                                setSelectedCountryFilter(connNode.countryCode);
+                              }}
+                              className="w-full text-left p-3 rounded-md bg-black/60 hover:bg-[#001838] border border-[#d4af37]/20 hover:border-[#ffd754] transition-all flex items-center justify-between group cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-lg">{connNode.flag}</span>
+                                <div>
+                                  <div className="text-xs font-mono font-bold text-white group-hover:text-[#ffd754] transition-colors">
+                                    {connNode.label}
+                                  </div>
+                                  <div className="text-[10px] font-mono text-gray-400">
+                                    {connNode.country} • {connNode.citations || connNode.type}
                                   </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-[#ffd754] transition-transform group-hover:translate-x-0.5" />
-                              </button>
-                            );
-                          })}
-                        </div>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-[#ffd754] transition-transform group-hover:translate-x-0.5" />
+                            </button>
+                          );
+                        })}
                       </div>
+                    </div>
 
-                      <div className="pt-4 border-t border-gray-800">
-                        <div className="text-[10px] font-mono text-gray-400 mb-2 flex items-center justify-between">
-                          <span>CLASSIFICATION</span>
-                          <span className="text-[#ffd754] font-bold">VERIFIED LEGAL SEAL</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleUnsealCaseFile(selectedNode)}
-                          className="w-full py-2.5 bg-black/80 hover:bg-black text-[#ffd754] hover:text-white border border-[#d4af37]/40 hover:border-[#ffd754] rounded font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
-                        >
-                          <BookOpen className="w-3.5 h-3.5 text-[#ffd754]" /> Open Case File Dossier
-                        </button>
+                    <div className="pt-4 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="text-[10px] font-mono text-gray-400 flex items-center gap-2">
+                        <span>CLASSIFICATION:</span>
+                        <span className="text-[#ffd754] font-bold">VERIFIED LEGAL SEAL</span>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUnsealCaseFile(selectedNode)}
+                        className="py-2.5 px-6 bg-black/80 hover:bg-black text-[#ffd754] hover:text-white border border-[#d4af37]/40 hover:border-[#ffd754] rounded font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-[#ffd754]" /> Open Case File Dossier
+                      </button>
                     </div>
                   </div>
                 </div>
