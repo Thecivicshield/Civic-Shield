@@ -382,10 +382,9 @@ export default function ConstitutionalNetwork() {
   const [userCertName, setUserCertName] = useState<string>("");
   const [isCertShowing, setIsCertShowing] = useState<boolean>(false);
 
-  // Independent Collapsible Subsection States: Map, Network, Cases (Closed by default!)
+  // Independent Collapsible Subsection States: Map (integrated with precedent network), Cases (Closed by default!)
   const [openSubsections, setOpenSubsections] = useState<Record<string, boolean>>({
     map: false,
-    network: false,
     cases: false
   });
 
@@ -576,12 +575,12 @@ export default function ConstitutionalNetwork() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
-                    SUBSECTION 01 // GEOGRAPHICAL GRID
+                    SUBSECTION 01 // GEOGRAPHICAL GRID & PRECEDENT NETWORK
                   </span>
-                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">GLOBAL JURISDICTIONS</span>
+                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">GLOBAL JURISDICTIONS & PRECEDENTS</span>
                 </div>
                 <h3 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-[#ffd754] transition-colors mt-0.5">
-                  World Jurisprudence Map & Global Red-String Grid
+                  World Jurisprudence Map & Precedent Network
                 </h3>
               </div>
             </div>
@@ -798,139 +797,111 @@ export default function ConstitutionalNetwork() {
                       <div className="flex items-center gap-1.5 justify-end"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Accountability Manual</div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* SUBSECTION 2: CONNECTED PRECEDENT NETWORK & COORDINATE INSPECTOR */}
-        <div className="border border-[#d4af37]/25 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm shadow-xl transition-all mb-8">
-          <button
-            type="button"
-            onClick={() => toggleSubsection("network")}
-            className="w-full p-4 sm:p-5 flex items-center justify-between text-left bg-gradient-to-r from-[#001433] via-[#001d47] to-[#001433] border-b border-[#d4af37]/20 cursor-pointer select-none group"
-          >
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/30 flex items-center justify-center text-[#d4af37] group-hover:scale-105 transition-transform">
-                <Scale className="w-5 h-5 text-[#ffd754]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
-                    SUBSECTION 02 // PRECEDENT COORDINATES
-                  </span>
-                  <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">SELECTED: {selectedNode.label}</span>
-                </div>
-                <h3 className="text-base sm:text-lg font-serif font-bold text-white group-hover:text-[#ffd754] transition-colors mt-0.5">
-                  Connected Case Coordinates & Precedent Network
-                </h3>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="hidden md:inline text-[9px] font-mono text-gray-400 uppercase tracking-wider font-semibold">
-                {openSubsections.network ? "UNSEALED & ACTIVE" : "CLICK TO EXPAND"}
-              </span>
-              <div className={`p-1.5 rounded-md border transition-transform ${openSubsections.network ? "bg-[#d4af37] text-black border-[#ffd754]" : "bg-black/50 text-gray-400 border-gray-700"}`}>
-                {openSubsections.network ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </div>
-            </div>
-          </button>
-
-          <AnimatePresence initial={false}>
-            {openSubsections.network && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="p-4 sm:p-6 border-t border-[#d4af37]/15 overflow-hidden"
-              >
-                {/* CLASSIFIED DOSSIER CARD */}
-                <div className="bg-[#000a1c] border border-[#d4af37]/20 rounded-sm p-6 sm:p-8 shadow-xl relative overflow-hidden text-left font-sans">
-                  <div className="absolute top-2 right-6 w-8 h-12 border-2 border-slate-600 rounded-b-md opacity-20 rotate-12 pointer-events-none" />
-
-                  <div className="absolute top-24 -left-6 w-32 h-32 rounded-full border-4 border-[#ef4444]/10 flex items-center justify-center -rotate-12 pointer-events-none">
-                    <span className="font-mono text-[9px] font-black text-[#ef4444]/15 uppercase tracking-[0.25em]">CLASSIFIED</span>
-                  </div>
-
-                  <div className="space-y-6 relative z-10">
-                    <div className="flex items-center justify-between border-b border-gray-900 pb-3">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#d4af37] font-bold flex items-center gap-1.5 leading-none">
-                        <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" /> INVESTIGATION DOSSIER
-                      </span>
-                      <span className="font-mono text-[8px] text-gray-500 font-bold uppercase tracking-wider">
-                        SYS_REF_{selectedNode.id.toUpperCase().slice(0, 8)}
+                  {/* INTEGRATED PRECEDENT NETWORK & COORDINATE INSPECTOR (COMBINED IN SUBSECTION 1) */}
+                  <div className="pt-4 border-t border-[#d4af37]/20">
+                    <div className="flex items-center justify-between mb-3 bg-[#001433]/80 border border-[#d4af37]/25 rounded-md px-3 sm:px-4 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Scale className="w-4 h-4 text-[#ffd754]" />
+                        <div>
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#ffd754] block">
+                            Active Coordinate Inspector:
+                          </span>
+                          <span className="text-sm font-serif font-bold text-white">
+                            {selectedNode.flag} {selectedNode.label} ({selectedNode.country})
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-mono text-gray-400 bg-black/50 px-2 py-1 rounded border border-[#d4af37]/15">
+                        CLICK ANY MAP PIN TO INSPECT
                       </span>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[8px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm border ${
-                          selectedNode.type === "topic"
-                            ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                            : selectedNode.type === "right"
-                              ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
-                              : selectedNode.type === "case"
-                                ? "bg-red-500/10 border-red-500/20 text-red-400"
-                                : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                        }`}>
-                          {selectedNode.type}
-                        </span>
-                        <span className="font-mono text-[8px] text-gray-500 flex items-center gap-1">
-                          <span>{selectedNode.flag}</span>
-                          <span>{selectedNode.country}</span>
-                        </span>
+                    {/* CLASSIFIED DOSSIER CARD */}
+                    <div className="bg-[#000a1c] border border-[#d4af37]/20 rounded-sm p-6 sm:p-8 shadow-xl relative overflow-hidden text-left font-sans">
+                      <div className="absolute top-2 right-6 w-8 h-12 border-2 border-slate-600 rounded-b-md opacity-20 rotate-12 pointer-events-none" />
+
+                      <div className="absolute top-24 -left-6 w-32 h-32 rounded-full border-4 border-[#ef4444]/10 flex items-center justify-center -rotate-12 pointer-events-none">
+                        <span className="font-mono text-[9px] font-black text-[#ef4444]/15 uppercase tracking-[0.25em]">CLASSIFIED</span>
                       </div>
-                      
-                      <h3 className="font-serif text-2xl font-bold text-white tracking-wide">
-                        {selectedNode.label}
-                      </h3>
-                      {selectedNode.citations && (
-                        <p className="font-mono text-[9px] text-[#d4af37] tracking-wider leading-none">
-                          CITATION: {selectedNode.citations}
-                        </p>
-                      )}
-                    </div>
 
-                    <div className="space-y-1.5 bg-black/40 border border-[#d4af37]/10 p-4 rounded-sm">
-                      <span className="font-mono text-[8px] uppercase tracking-widest text-gray-400 block font-bold">Classified Memorandum:</span>
-                      <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light">
-                        {selectedNode.description}
-                      </p>
-                    </div>
+                      <div className="space-y-6 relative z-10">
+                        <div className="flex items-center justify-between border-b border-gray-900 pb-3">
+                          <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#d4af37] font-bold flex items-center gap-1.5 leading-none">
+                            <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" /> INVESTIGATION DOSSIER
+                          </span>
+                          <span className="font-mono text-[8px] text-gray-500 font-bold uppercase tracking-wider">
+                            SYS_REF_{selectedNode.id.toUpperCase().slice(0, 8)}
+                          </span>
+                        </div>
 
-                    <div className="space-y-2">
-                      <span className="font-mono text-[8px] uppercase tracking-widest text-gray-500 block font-bold">Connected Precedent Coordinates:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedNode.connections.map((cId) => {
-                          const connNode = BOARD_NODES.find(n => n.id === cId);
-                          if (!connNode) return null;
-                          return (
-                            <button
-                              key={cId}
-                              onClick={() => {
-                                playNetworkSound("beep");
-                                setSelectedNode(connNode);
-                              }}
-                              className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1.5 bg-black/60 hover:bg-black text-gray-300 hover:text-white border border-gray-800 hover:border-gray-600 rounded-sm transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Link2 className="w-3.5 h-3.5 text-[#d4af37]" /> {connNode.label} ({connNode.flag})
-                            </button>
-                          );
-                        })}
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[8px] font-mono font-bold tracking-widest uppercase px-2 py-0.5 rounded-sm border ${
+                              selectedNode.type === "topic"
+                                ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                                : selectedNode.type === "right"
+                                  ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                  : selectedNode.type === "case"
+                                    ? "bg-red-500/10 border-red-500/20 text-red-400"
+                                    : "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                            }`}>
+                              {selectedNode.type}
+                            </span>
+                            <span className="font-mono text-[8px] text-gray-500 flex items-center gap-1">
+                              <span>{selectedNode.flag}</span>
+                              <span>{selectedNode.country}</span>
+                            </span>
+                          </div>
+                          
+                          <h3 className="font-serif text-2xl font-bold text-white tracking-wide">
+                            {selectedNode.label}
+                          </h3>
+                          {selectedNode.citations && (
+                            <p className="font-mono text-[9px] text-[#d4af37] tracking-wider leading-none">
+                              CITATION: {selectedNode.citations}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-1.5 bg-black/40 border border-[#d4af37]/10 p-4 rounded-sm">
+                          <span className="font-mono text-[8px] uppercase tracking-widest text-gray-400 block font-bold">Classified Memorandum:</span>
+                          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed font-light">
+                            {selectedNode.description}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <span className="font-mono text-[8px] uppercase tracking-widest text-gray-500 block font-bold">Connected Precedent Coordinates:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedNode.connections.map((cId) => {
+                              const connNode = BOARD_NODES.find(n => n.id === cId);
+                              if (!connNode) return null;
+                              return (
+                                <button
+                                  key={cId}
+                                  onClick={() => {
+                                    playNetworkSound("beep");
+                                    setSelectedNode(connNode);
+                                  }}
+                                  className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1.5 bg-black/60 hover:bg-black text-gray-300 hover:text-white border border-gray-800 hover:border-gray-600 rounded-sm transition-all flex items-center gap-1.5 cursor-pointer"
+                                >
+                                  <Link2 className="w-3.5 h-3.5 text-[#d4af37]" /> {connNode.label} ({connNode.flag})
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-900">
+                          <button
+                            onClick={() => handleUnsealCaseFile(selectedNode)}
+                            className="w-full py-3 bg-gradient-to-r from-red-600/10 via-[#d4af37]/10 to-red-600/10 hover:via-[#d4af37]/20 border border-[#d4af37]/30 hover:border-[#d4af37] text-white hover:text-[#d4af37] rounded-sm font-mono text-[10px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                            id="unseal-case-button"
+                          >
+                            <BookOpen className="w-4 h-4 text-[#d4af37]" /> Unseal Associated Declassified Dossier
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-900">
-                      <button
-                        onClick={() => handleUnsealCaseFile(selectedNode)}
-                        className="w-full py-3 bg-gradient-to-r from-red-600/10 via-[#d4af37]/10 to-red-600/10 hover:via-[#d4af37]/20 border border-[#d4af37]/30 hover:border-[#d4af37] text-white hover:text-[#d4af37] rounded-sm font-mono text-[10px] tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                        id="unseal-case-button"
-                      >
-                        <BookOpen className="w-4 h-4 text-[#d4af37]" /> Unseal Associated Declassified Dossier
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -1175,7 +1146,7 @@ export default function ConstitutionalNetwork() {
       </AnimatePresence>
 
       {/* ========================================== */}
-      {/* SUBSECTION 3: INVESTIGATOR CASE CLIPBOARD SECTION */}
+      {/* SUBSECTION 2: INVESTIGATOR CASE CLIPBOARD SECTION */}
       {/* ========================================== */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 relative z-10" id="case-clinics">
         <div className="border border-[#d4af37]/25 rounded-xl overflow-hidden bg-black/40 backdrop-blur-sm shadow-xl transition-all">
@@ -1191,7 +1162,7 @@ export default function ConstitutionalNetwork() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-[9px] font-mono uppercase tracking-widest text-[#ffd754] font-bold bg-[#ffd754]/10 px-2 py-0.5 rounded border border-[#ffd754]/30">
-                    SUBSECTION 03 // CITIZEN CASE CLINICS
+                    SUBSECTION 02 // CITIZEN CASE CLINICS
                   </span>
                   <span className="text-[9px] font-mono text-gray-400 hidden sm:inline">INTERACTIVE CHALLENGES</span>
                 </div>
